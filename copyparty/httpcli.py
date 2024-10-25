@@ -2,7 +2,6 @@
 from __future__ import print_function, unicode_literals
 
 import argparse  # typechk
-import calendar
 import copy
 import errno
 import gzip
@@ -19,7 +18,6 @@ import threading  # typechk
 import time
 import uuid
 from datetime import datetime
-from email.utils import parsedate
 from operator import itemgetter
 
 import jinja2  # typechk
@@ -3409,26 +3407,26 @@ class HttpCli(object):
         self.reply(response.encode("utf-8"))
         return True
 
-    def _chk_lastmod(self, file_ts: int) -> tuple[str, bool]:
+    def _chk_lastmod(self, file_ts: int) -> tuple[str, bool, bool]:
+        # ret: lastmod, do_send, can_range
         file_lastmod = formatdate(file_ts)
-        cli_lastmod = self.headers.get("if-modified-since")
-        if cli_lastmod:
-            try:
-                # some browser append "; length=573"
-                cli_lastmod = cli_lastmod.split(";")[0].strip()
-                cli_dt = parsedate(cli_lastmod)
-                assert cli_dt  # !rm
-                cli_ts = calendar.timegm(cli_dt)
-                return file_lastmod, int(file_ts) > int(cli_ts)
-            except Exception as ex:
-                self.log(
-                    "lastmod {}\nremote: [{}]\n local: [{}]".format(
-                        repr(ex), cli_lastmod, file_lastmod
-                    )
-                )
-                return file_lastmod, file_lastmod != cli_lastmod
+        c_ifrange = self.headers.get("if-range")
+        c_lastmod = self.headers.get("if-modified-since")
 
-        return file_lastmod, True
+        if not c_ifrange and not c_lastmod:
+            return file_lastmod, True, True
+
+        if c_ifrange and c_ifrange != file_lastmod:
+            t = "sending entire file due to If-Range; cli(%s) file(%s)"
+            self.log(t % (c_ifrange, file_lastmod), 6)
+            return file_lastmod, True, False
+
+        do_send = c_lastmod != file_lastmod
+        if do_send and c_lastmod:
+            t = "sending body due to If-Modified-Since cli(%s) file(%s)"
+            self.log(t % (c_lastmod, file_lastmod), 6)
+
+        return file_lastmod, do_send, True
 
     def _use_dirkey(self, vn: VFS, ap: str) -> bool:
         if self.can_read or not self.can_get:
@@ -3578,7 +3576,7 @@ class HttpCli(object):
         # if-modified
 
         if file_ts > 0:
-            file_lastmod, do_send = self._chk_lastmod(int(file_ts))
+            file_lastmod, do_send, _ = self._chk_lastmod(int(file_ts))
             self.out_headers["Last-Modified"] = file_lastmod
             if not do_send:
                 status = 304
@@ -3740,7 +3738,7 @@ class HttpCli(object):
         #
         # if-modified
 
-        file_lastmod, do_send = self._chk_lastmod(int(file_ts))
+        file_lastmod, do_send, can_range = self._chk_lastmod(int(file_ts))
         self.out_headers["Last-Modified"] = file_lastmod
         if not do_send:
             status = 304
@@ -3784,7 +3782,14 @@ class HttpCli(object):
 
         # let's not support 206 with compression
         # and multirange / multipart is also not-impl (mostly because calculating contentlength is a pain)
-        if do_send and not is_compressed and hrange and file_sz and "," not in hrange:
+        if (
+            do_send
+            and not is_compressed
+            and hrange
+            and can_range
+            and file_sz
+            and "," not in hrange
+        ):
             try:
                 if not hrange.lower().startswith("bytes"):
                     raise Exception()
@@ -4255,7 +4260,7 @@ class HttpCli(object):
             sz_md = len(lead) + len(fullfile)
 
         file_ts = int(max(ts_md, self.E.t0))
-        file_lastmod, do_send = self._chk_lastmod(file_ts)
+        file_lastmod, do_send, _ = self._chk_lastmod(file_ts)
         self.out_headers["Last-Modified"] = file_lastmod
         self.out_headers.update(NO_CACHE)
         status = 200 if do_send else 304
