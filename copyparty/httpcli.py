@@ -863,6 +863,19 @@ class HttpCli(object):
                 self.cbonk(self.conn.hsrv.gmal, zs, "cc_hdr", "Cc in out-hdr")
                 raise Pebkac(999)
 
+        if self.args.ohead and self.do_log:
+            keys = self.args.ohead
+            if "*" in keys:
+                lines = response[1:]
+            else:
+                lines = []
+                for zs in response[1:]:
+                    if zs.split(":")[0].lower() in keys:
+                        lines.append(zs)
+            for zs in lines:
+                hk, hv = zs.split(": ")
+                self.log("[O] {}: \033[33m[{}]".format(hk, hv), 5)
+
         response.append("\r\n")
         try:
             self.s.sendall("\r\n".join(response).encode("utf-8"))

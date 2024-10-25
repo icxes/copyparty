@@ -2640,7 +2640,7 @@ class AuthSrv(object):
         ]
 
         csv = set("i p th_covers zm_on zm_off zs_on zs_off".split())
-        zs = "c ihead mtm mtp on403 on404 xad xar xau xiu xban xbd xbr xbu xm"
+        zs = "c ihead ohead mtm mtp on403 on404 xad xar xau xiu xban xbd xbr xbu xm"
         lst = set(zs.split())
         askip = set("a v c vc cgen exp_lg exp_md theme".split())
         fskip = set("exp_lg exp_md mv_re_r mv_re_t rm_re_r rm_re_t".split())
