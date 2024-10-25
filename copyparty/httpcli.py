@@ -793,11 +793,7 @@ class HttpCli(object):
 
     def k304(self) -> bool:
         k304 = self.cookies.get("k304")
-        return (
-            k304 == "y"
-            or (self.args.k304 == 2 and k304 != "n")
-            or ("; Trident/" in self.ua and not k304)
-        )
+        return k304 == "y" or (self.args.k304 == 2 and k304 != "n")
 
     def _build_html_head(self, maybe_html: Any, kv: dict[str, Any]) -> None:
         html = str(maybe_html)
