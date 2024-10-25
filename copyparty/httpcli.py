@@ -125,6 +125,9 @@ _ = (argparse, threading)
 
 NO_CACHE = {"Cache-Control": "no-cache"}
 
+H_CONN_KEEPALIVE = "Connection: Keep-Alive"
+H_CONN_CLOSE = "Connection: Close"
+
 LOGUES = [[0, ".prologue.html"], [1, ".epilogue.html"]]
 
 READMES = [[0, ["preadme.md", "PREADME.md"]], [1, ["readme.md", "README.md"]]]
@@ -829,25 +832,28 @@ class HttpCli(object):
     ) -> None:
         response = ["%s %s %s" % (self.http_ver, status, HTTPCODE[status])]
 
-        if length is not None:
-            response.append("Content-Length: " + unicode(length))
-
-        if status == 304 and self.k304():
-            self.keepalive = False
-
-        # close if unknown length, otherwise take client's preference
-        response.append("Connection: " + ("Keep-Alive" if self.keepalive else "Close"))
-        response.append("Date: " + formatdate())
-
         # headers{} overrides anything set previously
         if headers:
             self.out_headers.update(headers)
 
-        # default to utf8 html if no content-type is set
-        if not mime:
-            mime = self.out_headers.get("Content-Type") or "text/html; charset=utf-8"
+        if status == 304:
+            self.out_headers.pop("Content-Length", None)
+            self.out_headers.pop("Content-Type", None)
+            self.out_headerlist.clear()
+            if self.k304():
+                self.keepalive = False
+        else:
+            if length is not None:
+                response.append("Content-Length: " + unicode(length))
 
-        self.out_headers["Content-Type"] = mime
+            if mime:
+                self.out_headers["Content-Type"] = mime
+            elif "Content-Type" not in self.out_headers:
+                self.out_headers["Content-Type"] = "text/html; charset=utf-8"
+
+        # close if unknown length, otherwise take client's preference
+        response.append(H_CONN_KEEPALIVE if self.keepalive else H_CONN_CLOSE)
+        response.append("Date: " + formatdate())
 
         for k, zs in list(self.out_headers.items()) + self.out_headerlist:
             response.append("%s: %s" % (k, zs))
@@ -953,13 +959,14 @@ class HttpCli(object):
 
         lines = [
             "%s %s %s" % (self.http_ver or "HTTP/1.1", status, HTTPCODE[status]),
-            "Connection: Close",
+            H_CONN_CLOSE,
         ]
 
         if body:
             lines.append("Content-Length: " + unicode(len(body)))
 
-        self.s.sendall("\r\n".join(lines).encode("utf-8") + b"\r\n\r\n" + body)
+        lines.append("\r\n")
+        self.s.sendall("\r\n".join(lines).encode("utf-8") + body)
 
     def urlq(self, add: dict[str, str], rm: list[str]) -> str:
         """
