@@ -34,6 +34,9 @@ var Ls = {
 		"ta2": "gjenta for å bekrefte nytt passord:",
 		"ta3": "fant en skrivefeil; vennligst prøv igjen",
 		"aa1": "innkommende:",
+		"ab1": "skru av no304",
+		"ac1": "skru på no304",
+		"ad1": "no304 stopper all bruk av cache. Hvis ikke k304 var nok, prøv denne. Vil mangedoble dataforbruk!",
 	},
 	"eng": {
 		"d2": "shows the state of all active threads",
@@ -80,6 +83,9 @@ var Ls = {
 		"ta2": "重复以确认新密码：",
 		"ta3": "发现拼写错误；请重试",
 		"aa1": "正在接收的文件：", //m
+		"ab1": "关闭 k304",
+		"ac1": "开启 k304",
+		"ad1": "启用 no304 将禁用所有缓存；如果 k304 不够，可以尝试此选项。这将消耗大量的网络流量！", //m
 	}
 };
 

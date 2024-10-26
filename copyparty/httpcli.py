@@ -125,6 +125,8 @@ _ = (argparse, threading)
 
 NO_CACHE = {"Cache-Control": "no-cache"}
 
+ALL_COOKIES = "k304 no304 js idxh dots cppwd cppws".split()
+
 H_CONN_KEEPALIVE = "Connection: Keep-Alive"
 H_CONN_CLOSE = "Connection: Close"
 
@@ -795,6 +797,10 @@ class HttpCli(object):
         k304 = self.cookies.get("k304")
         return k304 == "y" or (self.args.k304 == 2 and k304 != "n")
 
+    def no304(self) -> bool:
+        no304 = self.cookies.get("no304")
+        return no304 == "y" or (self.args.no304 == 2 and no304 != "n")
+
     def _build_html_head(self, maybe_html: Any, kv: dict[str, Any]) -> None:
         html = str(maybe_html)
         is_jinja = html[:2] in "%@%"
@@ -1198,9 +1204,6 @@ class HttpCli(object):
 
             if "ups" in self.uparam:
                 return self.tx_ups()
-
-            if "k304" in self.uparam:
-                return self.set_k304()
 
             if "setck" in self.uparam:
                 return self.setck()
@@ -3428,6 +3431,9 @@ class HttpCli(object):
         if do_send and c_lastmod:
             t = "sending body due to If-Modified-Since cli(%s) file(%s)"
             self.log(t % (c_lastmod, file_lastmod), 6)
+        elif not do_send and self.no304():
+            do_send = True
+            self.log("sending body due to no304")
 
         return file_lastmod, do_send, True
 
@@ -4460,7 +4466,9 @@ class HttpCli(object):
             dbwt=vs["dbwt"],
             url_suf=suf,
             k304=self.k304(),
+            no304=self.no304(),
             k304vis=self.args.k304 > 0,
+            no304vis=self.args.no304 > 0,
             ver=S_VERSION if self.args.ver else "",
             chpw=self.args.chpw and self.uname != "*",
             ahttps="" if self.is_https else "https://" + self.host + self.req,
@@ -4468,29 +4476,21 @@ class HttpCli(object):
         self.reply(html.encode("utf-8"))
         return True
 
-    def set_k304(self) -> bool:
-        v = self.uparam["k304"].lower()
-        if v in "yn":
-            dur = 86400 * 299
-        else:
-            dur = 0
-            v = "x"
-
-        ck = gencookie("k304", v, self.args.R, False, dur)
-        self.out_headerlist.append(("Set-Cookie", ck))
-        self.redirect("", "?h#cc")
-        return True
-
     def setck(self) -> bool:
         k, v = self.uparam["setck"].split("=", 1)
-        t = 0 if v == "" else 86400 * 299
+        t = 0 if v in ("", "x") else 86400 * 299
         ck = gencookie(k, v, self.args.R, False, t)
         self.out_headerlist.append(("Set-Cookie", ck))
-        self.reply(b"o7\n")
+        if "cc" in self.ouparam:
+            self.redirect("", "?h#cc")
+        else:
+            self.reply(b"o7\n")
         return True
 
     def set_cfg_reset(self) -> bool:
-        for k in ("k304", "js", "idxh", "dots", "cppwd", "cppws"):
+        for k in ALL_COOKIES:
+            if k not in self.cookies:
+                continue
             cookie = gencookie(k, "x", self.args.R, False)
             self.out_headerlist.append(("Set-Cookie", cookie))
 

@@ -54,7 +54,7 @@ var tl_cpanel = {
 		"cc1": "other stuff:",
 		"h1": "disable k304",  // TLNote: "j1" explains what k304 is
 		"i1": "enable k304",
-		"j1": "enabling this will disconnect your client on every HTTP 304, which can prevent some buggy proxies from getting stuck (suddenly not loading pages), <em>but</em> it will also make things slower in general",
+		"j1": "enabling k304 will disconnect your client on every HTTP 304, which can prevent some buggy proxies from getting stuck (suddenly not loading pages), <em>but</em> it will also make things slower in general",
 		"k1": "reset client settings",
 		"l1": "login for more:",
 		"m1": "welcome back,",  // TLNote: "welcome back, USERNAME"
@@ -76,6 +76,9 @@ var tl_cpanel = {
 		"ta2": "repeat to confirm new password:",
 		"ta3": "found a typo; please try again",
 		"aa1": "incoming files:",
+		"ab1": "disable no304",
+		"ac1": "enable no304",
+		"ad1": "enabling no304 will disable all caching; try this if k304 wasn't enough. This will waste a huge amount of network traffic!",
 	},
 };
 
