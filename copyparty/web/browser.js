@@ -4510,8 +4510,11 @@ var fileman = (function () {
 			'<tr><td>perms</td><td class="sh_axs">',
 		];
 		for (var a = 0; a < perms.length; a++)
-			if (perms[a] != 'admin')
+			if (!has(['admin', 'move'], perms[a]))
 				html.push('<a href="#" class="tgl btn">' + perms[a] + '</a>');
+
+		if (has(perms, 'write'))
+			html.push('<a href="#" class="btn">write-only</a>');
 
 		html.push('</td></tr></div');
 		shui.innerHTML = html.join('\n');
@@ -4576,6 +4579,9 @@ var fileman = (function () {
 
 		function shspf() {
 			clmod(this, 'on', 't');
+			if (this.textContent == 'write-only')
+				for (var a = 0; a < pbtns.length; a++)
+					clmod(pbtns[a], 'on', pbtns[a].textContent == 'write');
 		}
 		clmod(pbtns[0], 'on', 1);
 
@@ -7380,6 +7386,9 @@ var treectl = (function () {
 			r.ls_cb = null;
 			fun();
 		}
+
+		if (window.have_shr && QS('#op_unpost.act') && (cdir.startsWith(SR + have_shr) || get_evpath().startsWith(SR + have_shr)))
+			goto('unpost');
 	}
 
 	r.chk_index_html = function (top, res) {
@@ -9115,7 +9124,7 @@ var unpost = (function () {
 			r.me = me;
 		}
 
-		var q = SR + '/?ups';
+		var q = get_evpath() + '?ups';
 		if (filt.value)
 			q += '&filter=' + uricom_enc(filt.value, true);
 

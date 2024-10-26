@@ -552,15 +552,14 @@ class VFS(object):
             return self._get_dbv(vrem)
 
         shv, srem = src
-        return shv, vjoin(srem, vrem)
+        return shv._get_dbv(vjoin(srem, vrem))
 
     def _get_dbv(self, vrem: str) -> tuple["VFS", str]:
         dbv = self.dbv
         if not dbv:
             return self, vrem
 
-        tv = [self.vpath[len(dbv.vpath) :].lstrip("/"), vrem]
-        vrem = "/".join([x for x in tv if x])
+        vrem = vjoin(self.vpath[len(dbv.vpath) :].lstrip("/"), vrem)
         return dbv, vrem
 
     def canonical(self, rem: str, resolve: bool = True) -> str:

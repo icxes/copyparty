@@ -2204,6 +2204,23 @@ def unquotep(txt: str) -> str:
     return w8dec(unq2)
 
 
+def vroots(vp1: str, vp2: str) -> tuple[str, str]:
+    """
+    input("q/w/e/r","a/s/d/e/r") output("/q/w/","/a/s/d/")
+    """
+    while vp1 and vp2:
+        zt1 = vp1.rsplit("/", 1) if "/" in vp1 else ("", vp1)
+        zt2 = vp2.rsplit("/", 1) if "/" in vp2 else ("", vp2)
+        if zt1[1] != zt2[1]:
+            break
+        vp1 = zt1[0]
+        vp2 = zt2[0]
+    return (
+        "/%s/" % (vp1,) if vp1 else "/",
+        "/%s/" % (vp2,) if vp2 else "/",
+    )
+
+
 def vsplit(vpath: str) -> tuple[str, str]:
     if "/" not in vpath:
         return "", vpath

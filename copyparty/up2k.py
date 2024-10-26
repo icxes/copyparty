@@ -3907,11 +3907,9 @@ class Up2k(object):
             if unpost:
                 raise Pebkac(400, "cannot unpost folders")
         elif stat.S_ISLNK(st.st_mode) or stat.S_ISREG(st.st_mode):
-            dbv, vrem = self.asrv.vfs.get(vpath, uname, *permsets[0])
-            dbv, vrem = dbv.get_dbv(vrem)
-            voldir = vsplit(vrem)[0]
+            voldir = vsplit(rem)[0]
             vpath_dir = vsplit(vpath)[0]
-            g = [(dbv, voldir, vpath_dir, adir, [(fn, 0)], [], {})]  # type: ignore
+            g = [(vn, voldir, vpath_dir, adir, [(fn, 0)], [], {})]  # type: ignore
         else:
             self.log("rm: skip type-{:x} file [{}]".format(st.st_mode, atop))
             return 0, [], []
@@ -3938,7 +3936,10 @@ class Up2k(object):
                 volpath = ("%s/%s" % (vrem, fn)).strip("/")
                 vpath = ("%s/%s" % (dbv.vpath, volpath)).strip("/")
                 self.log("rm %s\n  %s" % (vpath, abspath))
-                _ = dbv.get(volpath, uname, *permsets[0])
+                if not unpost:
+                    # recursion-only sanchk
+                    _ = dbv.get(volpath, uname, *permsets[0])
+
                 if xbd:
                     if not runhook(
                         self.log,

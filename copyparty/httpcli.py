@@ -105,6 +105,7 @@ from .util import (
     unquotep,
     vjoin,
     vol_san,
+    vroots,
     vsplit,
     wrename,
     wunlink,
@@ -1202,9 +1203,6 @@ class HttpCli(object):
             if "stack" in self.uparam:
                 return self.tx_stack()
 
-            if "ups" in self.uparam:
-                return self.tx_ups()
-
             if "setck" in self.uparam:
                 return self.setck()
 
@@ -1219,6 +1217,10 @@ class HttpCli(object):
 
         if "h" in self.uparam:
             return self.tx_mounts()
+
+        if "ups" in self.uparam:
+            # vpath is used for share translation
+            return self.tx_ups()
 
         if "rss" in self.uparam:
             return self.tx_rss()
@@ -2408,6 +2410,15 @@ class HttpCli(object):
             if "purl" in ret:
                 ret["purl"] = self.args.SR + ret["purl"]
 
+        if self.args.shr and self.vpath.startswith(self.args.shr1):
+            # strip common suffix (uploader's folder structure)
+            vp_req, vp_vfs = vroots(self.vpath, vjoin(dbv.vpath, vrem))
+            if not ret["purl"].startswith(vp_vfs):
+                t = "share-mapping failed; req=[%s] dbv=[%s] vrem=[%s] n1=[%s] n2=[%s] purl=[%s]"
+                zt = (self.vpath, dbv.vpath, vrem, vp_req, vp_vfs, ret["purl"])
+                raise Pebkac(500, t % zt)
+            ret["purl"] = vp_req + ret["purl"][len(vp_vfs) :]
+
         ret = json.dumps(ret)
         self.log(ret)
         self.reply(ret.encode("utf-8"), mime="application/json")
@@ -2500,7 +2511,11 @@ class HttpCli(object):
                 chashes.append(siblings[n : n + clen])
 
         vfs, _ = self.asrv.vfs.get(self.vpath, self.uname, False, True)
-        ptop = (vfs.dbv or vfs).realpath
+        ptop = vfs.get_dbv("")[0].realpath
+        # if this is a share, then get_dbv has been overridden to return
+        # the dbv (which does not exist as a property). And its realpath
+        # could point into the middle of its origin vfs node, meaning it
+        # is not necessarily registered with up2k, so get_dbv is crucial
 
         broker = self.conn.hsrv.broker
         x = broker.ask("up2k.handle_chunks", ptop, wark, chashes)
@@ -4456,7 +4471,7 @@ class HttpCli(object):
             rvol=rvol,
             wvol=wvol,
             avol=avol,
-            in_shr=self.args.shr and self.vpath.startswith(self.args.shr[1:]),
+            in_shr=self.args.shr and self.vpath.startswith(self.args.shr1),
             vstate=vstate,
             ups=ups,
             scanning=vs["scanning"],
@@ -4520,7 +4535,7 @@ class HttpCli(object):
 
         t = t.format(self.args.SR)
         qv = quotep(self.vpaths) + self.ourlq()
-        in_shr = self.args.shr and self.vpath.startswith(self.args.shr[1:])
+        in_shr = self.args.shr and self.vpath.startswith(self.args.shr1)
         html = self.j2s("splash", this=self, qvpath=qv, in_shr=in_shr, msg=t)
         self.reply(html.encode("utf-8"), status=rc)
         return True
@@ -4683,6 +4698,11 @@ class HttpCli(object):
         lm = "ups [{}]".format(filt)
         self.log(lm)
 
+        if self.args.shr and self.vpath.startswith(self.args.shr1):
+            shr_dbv, shr_vrem = self.vn.get_dbv(self.rem)
+        else:
+            shr_dbv = None
+
         ret: list[dict[str, Any]] = []
         t0 = time.time()
         lim = time.time() - self.args.unpost
@@ -4703,7 +4723,12 @@ class HttpCli(object):
         else:
             allvols = list(self.asrv.vfs.all_vols.values())
 
-        allvols = [x for x in allvols if "e2d" in x.flags]
+        allvols = [
+            x
+            for x in allvols
+            if "e2d" in x.flags
+            and ("*" in x.axs.uwrite or self.uname in x.axs.uwrite or x == shr_dbv)
+        ]
 
         for vol in allvols:
             cur = idx.get_cur(vol)
@@ -4752,6 +4777,16 @@ class HttpCli(object):
                 break
 
         ret = ret[:2000]
+
+        if shr_dbv:
+            # translate vpaths from share-target to share-url
+            # to satisfy access checks
+            assert shr_vrem.split  # type: ignore  # !rm
+            vp_shr, vp_vfs = vroots(self.vpath, vjoin(shr_dbv.vpath, shr_vrem))
+            for v in ret:
+                vp = v["vp"]
+                if vp.startswith(vp_vfs):
+                    v["vp"] = vp_shr + vp[len(vp_vfs) :]
 
         if self.is_vproxied:
             for v in ret:
@@ -4882,7 +4917,7 @@ class HttpCli(object):
         if m:
             raise Pebkac(400, "sharekey has illegal character [%s]" % (m[1],))
 
-        if vp.startswith(self.args.shr[1:]):
+        if vp.startswith(self.args.shr1):
             raise Pebkac(400, "yo dawg...")
 
         cur = idx.get_shr()

@@ -230,6 +230,7 @@ class SvcHub(object):
         if not self.args.no_ses:
             self.setup_session_db()
 
+        args.shr1 = ""
         if args.shr:
             self.setup_share_db()
 
@@ -460,6 +461,7 @@ class SvcHub(object):
             raise Exception(t)
 
         al.shr = "/%s/" % (al.shr,)
+        al.shr1 = al.shr[1:]
 
         create = True
         modified = False
