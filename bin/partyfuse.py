@@ -1128,7 +1128,7 @@ def main():
 
     # dircache is always a boost,
     #   only want to disable it for tests etc,
-    cdn = 9  # max num dirs; 0=disable
+    cdn = 24  # max num dirs; keep larger than max dir depth; 0=disable
     cds = 1  # numsec until an entry goes stale
 
     where = "local directory"
