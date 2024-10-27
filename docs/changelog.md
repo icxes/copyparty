@@ -1,4 +1,28 @@
 ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀  
+# 2024-1018-2342  `v1.15.9`  rss server
+
+## 🧪 new features
+
+* #109 [rss feed generator](https://github.com/9001/copyparty#rss-feeds) 7ffd805a
+  * monitor folders recursively with RSS readers
+
+## 🩹 bugfixes
+
+* #107 `--df` diskspace limits was incompatible with webdav 2a570bb4
+* #108 up2k javascript crash (only affected the Chinese translation) a7e2a0c9
+
+## 🔧 other changes
+
+* up2k: detect buggy webworkers 5ca8f070
+* up2k: improve upload retry/timeout logic a9b4436c
+  * js: make handshake retries more aggressive
+  * u2c: reduce chunks timeout + ^
+  * main: reduce tcp timeout to 128sec (js is 42s)
+  * httpcli: less confusing log messages
+
+
+
+▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀  
 # 2024-1016-2153  `v1.15.8`  the sky is the limit
 
 ## 🧪 new features
