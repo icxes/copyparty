@@ -4535,8 +4535,14 @@ class HttpCli(object):
 
         t = t.format(self.args.SR)
         qv = quotep(self.vpaths) + self.ourlq()
-        in_shr = self.args.shr and self.vpath.startswith(self.args.shr1)
-        html = self.j2s("splash", this=self, qvpath=qv, in_shr=in_shr, msg=t)
+        html = self.j2s(
+            "splash",
+            this=self,
+            qvpath=qv,
+            msg=t,
+            in_shr=self.args.shr and self.vpath.startswith(self.args.shr1),
+            ahttps="" if self.is_https else "https://" + self.host + self.req,
+        )
         self.reply(html.encode("utf-8"), status=rc)
         return True
 
