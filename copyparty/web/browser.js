@@ -6239,9 +6239,6 @@ var ahotkeys = function (e) {
 		ae = document.activeElement,
 		aet = ae && ae != document.body ? ae.nodeName.toLowerCase() : '';
 
-	if (e.key == '?')
-		return hkhelp();
-
 	if (k == 'Escape' || k == 'Esc') {
 		ae && ae.blur();
 		tt.hide();
@@ -6321,6 +6318,9 @@ var ahotkeys = function (e) {
 
 	if (aet && aet != 'a' && aet != 'tr' && aet != 'td' && aet != 'div' && aet != 'pre')
 		return;
+
+	if (e.key == '?')
+		return hkhelp();
 
 	if (ctrl(e)) {
 		if (k == 'KeyX' || k == 'x')
