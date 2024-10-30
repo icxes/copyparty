@@ -208,6 +208,12 @@ upload modifiers:
 | method | params | result |
 |--|--|--|
 | GET | `?pw=x` | logout |
+| GET | `?grid` | ui: show grid-view |
+| GET | `?imgs` | ui: show grid-view with thumbnails |
+| GET | `?grid=0` | ui: show list-view |
+| GET | `?imgs=0` | ui: show list-view |
+| GET | `?thumb` | ui, grid-mode: show thumbnails |
+| GET | `?thumb=0` | ui, grid-mode: show icons |
 
 
 # event hooks

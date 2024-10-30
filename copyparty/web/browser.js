@@ -2118,8 +2118,9 @@ function set_files_html(html) {
 // actx breaks background album playback on ios
 var ACtx = !IPHONE && (window.AudioContext || window.webkitAudioContext),
 	ACB = sread('au_cbv') || 1,
-	noih = /[?&]v\b/.exec('' + location),
 	hash0 = location.hash,
+	sloc0 = '' + location,
+	noih = /[?&]v\b/.exec(sloc0),
 	ldks = [],
 	dks = {},
 	dk, mp;
@@ -6046,6 +6047,19 @@ var thegrid = (function () {
 		if (r.x3 != en)
 			toast.warn(10, L.ul_btnlk);
 	};
+
+	if (/[?&]grid\b/.exec(sloc0))
+		swrite('griden', /[?&]grid=0\b/.exec(sloc0) ? 0 : 1)
+
+	if (/[?&]thumb\b/.exec(sloc0))
+		swrite('thumbs', /[?&]thumb=0\b/.exec(sloc0) ? 0 : 1)
+
+	if (/[?&]imgs\b/.exec(sloc0)) {
+		var n = /[?&]imgs=0\b/.exec(sloc0) ? 0 : 1;
+		swrite('griden', n);
+		if (n)
+			swrite('thumbs', 1);
+	}
 
 	bcfg_bind(r, 'thumbs', 'thumbs', true, r.setdirty);
 	bcfg_bind(r, 'ihop', 'ihop', true);
