@@ -4820,6 +4820,9 @@ var fileman = (function () {
 			inew = ebi('rn_pnew'),
 			defp = '$lpad((tn),2,0). [(artist) - ](title).(ext)';
 
+		ire.value = sread('cpp_rn_re') || '';
+		ifmt.value = sread('cpp_rn_fmt') || '';
+
 		var presets = {};
 		presets[defp] = ['', defp];
 		presets = jread("rn_pre", presets);
@@ -4910,6 +4913,8 @@ var fileman = (function () {
 
 		function rn_apply(e) {
 			ev(e);
+			swrite('cpp_rn_re', ire.value);
+			swrite('cpp_rn_fmt', ifmt.value);
 			if (r.win || r.slash) {
 				var changed = 0;
 				for (var a = 0; a < f.length; a++) {
