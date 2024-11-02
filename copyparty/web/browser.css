@@ -1710,6 +1710,18 @@ html.dz .btn {
 	background: var(--btn-1-bg);
 	text-shadow: none;
 }
+#tree ul a.ld::before {
+	font-weight: bold;
+	font-family: sans-serif;
+	display: inline-block;
+	text-align: center;
+	width: 1em;
+	margin: 0 .3em 0 -1.3em;
+	color: var(--fg-max);
+	opacity: 0;
+	content: '◠';
+	animation: .5s linear infinite forwards spin, ease .25s 1 forwards fadein;
+}
 #tree ul a.par {
 	color: var(--fg-max);
 }
