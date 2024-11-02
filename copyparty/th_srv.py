@@ -896,7 +896,9 @@ class ThumbSrv(object):
         prev_b64 = None
         prev_fp = ""
         try:
-            t1 = statdir(self.log_func, not self.args.no_scandir, False, thumbpath)
+            t1 = statdir(
+                self.log_func, not self.args.no_scandir, False, thumbpath, False
+            )
             ents = sorted(list(t1))
         except:
             return 0

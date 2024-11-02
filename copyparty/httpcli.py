@@ -1450,6 +1450,7 @@ class HttpCli(object):
                 not self.args.no_scandir,
                 [[True, False]],
                 lstat="davrt" not in vn.flags,
+                throw=True,
             )
             if not self.can_read:
                 vfs_ls = []
@@ -5459,6 +5460,7 @@ class HttpCli(object):
             not self.args.no_scandir,
             [[True, False], [False, True]],
             lstat="lt" in self.uparam,
+            throw=True,
         )
         stats = {k: v for k, v in vfs_ls}
         ls_names = [x[0] for x in vfs_ls]

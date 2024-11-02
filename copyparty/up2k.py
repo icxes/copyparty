@@ -1347,7 +1347,7 @@ class Up2k(object):
         rds = rd + "/" if rd else ""
         cdirs = cdir + os.sep
 
-        g = statdir(self.log_func, not self.args.no_scandir, True, cdir)
+        g = statdir(self.log_func, not self.args.no_scandir, True, cdir, False)
         gl = sorted(g)
         partials = set([x[0] for x in gl if "PARTIAL" in x[0]])
         for iname, inf in gl:

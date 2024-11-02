@@ -1142,7 +1142,10 @@ class Ctl(object):
 
                     if self.ar.drd:
                         dp = os.path.join(top, rd)
-                        lnodes = set(os.listdir(dp))
+                        try:
+                            lnodes = set(os.listdir(dp))
+                        except:
+                            lnodes = list(ls)  # fs eio; don't delete
                         if ptn:
                             zs = dp.replace(sep, b"/").rstrip(b"/") + b"/"
                             zls = [zs + x for x in lnodes]

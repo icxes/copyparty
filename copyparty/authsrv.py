@@ -591,10 +591,11 @@ class VFS(object):
         scandir: bool,
         permsets: list[list[bool]],
         lstat: bool = False,
+        throw: bool = False,
     ) -> tuple[str, list[tuple[str, os.stat_result]], dict[str, "VFS"]]:
         """replaces _ls for certain shares (single-file, or file selection)"""
         vn, rem = self.shr_src  # type: ignore
-        abspath, real, _ = vn.ls(rem, "\n", scandir, permsets, lstat)
+        abspath, real, _ = vn.ls(rem, "\n", scandir, permsets, lstat, throw)
         real = [x for x in real if os.path.basename(x[0]) in self.shr_files]
         return abspath, real, {}
 
@@ -605,11 +606,12 @@ class VFS(object):
         scandir: bool,
         permsets: list[list[bool]],
         lstat: bool = False,
+        throw: bool = False,
     ) -> tuple[str, list[tuple[str, os.stat_result]], dict[str, "VFS"]]:
         """return user-readable [fsdir,real,virt] items at vpath"""
         virt_vis = {}  # nodes readable by user
         abspath = self.canonical(rem)
-        real = list(statdir(self.log, scandir, lstat, abspath))
+        real = list(statdir(self.log, scandir, lstat, abspath, throw))
         real.sort()
         if not rem:
             # no vfs nodes in the list of real inodes

@@ -2862,7 +2862,7 @@ def sendfile_kern(
 
 
 def statdir(
-    logger: Optional["RootLogger"], scandir: bool, lstat: bool, top: str
+    logger: Optional["RootLogger"], scandir: bool, lstat: bool, top: str, throw: bool
 ) -> Generator[tuple[str, os.stat_result], None, None]:
     if lstat and ANYWIN:
         lstat = False
@@ -2898,6 +2898,12 @@ def statdir(
                     logger(src, "[s] {} @ {}".format(repr(ex), fsdec(abspath)), 6)
 
     except Exception as ex:
+        if throw:
+            zi = getattr(ex, "errno", 0)
+            if zi == errno.ENOENT:
+                raise Pebkac(404, str(ex))
+            raise
+
         t = "{} @ {}".format(repr(ex), top)
         if logger:
             logger(src, t, 1)
@@ -2906,7 +2912,7 @@ def statdir(
 
 
 def dir_is_empty(logger: "RootLogger", scandir: bool, top: str):
-    for _ in statdir(logger, scandir, False, top):
+    for _ in statdir(logger, scandir, False, top, False):
         return False
     return True
 
@@ -2919,7 +2925,7 @@ def rmdirs(
         top = os.path.dirname(top)
         depth -= 1
 
-    stats = statdir(logger, scandir, lstat, top)
+    stats = statdir(logger, scandir, lstat, top, False)
     dirs = [x[0] for x in stats if stat.S_ISDIR(x[1].st_mode)]
     dirs = [os.path.join(top, x) for x in dirs]
     ok = []

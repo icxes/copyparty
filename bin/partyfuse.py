@@ -393,7 +393,8 @@ class Gateway(object):
         if r.status != 200:
             self.closeconn()
             info("http error %s reading dir %r", r.status, web_path)
-            raise FuseOSError(errno.ENOENT)
+            err = errno.ENOENT if r.status == 404 else errno.EIO
+            raise FuseOSError(err)
 
         ctype = r.getheader("Content-Type", "")
         if ctype == "application/json":

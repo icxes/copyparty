@@ -269,6 +269,7 @@ class Tftpd(object):
             "*",
             not self.args.no_scandir,
             [[True, False]],
+            throw=True,
         )
         dnames = set([x[0] for x in vfs_ls if stat.S_ISDIR(x[1].st_mode)])
         dirs1 = [(v.st_mtime, v.st_size, k + "/") for k, v in vfs_ls if k in dnames]
