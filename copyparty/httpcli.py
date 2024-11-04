@@ -4591,7 +4591,7 @@ class HttpCli(object):
         if self.args.no_reload:
             raise Pebkac(403, "the reload feature is disabled in server config")
 
-        x = self.conn.hsrv.broker.ask("reload")
+        x = self.conn.hsrv.broker.ask("reload", True, True)
         return self.redirect("", "?h", x.get(), "return to", False)
 
     def tx_stack(self) -> bool:
@@ -4879,7 +4879,7 @@ class HttpCli(object):
 
         cur.connection.commit()
         if reload:
-            self.conn.hsrv.broker.ask("_reload_blocking", False, False).get()
+            self.conn.hsrv.broker.ask("reload", False, False).get()
             self.conn.hsrv.broker.ask("up2k.wake_rescanner").get()
 
         self.redirect(self.args.SRS + "?shares")
@@ -4970,7 +4970,7 @@ class HttpCli(object):
             cur.execute(q, (skey, fn))
 
         cur.connection.commit()
-        self.conn.hsrv.broker.ask("_reload_blocking", False, False).get()
+        self.conn.hsrv.broker.ask("reload", False, False).get()
         self.conn.hsrv.broker.ask("up2k.wake_rescanner").get()
 
         fn = quotep(fns[0]) if len(fns) == 1 else ""

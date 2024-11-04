@@ -913,7 +913,7 @@ class AuthSrv(object):
                 self._reload()
                 return True
 
-        broker.ask("_reload_blocking", False).get()
+        broker.ask("reload", False, True).get()
         return True
 
     def _map_volume_idp(
@@ -2389,7 +2389,7 @@ class AuthSrv(object):
                 self._reload()
                 return True, "new password OK"
 
-        broker.ask("_reload_blocking", False, False).get()
+        broker.ask("reload", False, False).get()
         return True, "new password OK"
 
     def setup_chpw(self, acct: dict[str, str]) -> None:

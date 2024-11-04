@@ -112,7 +112,7 @@ class SvcHub(object):
         self.stopping = False
         self.stopped = False
         self.reload_req = False
-        self.reloading = 0
+        self.reload_mutex = threading.Lock()
         self.stop_cond = threading.Condition()
         self.nsigs = 3
         self.retcode = 0
@@ -1004,20 +1004,8 @@ class SvcHub(object):
             except:
                 self.log("root", "ssdp startup failed;\n" + min_ex(), 3)
 
-    def reload(self) -> str:
-        with self.up2k.mutex:
-            if self.reloading:
-                return "cannot reload; already in progress"
-            self.reloading = 1
-
-        Daemon(self._reload, "reloading")
-        return "reload initiated"
-
-    def _reload(self, rescan_all_vols: bool = True, up2k: bool = True) -> None:
-        with self.up2k.mutex:
-            if self.reloading != 1:
-                return
-            self.reloading = 2
+    def reload(self, rescan_all_vols: bool, up2k: bool) -> None:
+        with self.reload_mutex:
             self.log("root", "reloading config")
             self.asrv.reload(9 if up2k else 4)
             if up2k:
@@ -1025,20 +1013,6 @@ class SvcHub(object):
             else:
                 self.log("root", "reload done")
             self.broker.reload()
-            self.reloading = 0
-
-    def _reload_blocking(self, rescan_all_vols: bool = True, up2k: bool = True) -> None:
-        while True:
-            with self.up2k.mutex:
-                if self.reloading < 2:
-                    self.reloading = 1
-                    break
-            time.sleep(0.05)
-
-        # try to handle multiple pending IdP reloads at once:
-        time.sleep(0.2)
-
-        self._reload(rescan_all_vols=rescan_all_vols, up2k=up2k)
 
     def _reload_sessions(self) -> None:
         with self.asrv.mutex:
@@ -1052,7 +1026,7 @@ class SvcHub(object):
 
             if self.reload_req:
                 self.reload_req = False
-                self.reload()
+                self.reload(True, True)
 
         self.shutdown()
 
