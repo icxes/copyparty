@@ -1464,7 +1464,7 @@ class Up2k(object):
                     t = "failed to index subdir [{}]:\n{}"
                     self.log(t.format(abspath, min_ex()), c=1)
             elif not stat.S_ISREG(inf.st_mode):
-                self.log("skip type-{:x} file [{}]".format(inf.st_mode, abspath))
+                self.log("skip type-0%o file [%s]" % (inf.st_mode, abspath))
             else:
                 # self.log("file: {}".format(abspath))
                 if rp.endswith(".PARTIAL") and time.time() - lmod < 60:
@@ -3896,13 +3896,13 @@ class Up2k(object):
         partial = ""
         if not unpost:
             permsets = [[True, False, False, True]]
-            vn, rem = self.vfs.get(vpath, uname, *permsets[0])
-            vn, rem = vn.get_dbv(rem)
+            vn0, rem0 = self.vfs.get(vpath, uname, *permsets[0])
+            vn, rem = vn0.get_dbv(rem0)
         else:
             # unpost with missing permissions? verify with db
             permsets = [[False, True]]
-            vn, rem = self.vfs.get(vpath, uname, *permsets[0])
-            vn, rem = vn.get_dbv(rem)
+            vn0, rem0 = self.vfs.get(vpath, uname, *permsets[0])
+            vn, rem = vn0.get_dbv(rem0)
             ptop = vn.realpath
             with self.mutex, self.reg_mutex:
                 abrt_cfg = self.flags.get(ptop, {}).get("u2abort", 1)
@@ -3958,7 +3958,9 @@ class Up2k(object):
 
         scandir = not self.args.no_scandir
         if is_dir:
-            g = vn.walk("", rem, [], uname, permsets, True, scandir, True)
+            # note: deletion inside shares would require a rewrite here;
+            #   shares necessitate get_dbv which is incompatible with walk
+            g = vn0.walk("", rem0, [], uname, permsets, True, scandir, True)
             if unpost:
                 raise Pebkac(400, "cannot unpost folders")
         elif stat.S_ISLNK(st.st_mode) or stat.S_ISREG(st.st_mode):
@@ -3966,7 +3968,7 @@ class Up2k(object):
             vpath_dir = vsplit(vpath)[0]
             g = [(vn, voldir, vpath_dir, adir, [(fn, 0)], [], {})]  # type: ignore
         else:
-            self.log("rm: skip type-{:x} file [{}]".format(st.st_mode, atop))
+            self.log("rm: skip type-0%o file [%s]" % (st.st_mode, atop))
             return 0, [], []
 
         xbd = vn.flags.get("xbd")
@@ -4066,17 +4068,226 @@ class Up2k(object):
 
         return n_files, ok + ok2, ng + ng2
 
+    def handle_cp(self, uname: str, ip: str, svp: str, dvp: str) -> str:
+        if svp == dvp or dvp.startswith(svp + "/"):
+            raise Pebkac(400, "cp: cannot copy parent into subfolder")
+
+        svn, srem = self.vfs.get(svp, uname, True, False)
+        svn_dbv, _ = svn.get_dbv(srem)
+        sabs = svn.canonical(srem, False)
+        curs: set["sqlite3.Cursor"] = set()
+        self.db_act = self.vol_act[svn_dbv.realpath] = time.time()
+
+        st = bos.stat(sabs)
+        if stat.S_ISREG(st.st_mode) or stat.S_ISLNK(st.st_mode):
+            with self.mutex:
+                try:
+                    ret = self._cp_file(uname, ip, svp, dvp, curs)
+                finally:
+                    for v in curs:
+                        v.connection.commit()
+
+                return ret
+
+        if not stat.S_ISDIR(st.st_mode):
+            raise Pebkac(400, "cannot copy type-0%o file" % (st.st_mode,))
+
+        permsets = [[True, False]]
+        scandir = not self.args.no_scandir
+
+        # don't use svn_dbv; would skip subvols due to _ls `if not rem:`
+        g = svn.walk("", srem, [], uname, permsets, True, scandir, True)
+        with self.mutex:
+            try:
+                for dbv, vrem, _, atop, files, rd, vd in g:
+                    for fn in files:
+                        self.db_act = self.vol_act[dbv.realpath] = time.time()
+                        svpf = "/".join(x for x in [dbv.vpath, vrem, fn[0]] if x)
+                        if not svpf.startswith(svp + "/"):  # assert
+                            self.log(min_ex(), 1)
+                            t = "cp: bug at %s, top %s%s"
+                            raise Pebkac(500, t % (svpf, svp, SEESLOG))
+
+                        dvpf = dvp + svpf[len(svp) :]
+                        self._cp_file(uname, ip, svpf, dvpf, curs)
+
+                    for v in curs:
+                        v.connection.commit()
+                    curs.clear()
+            finally:
+                for v in curs:
+                    v.connection.commit()
+
+        return "k"
+
+    def _cp_file(
+        self, uname: str, ip: str, svp: str, dvp: str, curs: set["sqlite3.Cursor"]
+    ) -> str:
+        """mutex(main) me;  will mutex(reg)"""
+        svn, srem = self.vfs.get(svp, uname, True, False)
+        svn_dbv, srem_dbv = svn.get_dbv(srem)
+
+        dvn, drem = self.vfs.get(dvp, uname, False, True)
+        dvn, drem = dvn.get_dbv(drem)
+
+        sabs = svn.canonical(srem, False)
+        dabs = dvn.canonical(drem)
+        drd, dfn = vsplit(drem)
+
+        if bos.path.exists(dabs):
+            raise Pebkac(400, "cp2: target file exists")
+
+        st = stl = bos.lstat(sabs)
+        if stat.S_ISLNK(stl.st_mode):
+            is_link = True
+            try:
+                st = bos.stat(sabs)
+            except:
+                pass  # broken symlink; keep as-is
+        elif not stat.S_ISREG(st.st_mode):
+            self.log("skipping type-0%o file [%s]" % (st.st_mode, sabs))
+            return ""
+        else:
+            is_link = False
+
+        ftime = stl.st_mtime
+        fsize = st.st_size
+
+        xbc = svn.flags.get("xbc")
+        xac = dvn.flags.get("xac")
+        if xbc:
+            if not runhook(
+                self.log,
+                None,
+                self,
+                "xbc",
+                xbc,
+                sabs,
+                svp,
+                "",
+                uname,
+                self.vfs.get_perms(svp, uname),
+                ftime,
+                fsize,
+                ip,
+                time.time(),
+                "",
+            ):
+                t = "copy blocked by xbr server config: {}".format(svp)
+                self.log(t, 1)
+                raise Pebkac(405, t)
+
+        bos.makedirs(os.path.dirname(dabs))
+
+        c1, w, ftime_, fsize_, ip, at = self._find_from_vpath(
+            svn_dbv.realpath, srem_dbv
+        )
+        c2 = self.cur.get(dvn.realpath)
+
+        if w:
+            assert c1  # !rm
+            if c2 and c2 != c1:
+                self._copy_tags(c1, c2, w)
+
+            curs.add(c1)
+
+            if c2:
+                self.db_add(
+                    c2,
+                    {},  # skip upload hooks
+                    drd,
+                    dfn,
+                    ftime,
+                    fsize,
+                    dvn.realpath,
+                    dvn.vpath,
+                    w,
+                    w,
+                    "",
+                    "",
+                    ip or "",
+                    at or 0,
+                )
+                curs.add(c2)
+        else:
+            self.log("not found in src db: [{}]".format(svp))
+
+        try:
+            if is_link and st != stl:
+                # relink non-broken symlinks to still work after the move,
+                # but only resolve 1st level to maintain relativity
+                dlink = bos.readlink(sabs)
+                dlink = os.path.join(os.path.dirname(sabs), dlink)
+                dlink = bos.path.abspath(dlink)
+                self._symlink(dlink, dabs, dvn.flags, lmod=ftime)
+            else:
+                self._symlink(sabs, dabs, dvn.flags, lmod=ftime)
+
+        except OSError as ex:
+            if ex.errno != errno.EXDEV:
+                raise
+
+            self.log("using plain copy (%s):\n  %s\n  %s" % (ex.strerror, sabs, dabs))
+            b1, b2 = fsenc(sabs), fsenc(dabs)
+            is_link = os.path.islink(b1)  # due to _relink
+            try:
+                shutil.copy2(b1, b2)
+            except:
+                try:
+                    wunlink(self.log, dabs, dvn.flags)
+                except:
+                    pass
+
+                if not is_link:
+                    raise
+
+                # broken symlink? keep it as-is
+                try:
+                    zb = os.readlink(b1)
+                    os.symlink(zb, b2)
+                except:
+                    wunlink(self.log, dabs, dvn.flags)
+                    raise
+
+            if is_link:
+                try:
+                    times = (int(time.time()), int(ftime))
+                    bos.utime(dabs, times, False)
+                except:
+                    pass
+
+        if xac:
+            runhook(
+                self.log,
+                None,
+                self,
+                "xac",
+                xac,
+                dabs,
+                dvp,
+                "",
+                uname,
+                self.vfs.get_perms(dvp, uname),
+                ftime,
+                fsize,
+                ip,
+                time.time(),
+                "",
+            )
+
+        return "k"
+
     def handle_mv(self, uname: str, ip: str, svp: str, dvp: str) -> str:
         if svp == dvp or dvp.startswith(svp + "/"):
             raise Pebkac(400, "mv: cannot move parent into subfolder")
 
         svn, srem = self.vfs.get(svp, uname, True, False, True)
-        svn, srem = svn.get_dbv(srem)
+        jail, jail_rem = svn.get_dbv(srem)
         sabs = svn.canonical(srem, False)
         curs: set["sqlite3.Cursor"] = set()
-        self.db_act = self.vol_act[svn.realpath] = time.time()
+        self.db_act = self.vol_act[jail.realpath] = time.time()
 
-        if not srem:
+        if not jail_rem:
             raise Pebkac(400, "mv: cannot move a mountpoint")
 
         st = bos.lstat(sabs)
@@ -4090,7 +4301,9 @@ class Up2k(object):
 
                 return ret
 
-        jail = svn.get_dbv(srem)[0]
+        if not stat.S_ISDIR(st.st_mode):
+            raise Pebkac(400, "cannot move type-0%o file" % (st.st_mode,))
+
         permsets = [[True, False, True]]
         scandir = not self.args.no_scandir
 
@@ -4102,13 +4315,13 @@ class Up2k(object):
                 raise Pebkac(400, "mv: source folder contains other volumes")
 
         g = svn.walk("", srem, [], uname, permsets, True, scandir, True)
-        for dbv, vrem, _, atop, files, rd, vd in g:
-            if dbv != jail:
-                # the actual check (avoid toctou)
-                raise Pebkac(400, "mv: source folder contains other volumes")
+        with self.mutex:
+            try:
+                for dbv, vrem, _, atop, files, rd, vd in g:
+                    if dbv != jail:
+                        # the actual check (avoid toctou)
+                        raise Pebkac(400, "mv: source folder contains other volumes")
 
-            with self.mutex:
-                try:
                     for fn in files:
                         self.db_act = self.vol_act[dbv.realpath] = time.time()
                         svpf = "/".join(x for x in [dbv.vpath, vrem, fn[0]] if x)
@@ -4119,11 +4332,13 @@ class Up2k(object):
 
                         dvpf = dvp + svpf[len(svp) :]
                         self._mv_file(uname, ip, svpf, dvpf, curs)
-                finally:
+
                     for v in curs:
                         v.connection.commit()
-
-            curs.clear()
+                    curs.clear()
+            finally:
+                for v in curs:
+                    v.connection.commit()
 
         rm_ok, rm_ng = rmdirs(self.log_func, scandir, True, sabs, 1)
 

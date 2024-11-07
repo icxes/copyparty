@@ -121,8 +121,9 @@ var tl_browser = {
 				["T", "toggle thumbnails / icons"],
 				["🡅 A/D", "thumbnail size"],
 				["ctrl-K", "delete selected"],
-				["ctrl-X", "cut selected"],
-				["ctrl-V", "paste into folder"],
+				["ctrl-X", "cut selection to clipboard"],
+				["ctrl-C", "copy selection to clipboard"],
+				["ctrl-V", "paste (move/copy) here"],
 				["Y", "download selected"],
 				["F2", "rename selected"],
 
@@ -167,7 +168,7 @@ var tl_browser = {
 				["I/K", "prev/next file"],
 				["M", "close textfile"],
 				["E", "edit textfile"],
-				["S", "select file (for cut/rename)"],
+				["S", "select file (for cut/copy/rename)"],
 			]
 		],
 
@@ -217,6 +218,7 @@ var tl_browser = {
 		"wt_ren": "rename selected items$NHotkey: F2",
 		"wt_del": "delete selected items$NHotkey: ctrl-K",
 		"wt_cut": "cut selected items &lt;small&gt;(then paste somewhere else)&lt;/small&gt;$NHotkey: ctrl-X",
+		"wt_cpy": "copy selected items to clipboard$N(to paste them somewhere else)$NHotkey: ctrl-C",
 		"wt_pst": "paste a previously cut / copied selection$NHotkey: ctrl-V",
 		"wt_selall": "select all files$NHotkey: ctrl-A (when file focused)",
 		"wt_selinv": "invert selection",
@@ -411,6 +413,7 @@ var tl_browser = {
 		"fr_emore": "select at least one item to rename",
 		"fd_emore": "select at least one item to delete",
 		"fc_emore": "select at least one item to cut",
+		"fcp_emore": "select at least one item to copy",
 
 		"fs_sc": "share the folder you're in",
 		"fs_ss": "share the selected files",
@@ -463,16 +466,26 @@ var tl_browser = {
 		"fc_ok": "cut {0} items",
 		"fc_warn": 'cut {0} items\n\nbut: only <b>this</b> browser-tab can paste them\n(since the selection is so absolutely massive)',
 
-		"fp_ecut": "first cut some files / folders to paste / move\n\nnote: you can cut / paste across different browser tabs",
+		"fcc_ok": "copied {0} items to clipboard",
+		"fcc_warn": 'copied {0} items to clipboard\n\nbut: only <b>this</b> browser-tab can paste them\n(since the selection is so absolutely massive)',
+
+		"fp_ecut": "first cut or copy some files / folders to paste / move\n\nnote: you can cut / paste across different browser tabs",
 		"fp_ename": "these {0} items cannot be moved here (names already exist):",
+		"fcp_ename": "these {0} items cannot be copied here (names already exist):",
 		"fp_ok": "move OK",
+		"fcp_ok": "copy OK",
 		"fp_busy": "moving {0} items...\n\n{1}",
+		"fcp_busy": "copying {0} items...\n\n{1}",
 		"fp_err": "move failed:\n",
+		"fcp_err": "copy failed:\n",
 		"fp_confirm": "move these {0} items here?",
+		"fcp_confirm": "copy these {0} items here?",
 		"fp_etab": 'failed to read clipboard from other browser tab',
 		"fp_name": "uploading a file from your device. Give it a name:",
 		"fp_both_m": '<h6>choose what to paste</h6><code>Enter</code> = Move {0} files from «{1}»\n<code>ESC</code> = Upload {2} files from your device',
+		"fcp_both_m": '<h6>choose what to paste</h6><code>Enter</code> = Copy {0} files from «{1}»\n<code>ESC</code> = Upload {2} files from your device',
 		"fp_both_b": '<a href="#" id="modal-ok">Move</a><a href="#" id="modal-ng">Upload</a>',
+		"fcp_both_b": '<a href="#" id="modal-ok">Copy</a><a href="#" id="modal-ng">Upload</a>',
 
 		"mk_noname": "type a name into the text field on the left before you do that :p",
 
@@ -484,7 +497,7 @@ var tl_browser = {
 		"tvt_dl": "download this file$NHotkey: Y\">💾 download",
 		"tvt_prev": "show previous document$NHotkey: i\">⬆ prev",
 		"tvt_next": "show next document$NHotkey: K\">⬇ next",
-		"tvt_sel": "select file &nbsp; ( for cut / delete / ... )$NHotkey: S\">sel",
+		"tvt_sel": "select file &nbsp; ( for cut / copy / delete / ... )$NHotkey: S\">sel",
 		"tvt_edit": "open file in text editor$NHotkey: E\">✏️ edit",
 
 		"gt_vau": "don't show videos, just play the audio\">🎧",

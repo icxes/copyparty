@@ -637,7 +637,7 @@ class HttpCli(object):
             avn.can_access("", self.uname) if avn else [False] * 8
         )
         self.avn = avn
-        self.vn = vn
+        self.vn = vn  # note: do not dbv due to walk/zipgen
         self.rem = rem
 
         self.s.settimeout(self.args.s_tbody or None)
@@ -1195,6 +1195,9 @@ class HttpCli(object):
 
             if "move" in self.uparam:
                 return self.handle_mv()
+
+            if "copy" in self.uparam:
+                return self.handle_cp()
 
         if not self.vpath and self.ouparam:
             if "reload" in self.uparam:
@@ -1790,6 +1793,9 @@ class HttpCli(object):
 
         if "move" in self.uparam:
             return self.handle_mv()
+
+        if "copy" in self.uparam:
+            return self.handle_cp()
 
         if "delete" in self.uparam:
             return self.handle_rm([])
@@ -5021,13 +5027,36 @@ class HttpCli(object):
         return self._mv(self.vpath, dst.lstrip("/"))
 
     def _mv(self, vsrc: str, vdst: str) -> bool:
-        if not self.can_move:
-            raise Pebkac(403, "not allowed for user " + self.uname)
-
         if self.args.no_mv:
             raise Pebkac(403, "the rename/move feature is disabled in server config")
 
+        self.asrv.vfs.get(vsrc, self.uname, True, False, True)
+        self.asrv.vfs.get(vdst, self.uname, False, True)
+
         x = self.conn.hsrv.broker.ask("up2k.handle_mv", self.uname, self.ip, vsrc, vdst)
+        self.loud_reply(x.get(), status=201)
+        return True
+
+    def handle_cp(self) -> bool:
+        # full path of new loc (incl filename)
+        dst = self.uparam.get("copy")
+
+        if self.is_vproxied and dst and dst.startswith(self.args.SR):
+            dst = dst[len(self.args.RS) :]
+
+        if not dst:
+            raise Pebkac(400, "need dst vpath")
+
+        return self._cp(self.vpath, dst.lstrip("/"))
+
+    def _cp(self, vsrc: str, vdst: str) -> bool:
+        if self.args.no_cp:
+            raise Pebkac(403, "the copy feature is disabled in server config")
+
+        self.asrv.vfs.get(vsrc, self.uname, True, False)
+        self.asrv.vfs.get(vdst, self.uname, False, True)
+
+        x = self.conn.hsrv.broker.ask("up2k.handle_cp", self.uname, self.ip, vsrc, vdst)
         self.loud_reply(x.get(), status=201)
         return True
 

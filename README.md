@@ -428,7 +428,7 @@ configuring accounts/volumes with arguments:
 
 permissions:
 * `r` (read): browse folder contents, download files, download as zip/tar, see filekeys/dirkeys
-* `w` (write): upload files, move files *into* this folder
+* `w` (write): upload files, move/copy files *into* this folder
 * `m` (move): move files/folders *from* this folder
 * `d` (delete): delete files/folders
 * `.` (dots): user can ask to show dotfiles in directory listings
@@ -508,7 +508,8 @@ the browser has the following hotkeys  (always qwerty)
 * `ESC` close various things
 * `ctrl-K` delete selected files/folders
 * `ctrl-X` cut selected files/folders
-* `ctrl-V` paste
+* `ctrl-C` copy selected files/folders to clipboard
+* `ctrl-V` paste (move/copy)
 * `Y` download selected files
 * `F2` [rename](#batch-rename) selected file/folder
 * when a file/folder is selected (in not-grid-view):
@@ -757,10 +758,11 @@ file selection: click somewhere on the line (not the link itself), then:
 * shift-click another line for range-select
 
 * cut: select some files and `ctrl-x`
+* copy: select some files and `ctrl-c`
 * paste: `ctrl-v` in another folder
 * rename: `F2`
 
-you can move files across browser tabs (cut in one tab, paste in another)
+you can copy/move files across browser tabs (cut/copy in one tab, paste in another)
 
 
 ## shares

@@ -684,6 +684,8 @@ def get_sects():
              \033[36mxbu\033[35m executes CMD before a file upload starts
              \033[36mxau\033[35m executes CMD after  a file upload finishes
              \033[36mxiu\033[35m executes CMD after  all uploads finish and volume is idle
+             \033[36mxbc\033[35m executes CMD before a file copy
+             \033[36mxac\033[35m executes CMD after  a file copy
              \033[36mxbr\033[35m executes CMD before a file rename/move
              \033[36mxar\033[35m executes CMD after  a file rename/move
              \033[36mxbd\033[35m executes CMD before a file delete
@@ -1201,6 +1203,8 @@ def add_hooks(ap):
     ap2.add_argument("--xbu", metavar="CMD", type=u, action="append", help="execute \033[33mCMD\033[0m before a file upload starts")
     ap2.add_argument("--xau", metavar="CMD", type=u, action="append", help="execute \033[33mCMD\033[0m after  a file upload finishes")
     ap2.add_argument("--xiu", metavar="CMD", type=u, action="append", help="execute \033[33mCMD\033[0m after  all uploads finish and volume is idle")
+    ap2.add_argument("--xbc", metavar="CMD", type=u, action="append", help="execute \033[33mCMD\033[0m before a file copy")
+    ap2.add_argument("--xac", metavar="CMD", type=u, action="append", help="execute \033[33mCMD\033[0m after  a file copy")
     ap2.add_argument("--xbr", metavar="CMD", type=u, action="append", help="execute \033[33mCMD\033[0m before a file move/rename")
     ap2.add_argument("--xar", metavar="CMD", type=u, action="append", help="execute \033[33mCMD\033[0m after  a file move/rename")
     ap2.add_argument("--xbd", metavar="CMD", type=u, action="append", help="execute \033[33mCMD\033[0m before a file delete")
@@ -1233,6 +1237,7 @@ def add_optouts(ap):
     ap2.add_argument("--no-dav", action="store_true", help="disable webdav support")
     ap2.add_argument("--no-del", action="store_true", help="disable delete operations")
     ap2.add_argument("--no-mv", action="store_true", help="disable move/rename operations")
+    ap2.add_argument("--no-cp", action="store_true", help="disable copy operations")
     ap2.add_argument("-nth", action="store_true", help="no title hostname; don't show \033[33m--name\033[0m in <title>")
     ap2.add_argument("-nih", action="store_true", help="no info hostname -- don't show in UI")
     ap2.add_argument("-nid", action="store_true", help="no info disk-usage -- don't show in UI")

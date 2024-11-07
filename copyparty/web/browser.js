@@ -37,8 +37,9 @@ var Ls = {
 				["T", "toggle thumbnails / icons"],
 				["🡅 A/D", "thumbnail size"],
 				["ctrl-K", "delete selected"],
-				["ctrl-X", "cut selected"],
-				["ctrl-V", "paste into folder"],
+				["ctrl-X", "cut selection to clipboard"],
+				["ctrl-C", "copy selection to clipboard"],
+				["ctrl-V", "paste (move/copy) here"],
 				["Y", "download selected"],
 				["F2", "rename selected"],
 
@@ -83,7 +84,7 @@ var Ls = {
 				["I/K", "prev/next file"],
 				["M", "close textfile"],
 				["E", "edit textfile"],
-				["S", "select file (for cut/rename)"],
+				["S", "select file (for cut/copy/rename)"],
 			]
 		],
 
@@ -133,6 +134,7 @@ var Ls = {
 		"wt_ren": "rename selected items$NHotkey: F2",
 		"wt_del": "delete selected items$NHotkey: ctrl-K",
 		"wt_cut": "cut selected items &lt;small&gt;(then paste somewhere else)&lt;/small&gt;$NHotkey: ctrl-X",
+		"wt_cpy": "copy selected items to clipboard$N(to paste them somewhere else)$NHotkey: ctrl-C",
 		"wt_pst": "paste a previously cut / copied selection$NHotkey: ctrl-V",
 		"wt_selall": "select all files$NHotkey: ctrl-A (when file focused)",
 		"wt_selinv": "invert selection",
@@ -327,6 +329,7 @@ var Ls = {
 		"fr_emore": "select at least one item to rename",
 		"fd_emore": "select at least one item to delete",
 		"fc_emore": "select at least one item to cut",
+		"fcp_emore": "select at least one item to copy to clipboard",
 
 		"fs_sc": "share the folder you're in",
 		"fs_ss": "share the selected files",
@@ -379,16 +382,26 @@ var Ls = {
 		"fc_ok": "cut {0} items",
 		"fc_warn": 'cut {0} items\n\nbut: only <b>this</b> browser-tab can paste them\n(since the selection is so absolutely massive)',
 
-		"fp_ecut": "first cut some files / folders to paste / move\n\nnote: you can cut / paste across different browser tabs",
+		"fcc_ok": "copied {0} items to clipboard",
+		"fcc_warn": 'copied {0} items to clipboard\n\nbut: only <b>this</b> browser-tab can paste them\n(since the selection is so absolutely massive)',
+
+		"fp_ecut": "first cut or copy some files / folders to paste / move\n\nnote: you can cut / paste across different browser tabs",
 		"fp_ename": "these {0} items cannot be moved here (names already exist):",
+		"fcp_ename": "these {0} items cannot be copied here (names already exist):",
 		"fp_ok": "move OK",
+		"fcp_ok": "copy OK",
 		"fp_busy": "moving {0} items...\n\n{1}",
+		"fcp_busy": "copying {0} items...\n\n{1}",
 		"fp_err": "move failed:\n",
+		"fcp_err": "copy failed:\n",
 		"fp_confirm": "move these {0} items here?",
+		"fcp_confirm": "copy these {0} items here?",
 		"fp_etab": 'failed to read clipboard from other browser tab',
 		"fp_name": "uploading a file from your device. Give it a name:",
 		"fp_both_m": '<h6>choose what to paste</h6><code>Enter</code> = Move {0} files from «{1}»\n<code>ESC</code> = Upload {2} files from your device',
+		"fcp_both_m": '<h6>choose what to paste</h6><code>Enter</code> = Copy {0} files from «{1}»\n<code>ESC</code> = Upload {2} files from your device',
 		"fp_both_b": '<a href="#" id="modal-ok">Move</a><a href="#" id="modal-ng">Upload</a>',
+		"fcp_both_b": '<a href="#" id="modal-ok">Copy</a><a href="#" id="modal-ng">Upload</a>',
 
 		"mk_noname": "type a name into the text field on the left before you do that :p",
 
@@ -400,7 +413,7 @@ var Ls = {
 		"tvt_dl": "download this file$NHotkey: Y\">💾 download",
 		"tvt_prev": "show previous document$NHotkey: i\">⬆ prev",
 		"tvt_next": "show next document$NHotkey: K\">⬇ next",
-		"tvt_sel": "select file &nbsp; ( for cut / delete / ... )$NHotkey: S\">sel",
+		"tvt_sel": "select file &nbsp; ( for cut / copy / delete / ... )$NHotkey: S\">sel",
 		"tvt_edit": "open file in text editor$NHotkey: E\">✏️ edit",
 
 		"gt_vau": "don't show videos, just play the audio\">🎧",
@@ -605,8 +618,9 @@ var Ls = {
 				["T", "miniatyrbilder på/av"],
 				["🡅 A/D", "ikonstørrelse"],
 				["ctrl-K", "slett valgte"],
-				["ctrl-X", "klipp ut"],
-				["ctrl-V", "lim inn"],
+				["ctrl-X", "klipp ut valgte"],
+				["ctrl-C", "kopiér til utklippstavle"],
+				["ctrl-V", "lim inn (flytt/kopiér)"],
 				["Y", "last ned valgte"],
 				["F2", "endre navn på valgte"],
 
@@ -702,7 +716,8 @@ var Ls = {
 		"wt_ren": "gi nye navn til de valgte filene$NSnarvei: F2",
 		"wt_del": "slett de valgte filene$NSnarvei: ctrl-K",
 		"wt_cut": "klipp ut de valgte filene &lt;small&gt;(for å lime inn et annet sted)&lt;/small&gt;$NSnarvei: ctrl-X",
-		"wt_pst": "lim inn filer (som tidligere ble klippet ut et annet sted)$NSnarvei: ctrl-V",
+		"wt_cpy": "kopiér de valgte filene til utklippstavlen$N(for å lime inn et annet sted)$NSnarvei: ctrl-C",
+		"wt_pst": "lim inn filer (som tidligere ble klippet ut / kopiert et annet sted)$NSnarvei: ctrl-V",
 		"wt_selall": "velg alle filer$NSnarvei: ctrl-A (mens fokus er på en fil)",
 		"wt_selinv": "inverter utvalg",
 		"wt_selzip": "last ned de valgte filene som et arkiv",
@@ -845,7 +860,7 @@ var Ls = {
 		"mt_oscv": "vis album-cover på infoskjermen\">bilde",
 		"mt_follow": "bla slik at sangen som spilles alltid er synlig\">🎯",
 		"mt_compact": "tettpakket avspillerpanel\">⟎",
-		"mt_uncache": "prøv denne hvis en sang ikke spiller riktig\">uncache",
+		"mt_uncache": "prøv denne hvis en sang ikke spiller riktig\">oppfrisk",
 		"mt_mloop": "repeter hele mappen\">🔁 gjenta",
 		"mt_mnext": "hopp til neste mappe og fortsett\">📂 neste",
 		"mt_cflac": "konverter flac / wav-filer til opus\">flac",
@@ -896,6 +911,7 @@ var Ls = {
 		"fr_emore": "velg minst én fil som skal få nytt navn",
 		"fd_emore": "velg minst én fil som skal slettes",
 		"fc_emore": "velg minst én fil som skal klippes ut",
+		"fcp_emore": "velg minst én fil som skal kopieres til utklippstavlen",
 
 		"fs_sc": "del mappen du er i nå",
 		"fs_ss": "del de valgte filene",
@@ -948,16 +964,26 @@ var Ls = {
 		"fc_ok": "klippet ut {0} filer",
 		"fc_warn": 'klippet ut {0} filer\n\nmen: kun <b>denne</b> nettleserfanen har mulighet til å lime dem inn et annet sted, siden antallet filer er helt hinsides',
 
-		"fp_ecut": "du må klippe ut noen filer / mapper først\n\nmerk: du kan gjerne jobbe på kryss av nettleserfaner; klippe ut i én fane, lime inn i en annen",
+		"fcc_ok": "kopierte {0} filer til utklippstavlen",
+		"fcc_warn": 'kopierte {0} filer til utklippstavlen\n\nmen: kun <b>denne</b> nettleserfanen har mulighet til å lime dem inn et annet sted, siden antallet filer er helt hinsides',
+
+		"fp_ecut": "du må klippe ut eller kopiere noen filer / mapper først\n\nmerk: du kan gjerne jobbe på kryss av nettleserfaner; klippe ut i én fane, lime inn i en annen",
 		"fp_ename": "disse {0} filene kan ikke flyttes til målmappen fordi det allerede finnes filer med samme navn:",
+		"fcp_ename": "disse {0} filene kan ikke kopieres til målmappen fordi det allerede finnes filer med samme navn:",
 		"fp_ok": "flytting OK",
+		"fcp_ok": "kopiering OK",
 		"fp_busy": "flytter {0} filer...\n\n{1}",
+		"fcp_busy": "kopierer {0} filer...\n\n{1}",
 		"fp_err": "flytting feilet:\n",
+		"fcp_err": "kopiering feilet:\n",
 		"fp_confirm": "flytt disse {0} filene hit?",
+		"fcp_confirm": "kopiér disse {0} filene hit?",
 		"fp_etab": 'kunne ikke lese listen med filer ifra den andre nettleserfanen',
 		"fp_name": "Laster opp én fil fra enheten din. Velg filnavn:",
 		"fp_both_m": '<h6>hva skal limes inn her?</h6><code>Enter</code> = Flytt {0} filer fra «{1}»\n<code>ESC</code> = Last opp {2} filer fra enheten din',
+		"fcp_both_m": '<h6>hva skal limes inn her?</h6><code>Enter</code> = Kopiér {0} filer fra «{1}»\n<code>ESC</code> = Last opp {2} filer fra enheten din',
 		"fp_both_b": '<a href="#" id="modal-ok">Flytt</a><a href="#" id="modal-ng">Last opp</a>',
+		"fcp_both_b": '<a href="#" id="modal-ok">Kopiér</a><a href="#" id="modal-ng">Last opp</a>',
 
 		"mk_noname": "skriv inn et navn i tekstboksen til venstre først :p",
 
@@ -1176,6 +1202,7 @@ var Ls = {
 				["🡅 A/D", "缩略图大小"],
 				["ctrl-K", "删除选中项"],
 				["ctrl-X", "剪切选中项"],
+				["ctrl-C", "复制选中项"], //m
 				["ctrl-V", "粘贴到文件夹"],
 				["Y", "下载选中项"],
 				["F2", "重命名选中项"],
@@ -1271,6 +1298,7 @@ var Ls = {
 		"wt_ren": "重命名选中的项目$N快捷键: F2",
 		"wt_del": "删除选中的项目$N快捷键: ctrl-K",
 		"wt_cut": "剪切选中的项目&lt;small&gt;（然后粘贴到其他地方）&lt;/small&gt;$N快捷键: ctrl-X",
+		"wt_cpy": "将选中的项目复制到剪贴板&lt;small&gt;（然后粘贴到其他地方）&lt;/small&gt;$N快捷键: ctrl-C", //m
 		"wt_pst": "粘贴之前剪切/复制的选择$N快捷键: ctrl-V",
 		"wt_selall": "选择所有文件$N快捷键: ctrl-A（当文件被聚焦时）",
 		"wt_selinv": "反转选择",
@@ -1465,6 +1493,7 @@ var Ls = {
 		"fr_emore": "选择至少一个项目以重命名",
 		"fd_emore": "选择至少一个项目以删除",
 		"fc_emore": "选择至少一个项目以剪切",
+		"fcp_emore": "选择至少一个要复制到剪贴板的项目", //m
 
 		"fs_sc": "分享你所在的文件夹",
 		"fs_ss": "分享选定的文件",
@@ -1517,16 +1546,26 @@ var Ls = {
 		"fc_ok": "剪切 {0} 项",
 		"fc_warn": '剪切 {0} 项\n\n但：只有 <b>这个</b> 浏览器标签页可以粘贴它们\n（因为选择非常庞大）',
 
-		"fp_ecut": "首先剪切一些文件/文件夹以粘贴/移动\n\n注意：你可以在不同的浏览器标签页之间剪切/粘贴",
+		"fcc_ok": "已将 {0} 项复制到剪贴板", //m
+		"fcc_warn": '已将 {0} 项复制到剪贴板\n\n但：只有 <b>这个</b> 浏览器标签页可以粘贴它们\n（因为选择非常庞大）', //m
+
+		"fp_ecut": "首先剪切或复制一些文件/文件夹以粘贴/移动\n\n注意：你可以在不同的浏览器标签页之间剪切/粘贴", //m
 		"fp_ename": "这些 {0} 项不能移动到这里（名称已存在）：",
+		"fcp_ename": "这些 {0} 项不能复制到这里（名称已存在）：", //m
 		"fp_ok": "移动成功",
+		"fcp_ok": "复制成功", //m
 		"fp_busy": "正在移动 {0} 项...\n\n{1}",
+		"fcp_busy": "正在复制 {0} 项...\n\n{1}", //m
 		"fp_err": "移动失败：\n",
+		"fcp_err": "复制失败：\n", //m
 		"fp_confirm": "将这些 {0} 项移动到这里？",
+		"fcp_confirm": "将这些 {0} 项复制到这里？", //m
 		"fp_etab": '无法从其他浏览器标签页读取剪贴板',
 		"fp_name": "从你的设备上传一个文件。给它一个名字：",
 		"fp_both_m": '<h6>选择粘贴内容</h6><code>Enter</code> = 从 «{1}» 移动 {0} 个文件\n<code>ESC</code> = 从你的设备上传 {2} 个文件',
+		"fcp_both_m": '<h6>选择粘贴内容</h6><code>Enter</code> = 从 «{1}» 复制 {0} 个文件\n<code>ESC</code> = 从你的设备上传 {2} 个文件', //m
 		"fp_both_b": '<a href="#" id="modal-ok">移动</a><a href="#" id="modal-ng">上传</a>',
+		"fcp_both_b": '<a href="#" id="modal-ok">复制</a><a href="#" id="modal-ng">上传</a>', //m
 
 		"mk_noname": "在左侧文本框中输入名称，然后再执行此操作 :p",
 
@@ -1771,6 +1810,7 @@ ebi('widget').innerHTML = (
 	' href="#" id="fren" tt="' + L.wt_ren + '">✎<span>name</span></a><a' +
 	' href="#" id="fdel" tt="' + L.wt_del + '">⌫<span>del.</span></a><a' +
 	' href="#" id="fcut" tt="' + L.wt_cut + '">✂<span>cut</span></a><a' +
+	' href="#" id="fcpy" tt="' + L.wt_cpy + '">⧉<span>copy</span></a><a' +
 	' href="#" id="fpst" tt="' + L.wt_pst + '">📋<span>paste</span></a>' +
 	'</span><span id="wzip"><a' +
 	' href="#" id="selall" tt="' + L.wt_selall + '">sel.<br />all</a><a' +
@@ -4377,6 +4417,7 @@ var fileman = (function () {
 	var bren = ebi('fren'),
 		bdel = ebi('fdel'),
 		bcut = ebi('fcut'),
+		bcpy = ebi('fcpy'),
 		bpst = ebi('fpst'),
 		bshr = ebi('fshr'),
 		t_paste,
@@ -4389,14 +4430,19 @@ var fileman = (function () {
 	catch (ex) { }
 
 	r.render = function () {
-		if (r.clip === null)
+		if (r.clip === null) {
 			r.clip = jread('fman_clip', []).slice(1);
+			r.ccp = r.clip.length && r.clip[0] == '//c';
+			if (r.ccp)
+				r.clip.shift();
+		}
 
 		var sel = msel.getsel(),
 			nsel = sel.length,
 			enren = nsel,
 			endel = nsel,
 			encut = nsel,
+			encpy = nsel,
 			enpst = r.clip && r.clip.length,
 			hren = !(have_mv && has(perms, 'write') && has(perms, 'move')),
 			hdel = !(have_del && has(perms, 'delete')),
@@ -4410,6 +4456,7 @@ var fileman = (function () {
 		clmod(bren, 'en', enren);
 		clmod(bdel, 'en', endel);
 		clmod(bcut, 'en', encut);
+		clmod(bcpy, 'en', encpy);
 		clmod(bpst, 'en', enpst);
 		clmod(bshr, 'en', 1);
 
@@ -5015,7 +5062,8 @@ var fileman = (function () {
 	r.cut = function (e) {
 		ev(e);
 		var sel = msel.getsel(),
-			vps = [];
+			stamp = Date.now(),
+			vps = [stamp];
 
 		if (!sel.length)
 			return toast.err(3, L.fc_emore);
@@ -5046,9 +5094,11 @@ var fileman = (function () {
 			catch (ex) { }
 		}, 1);
 
+		r.ccp = false;
+		r.clip = vps.slice(1);
+
 		try {
-			var stamp = Date.now();
-			vps = JSON.stringify([stamp].concat(vps));
+			vps = JSON.stringify(vps);
 			if (vps.length > 1024 * 1024)
 				throw 'a';
 
@@ -5059,6 +5109,59 @@ var fileman = (function () {
 		}
 		catch (ex) {
 			toast.warn(30, L.fc_warn.format(sel.length));
+		}
+	};
+
+	r.cpy = function (e) {
+		ev(e);
+		var sel = msel.getsel(),
+			stamp = Date.now(),
+			vps = [stamp, '//c'];
+
+		if (!sel.length)
+			return toast.err(3, L.fcp_emore);
+
+		var els = [], griden = thegrid.en;
+		for (var a = 0; a < sel.length; a++) {
+			vps.push(sel[a].vp);
+			if (sel.length < 100)
+				try {
+					if (griden)
+						els.push(QS('#ggrid>a[ref="' + sel[a].id + '"]'));
+					else
+						els.push(ebi(sel[a].id).closest('tr'));
+
+					clmod(els[a], 'fcut');
+				}
+				catch (ex) { }
+		}
+
+		setTimeout(function () {
+			try {
+				for (var a = 0; a < els.length; a++)
+					clmod(els[a], 'fcut', 1);
+			}
+			catch (ex) { }
+		}, 1);
+
+		if (vps.length < 3)
+			vps.pop();
+
+		r.ccp = true;
+		r.clip = vps.slice(2);
+
+		try {
+			vps = JSON.stringify(vps);
+			if (vps.length > 1024 * 1024)
+				throw 'a';
+
+			swrite('fman_clip', vps);
+			r.tx(stamp);
+			if (sel.length)
+				toast.inf(1.5, L.fcc_ok.format(sel.length));
+		}
+		catch (ex) {
+			toast.warn(30, L.fcc_warn.format(sel.length));
 		}
 	};
 
@@ -5077,9 +5180,9 @@ var fileman = (function () {
 			return r.clip_up(files);
 
 		var src = r.clip.length == 1 ? r.clip[0] : vsplit(r.clip[0])[0],
-			msg = L.fp_both_m.format(r.clip.length, src, files.length);
+			msg = (r.ccp ? L.fcp_both_m : L.fp_both_m).format(r.clip.length, src, files.length);
 
-		modal.confirm(msg, r.paste, function () { r.clip_up(files); }, null, L.fp_both_b);
+		modal.confirm(msg, r.paste, function () { r.clip_up(files); }, null, (r.ccp ? L.fcp_both_b : L.fp_both_b));
 	};
 
 	r.clip_up = function (files) {
@@ -5157,7 +5260,7 @@ var fileman = (function () {
 		}
 
 		if (exists.length)
-			toast.warn(30, L.fp_ename.format(exists.length) + '<ul>' + uricom_adec(exists, true).join('') + '</ul>');
+			toast.warn(30, (r.ccp ? L.fcp_ename : L.fp_ename).format(exists.length) + '<ul>' + uricom_adec(exists, true).join('') + '</ul>');
 
 		if (!req.length)
 			return;
@@ -5167,29 +5270,30 @@ var fileman = (function () {
 				vp = req.shift();
 
 			if (!vp) {
-				toast.ok(2, L.fp_ok);
+				toast.ok(2, r.ccp ? L.fcp_ok : L.fp_ok);
 				treectl.goto();
 				r.tx(srcdir);
 				return;
 			}
-			toast.show('inf r', 0, esc(L.fp_busy.format(req.length + 1, uricom_dec(vp))));
+			toast.show('inf r', 0, esc((r.ccp ? L.fcp_busy : L.fp_busy).format(req.length + 1, uricom_dec(vp))));
 
-			var dst = get_evpath() + vp.split('/').pop();
+			var act = r.ccp ? '?copy=' : '?move=',
+				dst = get_evpath() + vp.split('/').pop();
 
-			xhr.open('POST', vp + '?move=' + dst, true);
+			xhr.open('POST', vp + act + dst, true);
 			xhr.onload = xhr.onerror = paste_cb;
 			xhr.send();
 		}
 		function paste_cb() {
 			if (this.status !== 201) {
 				var msg = unpre(this.responseText);
-				toast.err(9, L.fp_err + msg);
+				toast.err(9, (r.ccp ? L.fcp_err : L.fp_err) + msg);
 				return;
 			}
 			paster();
 		}
 
-		modal.confirm(L.fp_confirm.format(req.length) + '<ul>' + uricom_adec(req, true).join('') + '</ul>', function () {
+		modal.confirm((r.ccp ? L.fcp_confirm : L.fp_confirm).format(req.length) + '<ul>' + uricom_adec(req, true).join('') + '</ul>', function () {
 			paster();
 			jwrite('fman_clip', [Date.now()]);
 		}, null);
@@ -5231,6 +5335,7 @@ var fileman = (function () {
 	bren.onclick = r.rename;
 	bdel.onclick = r.delete;
 	bcut.onclick = r.cut;
+	bcpy.onclick = r.cpy;
 	bpst.onclick = r.paste;
 	bshr.onclick = r.share;
 
@@ -6326,8 +6431,14 @@ var ahotkeys = function (e) {
 		return hkhelp();
 
 	if (ctrl(e)) {
+		var sel = window.getSelection && window.getSelection() || {};
+		sel = sel && !sel.isCollapsed && sel.direction != 'none';
+
 		if (k == 'KeyX' || k == 'x')
 			return fileman.cut();
+
+		if ((k == 'KeyC' || k == 'c') && !sel)
+			return fileman.cpy();
 
 		if (k == 'KeyV' || k == 'v')
 			return fileman.d_paste();

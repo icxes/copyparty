@@ -673,6 +673,10 @@ class VFS(object):
         """
         recursively yields from ./rem;
         rel is a unix-style user-defined vpath (not vfs-related)
+
+        NOTE: don't invoke this function from a dbv; subvols are only
+          descended into if rem is blank due to the _ls `if not rem:`
+          which intention is to prevent unintended access to subvols
         """
 
         fsroot, vfs_ls, vfs_virt = self.ls(rem, uname, scandir, permsets, lstat=lstat)
@@ -1383,7 +1387,7 @@ class AuthSrv(object):
             flags[name] = True
             return
 
-        zs = "mtp on403 on404 xbu xau xiu xbr xar xbd xad xm xban"
+        zs = "mtp on403 on404 xbu xau xiu xbc xac xbr xar xbd xad xm xban"
         if name not in zs.split():
             if value is True:
                 t = "└─add volflag [{}] = {}  ({})"
@@ -1938,7 +1942,7 @@ class AuthSrv(object):
                     vol.flags[k] = odfusion(getattr(self.args, k), vol.flags[k])
 
             # append additive args from argv to volflags
-            hooks = "xbu xau xiu xbr xar xbd xad xm xban".split()
+            hooks = "xbu xau xiu xbc xac xbr xar xbd xad xm xban".split()
             for name in "mtp on404 on403".split() + hooks:
                 self._read_volflag(vol.flags, name, getattr(self.args, name), True)
 
@@ -2641,7 +2645,7 @@ class AuthSrv(object):
         ]
 
         csv = set("i p th_covers zm_on zm_off zs_on zs_off".split())
-        zs = "c ihead ohead mtm mtp on403 on404 xad xar xau xiu xban xbd xbr xbu xm"
+        zs = "c ihead ohead mtm mtp on403 on404 xac xad xar xau xiu xban xbc xbd xbr xbu xm"
         lst = set(zs.split())
         askip = set("a v c vc cgen exp_lg exp_md theme".split())
         fskip = set("exp_lg exp_md mv_re_r mv_re_t rm_re_r rm_re_t".split())

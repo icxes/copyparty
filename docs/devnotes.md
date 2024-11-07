@@ -163,6 +163,7 @@ authenticate using header `Cookie: cppwd=foo` or url param `&pw=foo`
 
 | method | params | result |
 |--|--|--|
+| POST | `?copy=/foo/bar` | copy the file/folder at URL to /foo/bar |
 | POST | `?move=/foo/bar` | move/rename the file/folder at URL to /foo/bar |
 
 | method | params | body | result |
