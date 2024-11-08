@@ -5016,7 +5016,6 @@ var fileman = (function () {
 	};
 
 	r.delete = function (e) {
-		ev(e);
 		var sel = msel.getsel(),
 			vps = [];
 
@@ -5025,6 +5024,8 @@ var fileman = (function () {
 
 		if (!sel.length)
 			return toast.err(3, L.fd_emore);
+
+		ev(e);
 
 		if (clgot(bdel, 'hide'))
 			return toast.err(3, L.fd_eperm);
@@ -5065,13 +5066,14 @@ var fileman = (function () {
 	};
 
 	r.cut = function (e) {
-		ev(e);
 		var sel = msel.getsel(),
 			stamp = Date.now(),
 			vps = [stamp];
 
 		if (!sel.length)
 			return toast.err(3, L.fc_emore);
+
+		ev(e);
 
 		if (clgot(bcut, 'hide'))
 			return toast.err(3, L.fc_eperm);
@@ -5118,13 +5120,14 @@ var fileman = (function () {
 	};
 
 	r.cpy = function (e) {
-		ev(e);
 		var sel = msel.getsel(),
 			stamp = Date.now(),
 			vps = [stamp, '//c'];
 
 		if (!sel.length)
 			return toast.err(3, L.fcp_emore);
+
+		ev(e);
 
 		var els = [], griden = thegrid.en;
 		for (var a = 0; a < sel.length; a++) {
@@ -5531,7 +5534,7 @@ var showfile = (function () {
 
 			if (ah.textContent.endsWith('/'))
 				continue;
-	
+
 			if (lang == 'ts' || (lang == 'md' && td.textContent != '-'))
 				continue;
 
@@ -6516,21 +6519,21 @@ var ahotkeys = function (e) {
 	if (e.key == '?')
 		return hkhelp();
 
-	if (ctrl(e)) {
+	if (!e.shiftKey && ctrl(e)) {
 		var sel = window.getSelection && window.getSelection() || {};
 		sel = sel && !sel.isCollapsed && sel.direction != 'none';
 
 		if (k == 'KeyX' || k == 'x')
-			return fileman.cut();
+			return fileman.cut(e);
 
 		if ((k == 'KeyC' || k == 'c') && !sel)
-			return fileman.cpy();
+			return fileman.cpy(e);
 
 		if (k == 'KeyV' || k == 'v')
-			return fileman.d_paste();
+			return fileman.d_paste(e);
 
 		if (k == 'KeyK' || k == 'k')
-			return fileman.delete();
+			return fileman.delete(e);
 
 		return;
 	}
