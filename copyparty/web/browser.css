@@ -1943,11 +1943,10 @@ html.y #tree.nowrap .ntree a+a:hover {
 #rn_f.m td+td {
 	width: 50%;
 }
-#rn_f .err td {
-	background: var(--err-bg);
-	color: var(--fg-max);
-}
-#rn_f .err input[readonly] {
+#rn_f .err td,
+#rn_f .err input[readonly],
+#rui .ng input[readonly] {
+	color: var(--err-fg);
 	background: var(--err-bg);
 }
 #rui input[readonly] {

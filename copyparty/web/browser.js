@@ -385,9 +385,11 @@ var Ls = {
 		"fcc_ok": "copied {0} items to clipboard",
 		"fcc_warn": 'copied {0} items to clipboard\n\nbut: only <b>this</b> browser-tab can paste them\n(since the selection is so absolutely massive)',
 
+		"fp_apply": "use these names",
 		"fp_ecut": "first cut or copy some files / folders to paste / move\n\nnote: you can cut / paste across different browser tabs",
-		"fp_ename": "these {0} items cannot be moved here (names already exist):",
-		"fcp_ename": "these {0} items cannot be copied here (names already exist):",
+		"fp_ename": "{0} items cannot be moved here because the names are already taken. Give them new names below to continue, or blank the name to skip them:",
+		"fcp_ename": "{0} items cannot be copied here because the names are already taken. Give them new names below to continue, or blank the name to skip them:",
+		"fp_emore": "there are still some filename collisions left to fix",
 		"fp_ok": "move OK",
 		"fcp_ok": "copy OK",
 		"fp_busy": "moving {0} items...\n\n{1}",
@@ -967,9 +969,11 @@ var Ls = {
 		"fcc_ok": "kopierte {0} filer til utklippstavlen",
 		"fcc_warn": 'kopierte {0} filer til utklippstavlen\n\nmen: kun <b>denne</b> nettleserfanen har mulighet til å lime dem inn et annet sted, siden antallet filer er helt hinsides',
 
+		"fp_apply": "bekreft og lim inn nå",
 		"fp_ecut": "du må klippe ut eller kopiere noen filer / mapper først\n\nmerk: du kan gjerne jobbe på kryss av nettleserfaner; klippe ut i én fane, lime inn i en annen",
-		"fp_ename": "disse {0} filene kan ikke flyttes til målmappen fordi det allerede finnes filer med samme navn:",
-		"fcp_ename": "disse {0} filene kan ikke kopieres til målmappen fordi det allerede finnes filer med samme navn:",
+		"fp_ename": "{0} filer kan ikke flyttes til målmappen fordi det allerede finnes filer med samme navn. Gi dem nye navn nedenfor, eller gi dem et blankt navn for å hoppe over dem:",
+		"fcp_ename": "{0} filer kan ikke kopieres til målmappen fordi det allerede finnes filer med samme navn. Gi dem nye navn nedenfor, eller gi dem et blankt navn for å hoppe over dem:",
+		"fp_emore": "det er fortsatt flere navn som må endres",
 		"fp_ok": "flytting OK",
 		"fcp_ok": "kopiering OK",
 		"fp_busy": "flytter {0} filer...\n\n{1}",
@@ -1549,9 +1553,11 @@ var Ls = {
 		"fcc_ok": "已将 {0} 项复制到剪贴板", //m
 		"fcc_warn": '已将 {0} 项复制到剪贴板\n\n但：只有 <b>这个</b> 浏览器标签页可以粘贴它们\n（因为选择非常庞大）', //m
 
+		"fp_apply": "确认并立即粘贴", //m
 		"fp_ecut": "首先剪切或复制一些文件/文件夹以粘贴/移动\n\n注意：你可以在不同的浏览器标签页之间剪切/粘贴", //m
-		"fp_ename": "这些 {0} 项不能移动到这里（名称已存在）：",
-		"fcp_ename": "这些 {0} 项不能复制到这里（名称已存在）：", //m
+		"fp_ename": "{0} 项不能移动到这里，因为名称已被占用。请在下方输入新名称以继续，或将名称留空以跳过这些项：", //m
+		"fcp_ename": "{0} 项不能复制到这里，因为名称已被占用。请在下方输入新名称以继续，或将名称留空以跳过这些项：", //m
+		"fp_emore": "还有一些文件名冲突需要解决", //m
 		"fp_ok": "移动成功",
 		"fcp_ok": "复制成功", //m
 		"fp_busy": "正在移动 {0} 项...\n\n{1}",
@@ -4751,9 +4757,9 @@ var fileman = (function () {
 
 		var html = sel.length > 1 ? ['<div>'] : [
 			'<div>',
-			'<button class="rn_dec" n="0" tt="' + L.frt_dec + '</button>',
+			'<button class="rn_dec" id="rn_dec_0" tt="' + L.frt_dec + '</button>',
 			'//',
-			'<button class="rn_reset" n="0" tt="' + L.frt_rst + '</button>'
+			'<button class="rn_reset" id="rn_reset_0" tt="' + L.frt_rst + '</button>'
 		];
 
 		html = html.concat([
@@ -4780,8 +4786,8 @@ var fileman = (function () {
 		if (sel.length == 1)
 			html.push(
 				'<div><table id="rn_f">\n' +
-				'<tr><td>old:</td><td><input type="text" id="rn_old" n="0" readonly /></td></tr>\n' +
-				'<tr><td>new:</td><td><input type="text" id="rn_new" n="0" /></td></tr>');
+				'<tr><td>old:</td><td><input type="text" id="rn_old_0" readonly /></td></tr>\n' +
+				'<tr><td>new:</td><td><input type="text" id="rn_new_0" /></td></tr>');
 		else {
 			html.push(
 				'<div><table id="rn_f" class="m">' +
@@ -4790,10 +4796,10 @@ var fileman = (function () {
 				html.push(
 					'<tr><td>' +
 					(cheap ? '</td>' :
-						'<button class="rn_dec" n="' + a + '">decode</button>' +
-						'<button class="rn_reset" n="' + a + '">' + t_rst + '</button></td>') +
-					'<td><input type="text" id="rn_new" n="' + a + '" /></td>' +
-					'<td><input type="text" id="rn_old" n="' + a + '" readonly /></td></tr>');
+						'<button class="rn_dec" id="rn_dec_' + a + '">decode</button>' +
+						'<button class="rn_reset" id="rn_reset_' + a + '">' + t_rst + '</button></td>') +
+					'<td><input type="text" id="rn_new_' + a + '" /></td>' +
+					'<td><input type="text" id="rn_old_' + a + '" readonly /></td></tr>');
 		}
 		html.push('</table></div>');
 
@@ -4807,9 +4813,8 @@ var fileman = (function () {
 
 		rui.innerHTML = html.join('\n');
 		for (var a = 0; a < f.length; a++) {
-			var k = '[n="' + a + '"]';
-			f[a].iold = QS('#rn_old' + k);
-			f[a].inew = QS('#rn_new' + k);
+			f[a].iold = ebi('rn_old_' + a);
+			f[a].inew = ebi('rn_new_' + a);
 			f[a].inew.value = f[a].iold.value = f[a].ofn;
 
 			if (!cheap)
@@ -4820,11 +4825,11 @@ var fileman = (function () {
 						if (kc.endsWith('Enter'))
 							return rn_apply();
 					};
-					QS('.rn_dec' + k).onclick = function (e) {
+					ebi('rn_dec_' + a).onclick = function (e) {
 						ev(e);
 						f[a].inew.value = uricom_dec(f[a].inew.value);
 					};
-					QS('.rn_reset' + k).onclick = function (e) {
+					ebi('rn_reset_' + a).onclick = function (e) {
 						ev(e);
 						rn_reset(a);
 					};
@@ -5238,49 +5243,60 @@ var fileman = (function () {
 		if (clgot(bpst, 'hide'))
 			return toast.err(3, L.fp_eperm);
 
-		var req = [],
-			exists = [],
+		var html = [
+				'<div>',
+				'<button id="rn_cancel" tt="' + L.frt_abrt + '</button>',
+				'<button id="rn_apply">✅ ' + L.fp_apply + '</button>',
+				' &nbsp; src: ' + esc(r.clip[0].replace(/[^/]+$/, '')),
+				'</div>',
+				'<p id="cnmt"></p>',
+				'<div><table id="rn_f" class="m">',
+				'<tr><td>' + L.fr_lnew + '</td><td>' + L.fr_lold + '</td></tr>',
+			],
+			ui = false,
+			f = [],
 			indir = [],
 			srcdir = vsplit(r.clip[0])[0],
 			links = QSA('#files tbody td:nth-child(2) a');
 
 		for (var a = 0, aa = links.length; a < aa; a++)
-			indir.push(vsplit(noq_href(links[a]))[1]);
+			indir.push(uricom_dec(vsplit(noq_href(links[a]))[1]));
 
 		for (var a = 0; a < r.clip.length; a++) {
-			var found = false;
-			for (var b = 0; b < indir.length; b++) {
-				if (r.clip[a].endsWith('/' + indir[b])) {
-					exists.push(r.clip[a]);
-					found = true;
+			var t = {
+				'ok': true,
+				'src': r.clip[a],
+				'dst': uricom_dec(r.clip[a].split('/').pop()),
+			};
+			f.push(t);
+
+			for (var b = 0; b < indir.length; b++)
+				if (t.dst == indir[b]) {
+					t.ok = false;
+					ui = true;
 				}
-			}
-			if (!found)
-				req.push(r.clip[a]);
+
+			html.push('<tr' + (!t.ok ? ' class="ng"' : '') + '><td><input type="text" id="rn_new_' + a + '" value="' + esc(t.dst) + '" /></td><td><input type="text" id="rn_old_' + a + '" value="' + esc(t.dst) + '" readonly /></td></tr>');
 		}
 
-		if (exists.length)
-			toast.warn(30, (r.ccp ? L.fcp_ename : L.fp_ename).format(exists.length) + '<ul>' + uricom_adec(exists, true).join('') + '</ul>');
-
-		if (!req.length)
-			return;
-
 		function paster() {
-			var xhr = new XHR(),
-				vp = req.shift();
-
-			if (!vp) {
+			var t = f.shift();
+			if (!t) {
 				toast.ok(2, r.ccp ? L.fcp_ok : L.fp_ok);
 				treectl.goto();
 				r.tx(srcdir);
 				return;
 			}
-			toast.show('inf r', 0, esc((r.ccp ? L.fcp_busy : L.fp_busy).format(req.length + 1, uricom_dec(vp))));
+			if (!t.dst)
+				return paster();
 
-			var act = r.ccp ? '?copy=' : '?move=',
-				dst = get_evpath() + vp.split('/').pop();
+			toast.show('inf r', 0, esc((r.ccp ? L.fcp_busy : L.fp_busy).format(f.length + 1, uricom_dec(f.src))));
 
-			xhr.open('POST', vp + act + dst, true);
+			var xhr = new XHR(),
+				act = r.ccp ? '?copy=' : '?move=',
+				dst = get_evpath() + uricom_enc(t.dst);
+
+			xhr.open('POST', t.src + act + dst, true);
 			xhr.onload = xhr.onerror = paste_cb;
 			xhr.send();
 		}
@@ -5292,12 +5308,82 @@ var fileman = (function () {
 			}
 			paster();
 		}
-
-		modal.confirm((r.ccp ? L.fcp_confirm : L.fp_confirm).format(req.length) + '<ul>' + uricom_adec(req, true).join('') + '</ul>', function () {
+		function okgo() {
 			paster();
 			jwrite('fman_clip', [Date.now()]);
-		}, null);
-	};
+		}
+
+		if (!ui) {
+			var src = [];
+			for (var a = 0; a < f.length; a++)
+				src.push(f[a].src);
+
+			return modal.confirm((r.ccp ? L.fcp_confirm : L.fp_confirm).format(f.length) + '<ul>' + uricom_adec(src, true).join('') + '</ul>', okgo, null);
+		}
+
+		var rui = ebi('rui');
+		if (!rui) {
+			rui = mknod('div', 'rui');
+			document.body.appendChild(rui);
+		}
+		html.push('</table>');
+		rui.innerHTML = html.join('\n');
+		tt.att(rui);
+
+		function rn_apply(e) {
+			for (var a = 0; a < f.length; a++)
+				if (!f[a].ok) {
+					toast.err(30, L.fp_emore);
+					return setcnmt(true);
+				}
+			rn_cancel(e);
+			okgo();
+		}
+		function rn_cancel(e) {
+			ev(e);
+			rui.parentNode.removeChild(rui);
+		}
+		ebi('rn_cancel').onclick = rn_cancel;
+		ebi('rn_apply').onclick = rn_apply;
+
+		var first_bad = 0;
+		function setcnmt(sel) {
+			var nbad = 0;
+			for (var a = 0; a < f.length; a++) {
+				if (f[a].ok)
+					continue;
+				if (!nbad)
+					first_bad = a;
+				nbad += 1;
+			}
+			ebi('cnmt').innerHTML = (r.ccp ? L.fcp_ename : L.fp_ename).format(nbad);
+			if (sel && nbad) {
+				var el = ebi('rn_new_' + first_bad);
+				el.focus();
+				el.setSelectionRange(0, el.value.lastIndexOf('.'), "forward");
+			}
+		}
+		setcnmt(true);
+
+		for (var a = 0; a < f.length; a++)
+			(function (a) {
+				var inew = ebi('rn_new_' + a);
+				inew.onkeydown = function (e) {
+					if (((e.code || e.key) + '').endsWith('Enter'))
+						return rn_apply();
+				};
+				inew.oninput = function (e) {
+					f[a].dst = this.value;
+					f[a].ok = true;
+					if (f[a].dst)
+						for (var b = 0; b < indir.length; b++)
+							if (indir[b] == this.value)
+								f[a].ok = false;
+					clmod(this.closest('tr'), 'ng', !f[a].ok);
+					setcnmt();
+				};
+			})(a);
+	}
 
 	function onmsg(msg) {
 		r.clip = null;
