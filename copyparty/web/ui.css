@@ -75,7 +75,7 @@ html {
 	top: 1px;
 	right: 1px;
 	left: 1px;
-	animation: toastt var(--tmtime) steps(var(--tmstep)) forwards;
+	animation: toastt var(--tmtime) 0.07s steps(var(--tmstep)) forwards;
 	transform-origin: right;
 }
 @keyframes toastt {

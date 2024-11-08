@@ -1542,8 +1542,8 @@ var toast = (function () {
 
         var html = '';
         if (sec) {
-            setcvar('--tmtime', sec + 's');
-            setcvar('--tmstep', sec * 15);
+            setcvar('--tmtime', (sec - 0.15) + 's');
+            setcvar('--tmstep', Math.floor(sec * 20));
             html += '<div id="toastt"></div>';
         }
         obj.innerHTML = html + '<a href="#" id="toastc">x</a><div id="toastb">' + lf2br(txt) + '</div>';
