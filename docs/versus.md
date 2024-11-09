@@ -465,11 +465,13 @@ symbol legend,
 ## [hfs3](https://rejetto.com/hfs/)
 * nodejs; cross-platform
 * vfs with gui config, per-volume permissions
+* tested locally, v0.53.2 on archlinux
 * 🔵 uploads are resumable
 * ⚠️ uploads are not segmented; max upload size 100 MiB on cloudflare
 * ⚠️ uploads are not accelerated (copyparty is 3x faster across the atlantic)
 * ⚠️ uploads are not integrity-checked
 * ⚠️ copies the file after upload; need twice filesize free disk space
+* ⚠️ uploading small files is decent; `107` files per sec (copyparty does `670`/sec, 6x faster)
 * ⚠️ doesn't support crazy filenames
 * ✅ config GUI
 * ✅ download counter
@@ -478,11 +480,12 @@ symbol legend,
 
 ## [nextcloud](https://github.com/nextcloud/server)
 * php, mariadb
+* tested locally, [linuxserver/nextcloud](https://hub.docker.com/r/linuxserver/nextcloud) v30.0.2 (sqlite)
 * ⚠️ [isolated on-disk file hierarchy] in per-user folders
   * not that bad, can probably be remedied with bindmounts or maybe symlinks
 * ⚠️ uploads not resumable / accelerated / integrity-checked
   * ⚠️ on cloudflare: max upload size 100 MiB
-* ⚠️ uploading small files is slow; `2.2` files per sec (copyparty does `87`/sec), tested locally with [linuxserver/nextcloud](https://hub.docker.com/r/linuxserver/nextcloud) (sqlite)
+* ⚠️ uploading small files is slow; `4` files per sec (copyparty does `670`/sec, 160x faster)
 * ⚠️ no write-only / upload-only folders
 * ⚠️ http/webdav only; no ftp, zeroconf
 * ⚠️ less awesome music player
@@ -498,11 +501,12 @@ symbol legend,
 
 ## [seafile](https://github.com/haiwen/seafile)
 * c, mariadb
+* tested locally, [official container](https://manual.seafile.com/latest/docker/deploy_seafile_with_docker/) v11.0.13
 * ⚠️ [isolated on-disk file hierarchy](https://manual.seafile.com/maintain/seafile_fsck/), incompatible with other software
   * *much worse than nextcloud* in that regard
 * ⚠️ uploads not resumable / accelerated / integrity-checked
   * ⚠️ on cloudflare: max upload size 100 MiB
-* ⚠️ uploading small files is slow; `2.7` files per sec (copyparty does `87`/sec), tested locally with [official container](https://manual.seafile.com/docker/deploy_seafile_with_docker/)
+* ⚠️ uploading small files is slow; `4.7` files per sec (copyparty does `670`/sec, 140x faster)
 * ⚠️ no write-only / upload-only folders
 * ⚠️ big folders cannot be zip-downloaded
 * ⚠️ http/webdav only; no ftp, zeroconf
@@ -526,9 +530,11 @@ symbol legend,
 
 ## [dufs](https://github.com/sigoden/dufs)
 * rust; cross-platform (windows, linux, macos)
+* tested locally, v0.43.0 on archlinux (plain binary)
 * ⚠️ uploads not resumable / accelerated / integrity-checked
   * ⚠️ on cloudflare: max upload size 100 MiB
   * ⚠️ across the atlantic, copyparty is 3x faster
+* ⚠️ uploading small files is decent; `97` files per sec (copyparty does `670`/sec, 7x faster)
 * ⚠️ doesn't support crazy filenames
 * ✅ per-url access control (copyparty is per-volume)
 * 🔵 basic but really snappy ui
@@ -571,10 +577,12 @@ symbol legend,
 
 ## [filebrowser](https://github.com/filebrowser/filebrowser)
 * go; cross-platform (windows, linux, mac)
+* tested locally, v2.31.2 on archlinux (plain binary)
 * 🔵 uploads are resumable and segmented
 * 🔵 multiple files are uploaded in parallel, but...
   * ⚠️ big files are not accelerated (copyparty is 5x faster across the atlantic)
 * ⚠️ uploads are not integrity-checked
+* ⚠️ uploading small files is decent; `69` files per sec (copyparty does `670`/sec, 9x faster)
 * ⚠️ http only; no webdav / ftp / zeroconf
 * ⚠️ doesn't support crazy filenames
 * ⚠️ no directory tree nav
@@ -612,6 +620,7 @@ symbol legend,
 * ⚠️ no zeroconf (mdns/ssdp)
 * ⚠️ impractical directory URLs
 * ⚠️ AGPL licensed
+* 🔵 uploading small files is fast; `340` files per sec (copyparty does `670`/sec)
 * 🔵 ftp, ftps, webdav
 * ✅ sftp server
 * ✅ settings gui
