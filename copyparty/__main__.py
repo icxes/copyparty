@@ -50,6 +50,8 @@ from .util import (
     PARTFTPY_VER,
     PY_DESC,
     PYFTPD_VER,
+    RAM_AVAIL,
+    RAM_TOTAL,
     SQLITE_VER,
     UNPLICATIONS,
     Daemon,
@@ -1325,6 +1327,8 @@ def add_admin(ap):
 
 
 def add_thumbnail(ap):
+    th_ram = (RAM_AVAIL or RAM_TOTAL or 9) * 0.6
+    th_ram = int(max(min(th_ram, 6), 1) * 10) / 10
     ap2 = ap.add_argument_group('thumbnail options')
     ap2.add_argument("--no-thumb", action="store_true", help="disable all thumbnails (volflag=dthumb)")
     ap2.add_argument("--no-vthumb", action="store_true", help="disable video thumbnails (volflag=dvthumb)")
@@ -1332,7 +1336,7 @@ def add_thumbnail(ap):
     ap2.add_argument("--th-size", metavar="WxH", default="320x256", help="thumbnail res (volflag=thsize)")
     ap2.add_argument("--th-mt", metavar="CORES", type=int, default=CORES, help="num cpu cores to use for generating thumbnails")
     ap2.add_argument("--th-convt", metavar="SEC", type=float, default=60.0, help="conversion timeout in seconds (volflag=convt)")
-    ap2.add_argument("--th-ram-max", metavar="GB", type=float, default=6.0, help="max memory usage (GiB) permitted by thumbnailer; not very accurate")
+    ap2.add_argument("--th-ram-max", metavar="GB", type=float, default=th_ram, help="max memory usage (GiB) permitted by thumbnailer; not very accurate")
     ap2.add_argument("--th-crop", metavar="TXT", type=u, default="y", help="crop thumbnails to 4:3 or keep dynamic height; client can override in UI unless force. [\033[32my\033[0m]=crop, [\033[32mn\033[0m]=nocrop, [\033[32mfy\033[0m]=force-y, [\033[32mfn\033[0m]=force-n (volflag=crop)")
     ap2.add_argument("--th-x3", metavar="TXT", type=u, default="n", help="show thumbs at 3x resolution; client can override in UI unless force. [\033[32my\033[0m]=yes, [\033[32mn\033[0m]=no, [\033[32mfy\033[0m]=force-yes, [\033[32mfn\033[0m]=force-no (volflag=th3x)")
     ap2.add_argument("--th-dec", metavar="LIBS", default="vips,pil,ff", help="image decoders, in order of preference")

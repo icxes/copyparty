@@ -211,6 +211,15 @@ class SvcHub(object):
             t = "WARNING: --s-rd-sz (%d) is larger than --iobuf (%d); this may lead to reduced performance"
             self.log("root", t % (args.s_rd_sz, args.iobuf), 3)
 
+        zs = ""
+        if args.th_ram_max < 0.22:
+            zs = "generate thumbnails"
+        elif args.th_ram_max < 1:
+            zs = "generate audio waveforms or spectrograms"
+        if zs:
+            t = "WARNING: --th-ram-max is very small (%.2f GiB); will not be able to %s"
+            self.log("root", t % (args.th_ram_max, zs), 3)
+
         if args.chpw and args.idp_h_usr:
             t = "ERROR: user-changeable passwords is incompatible with IdP/identity-providers; you must disable either --chpw or --idp-h-usr"
             self.log("root", t, 1)

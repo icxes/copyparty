@@ -436,6 +436,27 @@ UNHUMANIZE_UNITS = {
 VF_CAREFUL = {"mv_re_t": 5, "rm_re_t": 5, "mv_re_r": 0.1, "rm_re_r": 0.1}
 
 
+def read_ram() -> tuple[float, float]:
+    a = b = 0
+    try:
+        with open("/proc/meminfo", "rb", 0x10000) as f:
+            zsl = f.read(0x10000).decode("ascii", "replace").split("\n")
+
+        p = re.compile("^MemTotal:.* kB")
+        zs = next((x for x in zsl if p.match(x)))
+        a = int((int(zs.split()[1]) / 0x100000) * 100) / 100
+
+        p = re.compile("^MemAvailable:.* kB")
+        zs = next((x for x in zsl if p.match(x)))
+        b = int((int(zs.split()[1]) / 0x100000) * 100) / 100
+    except:
+        pass
+    return a, b
+
+
+RAM_TOTAL, RAM_AVAIL = read_ram()
+
+
 pybin = sys.executable or ""
 if EXE:
     pybin = ""
@@ -1030,6 +1051,7 @@ class MTHash(object):
         self.sz = 0
         self.csz = 0
         self.stop = False
+        self.readsz = 1024 * 1024 * (2 if (RAM_AVAIL or 2) < 1 else 12)
         self.omutex = threading.Lock()
         self.imutex = threading.Lock()
         self.work_q: Queue[int] = Queue()
@@ -1105,7 +1127,7 @@ class MTHash(object):
         while chunk_rem > 0:
             with self.imutex:
                 f.seek(ofs)
-                buf = f.read(min(chunk_rem, 1024 * 1024 * 12))
+                buf = f.read(min(chunk_rem, self.readsz))
 
             if not buf:
                 raise Exception("EOF at " + str(ofs))

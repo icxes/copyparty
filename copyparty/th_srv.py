@@ -20,7 +20,6 @@ from .util import (
     FFMPEG_URL,
     Cooldown,
     Daemon,
-    Pebkac,
     afsenc,
     fsenc,
     min_ex,
@@ -164,6 +163,7 @@ class ThumbSrv(object):
         self.ram: dict[str, float] = {}
         self.memcond = threading.Condition(self.mutex)
         self.stopping = False
+        self.rm_nullthumbs = True  # forget failed conversions on startup
         self.nthr = max(1, self.args.th_mt)
 
         self.q: Queue[Optional[tuple[str, str, str, VFS]]] = Queue(self.nthr * 4)
@@ -862,7 +862,6 @@ class ThumbSrv(object):
     def cleaner(self) -> None:
         interval = self.args.th_clean
         while True:
-            time.sleep(interval)
             ndirs = 0
             for vol, histpath in self.asrv.vfs.histtab.items():
                 if histpath.startswith(vol):
@@ -876,6 +875,8 @@ class ThumbSrv(object):
                     self.log("\033[Jcln err in %s: %r" % (histpath, ex), 3)
 
             self.log("\033[Jcln ok; rm {} dirs".format(ndirs))
+            self.rm_nullthumbs = False
+            time.sleep(interval)
 
     def clean(self, histpath: str) -> int:
         ret = 0
@@ -937,6 +938,10 @@ class ThumbSrv(object):
                 if f != "dir.txt":
                     self.log("foreign file in thumbs dir: [{}]".format(fp), 1)
 
+                continue
+
+            if self.rm_nullthumbs and not inf.st_size:
+                bos.unlink(fp)
                 continue
 
             if b64 == prev_b64:
