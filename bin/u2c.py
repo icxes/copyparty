@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 from __future__ import print_function, unicode_literals
 
-S_VERSION = "2.5"
-S_BUILD_DT = "2024-10-18"
+S_VERSION = "2.6"
+S_BUILD_DT = "2024-11-10"
 
 """
 u2c.py: upload to copyparty
@@ -189,6 +189,8 @@ class HCli(object):
         return C(self.addr, self.port, timeout=timeout, **args)
 
     def req(self, meth, vpath, hdrs, body=None, ctype=None):
+        now = time.time()
+
         hdrs.update(self.base_hdrs)
         if self.ar.a:
             hdrs["PW"] = self.ar.a
@@ -201,7 +203,9 @@ class HCli(object):
 
         # large timeout for handshakes (safededup)
         conns = self.hconns if ctype == MJ else self.conns
-        c = conns.pop() if conns else self._connect(999 if ctype == MJ else 128)
+        while conns and self.ar.cxp < now - conns[0][0]:
+            conns.pop(0)[1].close()
+        c = conns.pop()[1] if conns else self._connect(999 if ctype == MJ else 128)
         try:
             c.request(meth, vpath, body, hdrs)
             if PY27:
@@ -210,8 +214,15 @@ class HCli(object):
                 rsp = c.getresponse()
 
             data = rsp.read()
-            conns.append(c)
+            conns.append((time.time(), c))
             return rsp.status, data.decode("utf-8")
+        except http_client.BadStatusLine:
+            if self.ar.cxp > 4:
+                t = "\nWARNING: --cxp probably too high; reducing from %d to 4"
+                print(t % (self.ar.cxp,))
+                self.ar.cxp = 4
+            c.close()
+            raise
         except:
             c.close()
             raise
@@ -1503,6 +1514,7 @@ source file/folder selection uses rsync syntax, meaning that:
     ap.add_argument("--szm", type=int, metavar="MiB", default=96, help="max size of each POST (default is cloudflare max)")
     ap.add_argument("-nh", action="store_true", help="disable hashing while uploading")
     ap.add_argument("-ns", action="store_true", help="no status panel (for slow consoles and macos)")
+    ap.add_argument("--cxp", type=float, metavar="SEC", default=57, help="assume http connections expired after SEConds")
     ap.add_argument("--cd", type=float, metavar="SEC", default=5, help="delay before reattempting a failed handshake/upload")
     ap.add_argument("--safe", action="store_true", help="use simple fallback approach")
     ap.add_argument("-z", action="store_true", help="ZOOMIN' (skip uploading files if they exist at the destination with the ~same last-modified timestamp, so same as yolo / turbo with date-chk but even faster)")
