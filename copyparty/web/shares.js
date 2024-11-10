@@ -71,7 +71,7 @@ function showqr(href) {
         tr[a].cells[11].innerHTML =
             '<button value="1">1min</button> ' +
             '<button value="60">1h</button>';
-    
+
     var btns = QSA('td button'), aa = btns.length;
     for (var a = 0; a < aa; a++)
         btns[a].onclick = bump;

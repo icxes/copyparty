@@ -1,4 +1,40 @@
 ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀  
+# 2024-1027-0751  `v1.15.10`  temporary upload links
+
+## 🧪 new features
+
+* [shares](https://github.com/9001/copyparty#shares) can now be uploaded into, and unpost works too 4bdcbc1c
+  * useful to create temporary URLs for other people to upload to
+  * shares can be write-only, so visitors can't browse or see any files
+* #110 HTTP 304 (caching):
+  * support `If-Range` for HTTP 206 159f51b1
+  * add server-side and client-side options to force-disable cache dd6dbdd9
+    * `--no304=1` shows a button in the controlpanel to disable caching
+    * `--no304=2` makes that button auto-enabled
+    * even when `--no304` is not specified, accessing the URL `/?setck=no304=y` force-disables cache
+    * when cache is force-disabled, browsers will waste a lot of network traffic / data usage
+    * might help to avoid bugs in browsers or proxies, for example if media files suddenly stop loading
+      * but such bugs should be exceedingly rare, so do not enable this unless actually necessary 
+
+## 🩹 bugfixes
+
+* #110 HTTP 304 (caching):
+  * remove `Content-Length` and `Content-Type` response headers from 304 replies 91240236
+    * browsers don't need these, and some middlewares might get confused if they're present
+* #113 fix crash on startup if `-j0` was combined with `--ipa` or `--ipu` 3a0d882c
+* #111 fix javascript crash if `--u2sz` was set to an invalid value b13899c6
+
+## 🔧 other changes
+
+* #110 HTTP 304 (caching):
+  * never automatically enable k304 because the `Vary` header killed support for caching in msie anyways 63013cc5
+  * change time comparison for `If-Modified-Since` to require an exact timestamp match, instead of the intended "modified since". This technically violates the http-spec, but should be safer for backdating file mtimes 159f51b1
+* new option `--ohead` to log response headers 7678a91b
+* added [nintendo 3ds](https://github.com/user-attachments/assets/88deab3d-6cad-4017-8841-2f041472b853) to the [list of supported browsers](https://github.com/9001/copyparty#browser-support) cb81f0ad
+
+
+
+▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀  
 # 2024-1018-2342  `v1.15.9`  rss server
 
 ## 🧪 new features

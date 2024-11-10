@@ -100,7 +100,7 @@ def gen_hdr(
 
     # spec says to put zeros when !crc if bit3 (streaming)
     # however infozip does actual sz and it even works on winxp
-    # (same reasning for z64 extradata later)
+    # (same reasoning for z64 extradata later)
     vsz = 0xFFFFFFFF if z64 else sz
     ret += spack(b"<LL", vsz, vsz)
 
