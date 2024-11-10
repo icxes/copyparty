@@ -2791,7 +2791,10 @@ def sendfile_py(
     bufsz: int,
     slp: float,
     use_poll: bool,
+    dls: dict[str, tuple[float, int]],
+    dl_id: str,
 ) -> int:
+    sent = 0
     remains = upper - lower
     f.seek(lower)
     while remains > 0:
@@ -2808,6 +2811,10 @@ def sendfile_py(
         except:
             return remains
 
+        if dl_id:
+            sent += len(buf)
+            dls[dl_id] = (time.time(), sent)
+
     return 0
 
 
@@ -2820,6 +2827,8 @@ def sendfile_kern(
     bufsz: int,
     slp: float,
     use_poll: bool,
+    dls: dict[str, tuple[float, int]],
+    dl_id: str,
 ) -> int:
     out_fd = s.fileno()
     in_fd = f.fileno()
@@ -2832,7 +2841,7 @@ def sendfile_kern(
     while ofs < upper:
         stuck = stuck or time.time()
         try:
-            req = min(2 ** 30, upper - ofs)
+            req = min(0x2000000, upper - ofs)  # 32 MiB
             if use_poll:
                 poll.poll(10000)
             else:
@@ -2856,6 +2865,9 @@ def sendfile_kern(
             return upper - ofs
 
         ofs += n
+        if dl_id:
+            dls[dl_id] = (time.time(), ofs - lower)
+
         # print("sendfile: ok, sent {} now, {} total, {} remains".format(n, ofs - lower, upper - ofs))
 
     return 0

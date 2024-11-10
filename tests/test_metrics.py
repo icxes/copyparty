@@ -57,6 +57,7 @@ class TestMetrics(unittest.TestCase):
         ptns = r"""
 cpp_uptime_seconds [0-9]\.[0-9]{3}$
 cpp_boot_unixtime_seconds [0-9]{7,10}\.[0-9]{3}$
+cpp_active_dl 0$
 cpp_http_reqs_created [0-9]{7,10}$
 cpp_http_reqs_total -1$
 cpp_http_conns 9$

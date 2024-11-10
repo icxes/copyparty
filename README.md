@@ -1687,6 +1687,7 @@ scrape_configs:
 currently the following metrics are available,
 * `cpp_uptime_seconds` time since last copyparty restart
 * `cpp_boot_unixtime_seconds` same but as an absolute timestamp
+* `cpp_active_dl` number of active downloads
 * `cpp_http_conns` number of open http(s) connections
 * `cpp_http_reqs` number of http(s) requests handled
 * `cpp_sus_reqs` number of 403/422/malicious requests

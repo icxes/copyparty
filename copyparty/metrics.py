@@ -72,6 +72,9 @@ class Metrics(object):
         v = "{:.3f}".format(self.hsrv.t0)
         addug("cpp_boot_unixtime", "seconds", v, t)
 
+        t = "number of active downloads"
+        addg("cpp_active_dl", str(len(self.hsrv.tdls)), t)
+
         t = "number of open http(s) client connections"
         addg("cpp_http_conns", str(self.hsrv.ncli), t)
 

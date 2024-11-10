@@ -43,6 +43,9 @@ class BrokerMp(object):
         self.procs = []
         self.mutex = threading.Lock()
 
+        self.retpend: dict[int, Any] = {}
+        self.retpend_mutex = threading.Lock()
+
         self.num_workers = self.args.j or CORES
         self.log("broker", "booting {} subprocesses".format(self.num_workers))
         for n in range(1, self.num_workers + 1):
@@ -53,6 +56,8 @@ class BrokerMp(object):
             Daemon(self.collector, "mp-sink-{}".format(n), (proc,))
             self.procs.append(proc)
             proc.start()
+
+        Daemon(self.periodic, "mp-periodic")
 
     def shutdown(self) -> None:
         self.log("broker", "shutting down")
@@ -90,8 +95,10 @@ class BrokerMp(object):
                 self.log(*args)
 
             elif dest == "retq":
-                # response from previous ipc call
-                raise Exception("invalid broker_mp usage")
+                with self.retpend_mutex:
+                    retq = self.retpend.pop(retq_id)
+
+                retq.put(args[0])
 
             else:
                 # new ipc invoking managed service in hub
@@ -109,7 +116,6 @@ class BrokerMp(object):
                     proc.q_pend.put((retq_id, "retq", rv))
 
     def ask(self, dest: str, *args: Any) -> Union[ExceptionalQueue, NotExQueue]:
-
         # new non-ipc invoking managed service in hub
         obj = self.hub
         for node in dest.split("."):
@@ -121,17 +127,30 @@ class BrokerMp(object):
         retq.put(rv)
         return retq
 
+    def wask(self, dest: str, *args: Any) -> list[Union[ExceptionalQueue, NotExQueue]]:
+        # call from hub to workers
+        ret = []
+        for p in self.procs:
+            retq = ExceptionalQueue(1)
+            retq_id = id(retq)
+            with self.retpend_mutex:
+                self.retpend[retq_id] = retq
+
+            p.q_pend.put((retq_id, dest, list(args)))
+            ret.append(retq)
+        return ret
+
     def say(self, dest: str, *args: Any) -> None:
         """
         send message to non-hub component in other process,
         returns a Queue object which eventually contains the response if want_retval
         (not-impl here since nothing uses it yet)
         """
-        if dest == "listen":
+        if dest == "httpsrv.listen":
             for p in self.procs:
                 p.q_pend.put((0, dest, [args[0], len(self.procs)]))
 
-        elif dest == "set_netdevs":
+        elif dest == "httpsrv.set_netdevs":
             for p in self.procs:
                 p.q_pend.put((0, dest, list(args)))
 
@@ -140,3 +159,19 @@ class BrokerMp(object):
 
         else:
             raise Exception("what is " + str(dest))
+
+    def periodic(self) -> None:
+        while True:
+            time.sleep(1)
+
+            tdli = {}
+            tdls = {}
+            qs = self.wask("httpsrv.read_dls")
+            for q in qs:
+                qr = q.get()
+                dli, dls = qr
+                tdli.update(dli)
+                tdls.update(dls)
+            tdl = (tdli, tdls)
+            for p in self.procs:
+                p.q_pend.put((0, "httpsrv.write_dls", tdl))

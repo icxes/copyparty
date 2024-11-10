@@ -80,6 +80,7 @@ web/deps/prismd.css
 web/deps/scp.woff2
 web/deps/sha512.ac.js
 web/deps/sha512.hw.js
+web/iiam.gif
 web/md.css
 web/md.html
 web/md.js

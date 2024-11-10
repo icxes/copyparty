@@ -53,11 +53,11 @@ class BrokerThr(BrokerCli):
         return NotExQueue(obj(*args))  # type: ignore
 
     def say(self, dest: str, *args: Any) -> None:
-        if dest == "listen":
+        if dest == "httpsrv.listen":
             self.httpsrv.listen(args[0], 1)
             return
 
-        if dest == "set_netdevs":
+        if dest == "httpsrv.set_netdevs":
             self.httpsrv.set_netdevs(args[0])
             return
 

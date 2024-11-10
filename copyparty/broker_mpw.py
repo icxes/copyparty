@@ -82,37 +82,38 @@ class MpWorker(BrokerCli):
         while True:
             retq_id, dest, args = self.q_pend.get()
 
-            # self.logw("work: [{}]".format(d[0]))
+            if dest == "retq":
+                # response from previous ipc call
+                with self.retpend_mutex:
+                    retq = self.retpend.pop(retq_id)
+
+                retq.put(args)
+                continue
+
             if dest == "shutdown":
                 self.httpsrv.shutdown()
                 self.logw("ok bye")
                 sys.exit(0)
                 return
 
-            elif dest == "reload":
+            if dest == "reload":
                 self.logw("mpw.asrv reloading")
                 self.asrv.reload()
                 self.logw("mpw.asrv reloaded")
+                continue
 
-            elif dest == "reload_sessions":
+            if dest == "reload_sessions":
                 with self.asrv.mutex:
                     self.asrv.load_sessions()
+                continue
 
-            elif dest == "listen":
-                self.httpsrv.listen(args[0], args[1])
+            obj = self
+            for node in dest.split("."):
+                obj = getattr(obj, node)
 
-            elif dest == "set_netdevs":
-                self.httpsrv.set_netdevs(args[0])
-
-            elif dest == "retq":
-                # response from previous ipc call
-                with self.retpend_mutex:
-                    retq = self.retpend.pop(retq_id)
-
-                retq.put(args)
-
-            else:
-                raise Exception("what is " + str(dest))
+            rv = obj(*args)  # type: ignore
+            if retq_id:
+                self.say("retq", rv, retq_id=retq_id)
 
     def ask(self, dest: str, *args: Any) -> Union[ExceptionalQueue, NotExQueue]:
         retq = ExceptionalQueue(1)
@@ -123,5 +124,5 @@ class MpWorker(BrokerCli):
         self.q_yield.put((retq_id, dest, list(args)))
         return retq
 
-    def say(self, dest: str, *args: Any) -> None:
-        self.q_yield.put((0, dest, list(args)))
+    def say(self, dest: str, *args: Any, retq_id=0) -> None:
+        self.q_yield.put((retq_id, dest, list(args)))

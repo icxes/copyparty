@@ -81,6 +81,7 @@ from .util import (
 )
 
 if TYPE_CHECKING:
+    from .authsrv import VFS
     from .broker_util import BrokerCli
     from .ssdp import SSDPr
 
@@ -129,6 +130,12 @@ class HttpSrv(object):
         self.gurl = Garda(self.args.ban_url)
         self.bans: dict[str, int] = {}
         self.aclose: dict[str, int] = {}
+
+        dli: dict[str, tuple[float, int, "VFS", str, str]] = {}  # info
+        dls: dict[str, tuple[float, int]] = {}  # state
+        self.dli = self.tdli = dli
+        self.dls = self.tdls = dls
+        self.iiam = '<img src="%s.cpr/iiam.gif" />' % (self.args.SRS,)
 
         self.bound: set[tuple[str, int]] = set()
         self.name = "hsrv" + nsuf
@@ -205,6 +212,9 @@ class HttpSrv(object):
             self.start_threads(4)
 
         if nid:
+            self.tdli = {}
+            self.tdls = {}
+
             if self.args.stackmon:
                 start_stackmon(self.args.stackmon, nid)
 
@@ -579,3 +589,32 @@ class HttpSrv(object):
                 ident += "a"
 
             self.u2idx_free[ident] = u2idx
+
+    def read_dls(
+        self,
+    ) -> tuple[
+        dict[str, tuple[float, int, str, str, str]], dict[str, tuple[float, int]]
+    ]:
+        """
+        mp-broker asking for local dl-info + dl-state;
+        reduce overhead by sending just the vfs vpath
+        """
+        dli = {k: (a, b, c.vpath, d, e) for k, (a, b, c, d, e) in self.dli.items()}
+        return (dli, self.dls)
+
+    def write_dls(
+        self,
+        sdli: dict[str, tuple[float, int, str, str, str]],
+        dls: dict[str, tuple[float, int]],
+    ) -> None:
+        """
+        mp-broker pushing total dl-info + dl-state;
+        swap out the vfs vpath with the vfs node
+        """
+        dli: dict[str, tuple[float, int, "VFS", str, str]] = {}
+        for k, (a, b, c, d, e) in sdli.items():
+            vn = self.asrv.vfs.all_vols[c]
+            dli[k] = (a, b, vn, d, e)
+
+        self.tdli = dli
+        self.tdls = dls

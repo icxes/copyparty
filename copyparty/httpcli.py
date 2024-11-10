@@ -186,6 +186,7 @@ class HttpCli(object):
         self.rem = " "
         self.vpath = " "
         self.vpaths = " "
+        self.dl_id = ""
         self.gctx = " "  # additional context for garda
         self.trailing_slash = True
         self.uname = " "
@@ -726,6 +727,11 @@ class HttpCli(object):
             except Pebkac:
                 return False
 
+        finally:
+            if self.dl_id:
+                self.conn.hsrv.dli.pop(self.dl_id, None)
+                self.conn.hsrv.dls.pop(self.dl_id, None)
+
     def dip(self) -> str:
         if self.args.plain_ip:
             return self.ip.replace(":", ".")
@@ -1217,6 +1223,9 @@ class HttpCli(object):
 
             if "shares" in self.uparam:
                 return self.tx_shares()
+
+            if "dls" in self.uparam:
+                return self.tx_dls()
 
         if "h" in self.uparam:
             return self.tx_mounts()
@@ -3690,6 +3699,8 @@ class HttpCli(object):
             self.args.s_wr_sz,
             self.args.s_wr_slp,
             not self.args.no_poll,
+            {},
+            "",
         )
         res.close()
 
@@ -3736,6 +3747,7 @@ class HttpCli(object):
         editions: dict[str, tuple[str, int]] = {}
         for ext in ("", ".gz"):
             if ptop is not None:
+                assert job and ap_data  # type: ignore  # !rm
                 sz = job["size"]
                 file_ts = job["lmod"]
                 editions["plain"] = (ap_data, sz)
@@ -3904,7 +3916,21 @@ class HttpCli(object):
             self.send_headers(length=upper - lower, status=status, mime=mime)
             return True
 
+        dls = self.conn.hsrv.dls
+        if upper - lower > 0x400000:  # 4m
+            now = time.time()
+            self.dl_id = "%s:%s" % (self.ip, self.addr[1])
+            dls[self.dl_id] = (now, 0)
+            self.conn.hsrv.dli[self.dl_id] = (
+                now,
+                upper - lower,
+                self.vn,
+                self.vpath,
+                self.uname,
+            )
+
         if ptop is not None:
+            assert job and ap_data  # type: ignore  # !rm
             return self.tx_pipe(
                 ptop, req_path, ap_data, job, lower, upper, status, mime, logmsg
             )
@@ -3923,6 +3949,8 @@ class HttpCli(object):
                 self.args.s_wr_sz,
                 self.args.s_wr_slp,
                 not self.args.no_poll,
+                dls,
+                self.dl_id,
             )
 
         if remains > 0:
@@ -4073,6 +4101,8 @@ class HttpCli(object):
                     wr_sz,
                     wr_slp,
                     not self.args.no_poll,
+                    self.conn.hsrv.dls,
+                    self.dl_id,
                 )
 
         spd = self._spd((upper - lower) - remains)
@@ -4158,6 +4188,18 @@ class HttpCli(object):
                 self.log("transcoding to [{}]".format(cfmt))
                 fgen = gfilter(fgen, self.thumbcli, self.uname, vpath, cfmt)
 
+        now = time.time()
+        self.dl_id = "%s:%s" % (self.ip, self.addr[1])
+        self.conn.hsrv.dli[self.dl_id] = (
+            now,
+            0,
+            self.vn,
+            "%s :%s" % (self.vpath, ext),
+            self.uname,
+        )
+        dls = self.conn.hsrv.dls
+        dls[self.dl_id] = (time.time(), 0)
+
         bgen = packer(
             self.log,
             self.asrv,
@@ -4166,6 +4208,7 @@ class HttpCli(object):
             pre_crc="crc" in uarg,
             cmp=uarg if cancmp or uarg == "pax" else "",
         )
+        n = 0
         bsent = 0
         for buf in bgen.gen():
             if not buf:
@@ -4178,6 +4221,11 @@ class HttpCli(object):
                 logmsg += " \033[31m" + unicode(bsent) + "\033[0m"
                 bgen.stop()
                 break
+
+            n += 1
+            if n >= 4:
+                n = 0
+                dls[self.dl_id] = (time.time(), bsent)
 
         spd = self._spd(bsent)
         self.log("{},  {}".format(logmsg, spd))
@@ -4436,6 +4484,32 @@ class HttpCli(object):
 
         assert vstate.items and vs  # type: ignore  # !rm
 
+        dls = dl_list = []
+        if self.conn.hsrv.tdls:
+            zi = self.args.dl_list
+            if zi == 2 or (zi == 1 and self.avol):
+                dl_list = self.get_dls()
+        for t0, t1, sent, sz, vp, dl_id, uname in dl_list:
+            rem = sz - sent
+            td = max(0.1, now - t0)
+            rd, fn = vsplit(vp)
+            if not rd:
+                rd = "/"
+            erd = quotep(rd)
+            rds = rd.replace("/", " / ")
+            spd = humansize(sent / td, True) + "/s"
+            hsent = humansize(sent, True)
+            idle = s2hms(now - t1, True)
+            usr = "%s @%s" % (dl_id, uname) if dl_id else uname
+            if sz and sent and td:
+                eta = s2hms((sz - sent) / (sent / td), True)
+                perc = int(100 * sent / sz)
+            else:
+                eta = perc = "--"
+
+            fn = html_escape(fn) if fn else self.conn.hsrv.iiam
+            dls.append((perc, hsent, spd, eta, idle, usr, erd, rds, fn))
+
         fmt = self.uparam.get("ls", "")
         if not fmt and (self.ua.startswith("curl/") or self.ua.startswith("fetch")):
             fmt = "v"
@@ -4454,6 +4528,12 @@ class HttpCli(object):
             if ups:
                 txt += "\n\nincoming files:"
                 for zt in ups:
+                    txt += "\n%s" % (", ".join((str(x) for x in zt)),)
+                txt += "\n"
+
+            if dls:
+                txt += "\n\nactive downloads:"
+                for zt in dls:
                     txt += "\n%s" % (", ".join((str(x) for x in zt)),)
                 txt += "\n"
 
@@ -4480,6 +4560,7 @@ class HttpCli(object):
             avol=avol,
             in_shr=self.args.shr and self.vpath.startswith(self.args.shr1),
             vstate=vstate,
+            dls=dls,
             ups=ups,
             scanning=vs["scanning"],
             hashq=vs["hashq"],
@@ -4699,6 +4780,40 @@ class HttpCli(object):
 
         ret["a"] = dirs
         return ret
+
+    def get_dls(self) -> list[list[Any]]:
+        ret = []
+        dls = self.conn.hsrv.tdls
+        for dl_id, (t0, sz, vn, vp, uname) in self.conn.hsrv.tdli.items():
+            t1, sent = dls[dl_id]
+            if sent > 0x100000:  # 1m; buffers 2~4
+                sent -= 0x100000
+            if self.uname not in vn.axs.uread:
+                vp = ""
+            elif self.uname not in vn.axs.udot and (vp.startswith(".") or "/." in vp):
+                vp = ""
+            if self.uname not in vn.axs.uadmin:
+                dl_id = uname = ""
+
+            ret.append([t0, t1, sent, sz, vp, dl_id, uname])
+        return ret
+
+    def tx_dls(self) -> bool:
+        ret = [
+            {
+                "t0": x[0],
+                "t1": x[1],
+                "sent": x[2],
+                "size": x[3],
+                "path": x[4],
+                "conn": x[5],
+                "uname": x[6],
+            }
+            for x in self.get_dls()
+        ]
+        zs = json.dumps(ret, separators=(",\n", ": "))
+        self.reply(zs.encode("utf-8", "replace"), mime="application/json")
+        return True
 
     def tx_ups(self) -> bool:
         idx = self.conn.get_u2idx()

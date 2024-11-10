@@ -140,6 +140,7 @@ authenticate using header `Cookie: cppwd=foo` or url param `&pw=foo`
 | GET | `?tar&j` | pregenerate jpg thumbnails |
 | GET | `?tar&p` | pregenerate audio waveforms |
 | GET | `?shares` | list your shared files/folders |
+| GET | `?dls` | show active downloads (do this as admin) |
 | GET | `?ups` | show recent uploads from your IP |
 | GET | `?ups&filter=f` | ...where URL contains `f` |
 | GET | `?mime=foo` | specify return mimetype `foo` |

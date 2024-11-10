@@ -134,7 +134,7 @@ class Cfg(Namespace):
         ex = "hash_mt safe_dedup srch_time u2abort u2j u2sz"
         ka.update(**{k: 1 for k in ex.split()})
 
-        ex = "au_vol mtab_age reg_cap s_thead s_tbody th_convt"
+        ex = "au_vol dl_list mtab_age reg_cap s_thead s_tbody th_convt"
         ka.update(**{k: 9 for k in ex.split()})
 
         ex = "db_act k304 loris no304 re_maxage rproxy rsp_jtr rsp_slp s_wr_slp snap_wri theme themes turbo"
@@ -254,6 +254,8 @@ class VHttpSrv(object):
         self.broker = NullBroker(args, asrv)
         self.prism = None
         self.bans = {}
+        self.tdls = self.dls = {}
+        self.tdli = self.dli = {}
         self.nreq = 0
         self.nsus = 0
 
@@ -292,6 +294,8 @@ class VHttpConn(object):
         self.args = args
         self.asrv = asrv
         self.bans = {}
+        self.tdls = self.dls = {}
+        self.tdli = self.dli = {}
         self.freshen_pwd = 0.0
 
         Ctor = VHttpSrvUp2k if use_up2k else VHttpSrv
