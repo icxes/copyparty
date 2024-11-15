@@ -1732,7 +1732,18 @@ class AuthSrv(object):
 
             self.log("\n\n".join(ta) + "\n", c=3)
 
-        vfs.histtab = {zv.realpath: zv.histpath for zv in vfs.all_vols.values()}
+        rhisttab = {}
+        vfs.histtab = {}
+        for zv in vfs.all_vols.values():
+            histp = zv.histpath
+            if histp in rhisttab:
+                zv2 = rhisttab[histp]
+                t = "invalid config; multiple volumes share the same histpath (database location):\n  histpath: %s\n  volume 1: /%s  [%s]\n  volume 2: %s  [%s]"
+                t = t % (histp, zv2.vpath, zv2.realpath, zv.vpath, zv.realpath)
+                self.log(t, 1)
+                raise Exception(t)
+            rhisttab[histp] = zv
+            vfs.histtab[zv.realpath] = histp
 
         for vol in vfs.all_vols.values():
             lim = Lim(self.log_func)
