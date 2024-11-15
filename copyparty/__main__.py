@@ -878,8 +878,9 @@ def get_sects():
             use argon2id with timecost 3, 256 MiB, 4 threads, version 19 (0x13/v1.3)
 
             \033[36m--ah-alg scrypt\033[0m  # which is the same as:
-            \033[36m--ah-alg scrypt,13,2,8,4\033[0m
-            use scrypt with cost 2**13, 2 iterations, blocksize 8, 4 threads
+            \033[36m--ah-alg scrypt,13,2,8,4,32\033[0m
+            use scrypt with cost 2**13, 2 iterations, blocksize 8, 4 threads,
+              and allow using up to 32 MiB RAM (ram=cost*blksz roughly)
 
             \033[36m--ah-alg sha2\033[0m  # which is the same as:
             \033[36m--ah-alg sha2,424242\033[0m

@@ -24,17 +24,13 @@ class PWHash(object):
     def __init__(self, args: argparse.Namespace):
         self.args = args
 
-        try:
-            alg, ac = args.ah_alg.split(",")
-        except:
-            alg = args.ah_alg
-            ac = {}
-
+        zsl = args.ah_alg.split(",")
+        alg = zsl[0]
         if alg == "none":
             alg = ""
 
         self.alg = alg
-        self.ac = ac
+        self.ac = zsl[1:]
         if not alg:
             self.on = False
             self.hash = unicode
@@ -90,17 +86,23 @@ class PWHash(object):
         its = 2
         blksz = 8
         para = 4
+        ramcap = 0  # openssl 1.1 = 32 MiB
         try:
             cost = 2 << int(self.ac[0])
             its = int(self.ac[1])
             blksz = int(self.ac[2])
             para = int(self.ac[3])
+            ramcap = int(self.ac[4]) * 1024 * 1024
         except:
             pass
 
+        cfg = {"salt": self.salt, "n": cost, "r": blksz, "p": para, "dklen": 24}
+        if ramcap:
+            cfg["maxmem"] = ramcap
+
         ret = plain.encode("utf-8")
         for _ in range(its):
-            ret = hashlib.scrypt(ret, salt=self.salt, n=cost, r=blksz, p=para, dklen=24)
+            ret = hashlib.scrypt(ret, **cfg)
 
         return "+" + base64.urlsafe_b64encode(ret).decode("utf-8")
 
