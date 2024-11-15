@@ -4,6 +4,7 @@ from __future__ import print_function, unicode_literals
 import argparse
 import json
 import os
+import re
 import shutil
 import subprocess as sp
 import sys
@@ -61,6 +62,9 @@ def have_ff(scmd: str) -> bool:
 
 HAVE_FFMPEG = not os.environ.get("PRTY_NO_FFMPEG") and have_ff("ffmpeg")
 HAVE_FFPROBE = not os.environ.get("PRTY_NO_FFPROBE") and have_ff("ffprobe")
+
+CBZ_PICS = set("png jpg jpeg gif bmp tga tif tiff webp avif".split())
+CBZ_01 = re.compile(r"(^|[^0-9v])0+[01]\b")
 
 
 class MParser(object):
@@ -126,6 +130,7 @@ def au_unpk(
     log: "NamedLogger", fmt_map: dict[str, str], abspath: str, vn: Optional[VFS] = None
 ) -> str:
     ret = ""
+    maxsz = 1024 * 1024 * 64
     try:
         ext = abspath.split(".")[-1].lower()
         au, pk = fmt_map[ext].split(".")
@@ -148,16 +153,40 @@ def au_unpk(
             zf = zipfile.ZipFile(abspath, "r")
             zil = zf.infolist()
             zil = [x for x in zil if x.filename.lower().split(".")[-1] == au]
+            if not zil:
+                raise Exception("no audio inside zip")
             fi = zf.open(zil[0])
+
+        elif pk == "cbz":
+            import zipfile
+
+            zf = zipfile.ZipFile(abspath, "r")
+            znil = [(x.filename.lower(), x) for x in zf.infolist()]
+            nf = len(znil)
+            znil = [x for x in znil if x[0].split(".")[-1] in CBZ_PICS]
+            znil = [x for x in znil if "cover" in x[0]] or znil
+            znil = [x for x in znil if CBZ_01.search(x[0])] or znil
+            t = "cbz: %d files, %d hits" % (nf, len(znil))
+            if znil:
+                t += ", using " + znil[0][1].filename
+            log(t)
+            if not znil:
+                raise Exception("no images inside cbz")
+            fi = zf.open(znil[0][1])
 
         else:
             raise Exception("unknown compression %s" % (pk,))
 
+        fsz = 0
         with os.fdopen(fd, "wb") as fo:
             while True:
                 buf = fi.read(32768)
                 if not buf:
                     break
+
+                fsz += len(buf)
+                if fsz > maxsz:
+                    raise Exception("zipbomb defused")
 
                 fo.write(buf)
 
