@@ -613,7 +613,7 @@ class HttpSrv(object):
         """
         dli: dict[str, tuple[float, int, "VFS", str, str]] = {}
         for k, (a, b, c, d, e) in sdli.items():
-            vn = self.asrv.vfs.all_vols[c]
+            vn = self.asrv.vfs.all_nodes[c]
             dli[k] = (a, b, vn, d, e)
 
         self.tdli = dli

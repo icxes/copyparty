@@ -367,18 +367,19 @@ class VFS(object):
         self.ahtml: dict[str, list[str]] = {}
         self.aadmin: dict[str, list[str]] = {}
         self.adot: dict[str, list[str]] = {}
-        self.all_vols: dict[str, VFS] = {}
 
         if realpath:
             rp = realpath + ("" if realpath.endswith(os.sep) else os.sep)
             vp = vpath + ("/" if vpath else "")
             self.histpath = os.path.join(realpath, ".hist")  # db / thumbcache
             self.all_vols = {vpath: self}  # flattened recursive
+            self.all_nodes = {vpath: self}  # also jumpvols
             self.all_aps = [(rp, self)]
             self.all_vps = [(vp, self)]
         else:
             self.histpath = ""
             self.all_vols = {}
+            self.all_nodes = {}
             self.all_aps = []
             self.all_vps = []
 
@@ -396,9 +397,11 @@ class VFS(object):
     def get_all_vols(
         self,
         vols: dict[str, "VFS"],
+        nodes: dict[str, "VFS"],
         aps: list[tuple[str, "VFS"]],
         vps: list[tuple[str, "VFS"]],
     ) -> None:
+        nodes[self.vpath] = self
         if self.realpath:
             vols[self.vpath] = self
             rp = self.realpath
@@ -408,7 +411,7 @@ class VFS(object):
             vps.append((vp, self))
 
         for v in self.nodes.values():
-            v.get_all_vols(vols, aps, vps)
+            v.get_all_vols(vols, nodes, aps, vps)
 
     def add(self, src: str, dst: str) -> "VFS":
         """get existing, or add new path to the vfs"""
@@ -1535,10 +1538,11 @@ class AuthSrv(object):
 
         assert vfs  # type: ignore
         vfs.all_vols = {}
+        vfs.all_nodes = {}
         vfs.all_aps = []
         vfs.all_vps = []
-        vfs.get_all_vols(vfs.all_vols, vfs.all_aps, vfs.all_vps)
-        for vol in vfs.all_vols.values():
+        vfs.get_all_vols(vfs.all_vols, vfs.all_nodes, vfs.all_aps, vfs.all_vps)
+        for vol in vfs.all_nodes.values():
             vol.all_aps.sort(key=lambda x: len(x[0]), reverse=True)
             vol.all_vps.sort(key=lambda x: len(x[0]), reverse=True)
             vol.root = vfs
@@ -1589,7 +1593,7 @@ class AuthSrv(object):
 
             vfs.nodes[shr] = vfs.all_vols[shr] = shv
             for vol in shv.nodes.values():
-                vfs.all_vols[vol.vpath] = vol
+                vfs.all_vols[vol.vpath] = vfs.all_nodes[vol.vpath] = vol
                 vol.get_dbv = vol._get_share_src
                 vol.ls = vol._ls_nope
 
@@ -1736,7 +1740,8 @@ class AuthSrv(object):
         vfs.histtab = {}
         for zv in vfs.all_vols.values():
             histp = zv.histpath
-            if histp in rhisttab:
+            is_shr = shr and zv.vpath.split("/")[0] == shr
+            if histp and not is_shr and histp in rhisttab:
                 zv2 = rhisttab[histp]
                 t = "invalid config; multiple volumes share the same histpath (database location):\n  histpath: %s\n  volume 1: /%s  [%s]\n  volume 2: %s  [%s]"
                 t = t % (histp, zv2.vpath, zv2.realpath, zv.vpath, zv.realpath)
@@ -1802,12 +1807,12 @@ class AuthSrv(object):
                 vol.lim = lim
 
         if self.args.no_robots:
-            for vol in vfs.all_vols.values():
+            for vol in vfs.all_nodes.values():
                 # volflag "robots" overrides global "norobots", allowing indexing by search engines for this vol
                 if not vol.flags.get("robots"):
                     vol.flags["norobots"] = True
 
-        for vol in vfs.all_vols.values():
+        for vol in vfs.all_nodes.values():
             if self.args.no_vthumb:
                 vol.flags["dvthumb"] = True
             if self.args.no_athumb:
@@ -1819,7 +1824,7 @@ class AuthSrv(object):
                 vol.flags["dithumb"] = True
 
         have_fk = False
-        for vol in vfs.all_vols.values():
+        for vol in vfs.all_nodes.values():
             fk = vol.flags.get("fk")
             fka = vol.flags.get("fka")
             if fka and not fk:
@@ -1851,7 +1856,7 @@ class AuthSrv(object):
             zs = os.path.join(E.cfg, "fk-salt.txt")
             self.log(t % (fk_len, 16, zs), 3)
 
-        for vol in vfs.all_vols.values():
+        for vol in vfs.all_nodes.values():
             if "pk" in vol.flags and "gz" not in vol.flags and "xz" not in vol.flags:
                 vol.flags["gz"] = False  # def.pk
 
@@ -1862,7 +1867,7 @@ class AuthSrv(object):
 
         all_mte = {}
         errors = False
-        for vol in vfs.all_vols.values():
+        for vol in vfs.all_nodes.values():
             if (self.args.e2ds and vol.axs.uwrite) or self.args.e2dsa:
                 vol.flags["e2ds"] = True
 
@@ -2080,7 +2085,7 @@ class AuthSrv(object):
                 errors = True
 
         have_daw = False
-        for vol in vfs.all_vols.values():
+        for vol in vfs.all_nodes.values():
             daw = vol.flags.get("daw") or self.args.daw
             if daw:
                 vol.flags["daw"] = True
@@ -2095,13 +2100,12 @@ class AuthSrv(object):
             self.log("--smb can only be used when --ah-alg is none", 1)
             errors = True
 
-        for vol in vfs.all_vols.values():
+        for vol in vfs.all_nodes.values():
             for k in list(vol.flags.keys()):
                 if re.match("^-[^-]+$", k):
                     vol.flags.pop(k[1:], None)
                     vol.flags.pop(k)
 
-        for vol in vfs.all_vols.values():
             if vol.flags.get("dots"):
                 for name in vol.axs.uread:
                     vol.axs.udot.add(name)
@@ -2241,6 +2245,11 @@ class AuthSrv(object):
             vfs.all_vols = {
                 x: y
                 for x, y in vfs.all_vols.items()
+                if x != shr and not x.startswith(shrs)
+            }
+            vfs.all_nodes = {
+                x: y
+                for x, y in vfs.all_nodes.items()
                 if x != shr and not x.startswith(shrs)
             }
 
