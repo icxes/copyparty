@@ -5299,7 +5299,7 @@ var fileman = (function () {
 			if (!t.dst)
 				return paster();
 
-			toast.show('inf r', 0, esc((r.ccp ? L.fcp_busy : L.fp_busy).format(f.length + 1, uricom_dec(f.src))));
+			toast.show('inf r', 0, esc((r.ccp ? L.fcp_busy : L.fp_busy).format(f.length + 1, uricom_dec(t.src))));
 
 			var xhr = new XHR(),
 				act = r.ccp ? '?copy=' : '?move=',
