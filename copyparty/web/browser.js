@@ -4138,6 +4138,12 @@ function eval_hash() {
 				if (!im)
 					return toast.warn(10, L.im_hnf);
 
+				if (thegrid.sel)
+					setTimeout(function () {
+						thegrid.sel = true;
+					}, 1);
+
+				thegrid.sel = false;
 				im.click();
 				im.scrollIntoView();
 			}, 50);
