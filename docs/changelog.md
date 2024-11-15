@@ -1,4 +1,40 @@
 ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀  
+# 2024-1110-1932  `v1.16.0`  COPYparty
+
+## 🧪 new features
+
+* #46 #115 copy/paste files and folders cacec9c1
+  * cut/paste still exists, but now you can copy too
+  * with a UI to rename files in case of filename collisions 56317b00
+  * files are created according to the dedup settings in the target volume (either full copies or symlinks/hardlinks)
+* show currently active downloads in the controlpanel 8aba5aed
+  * can be made admin-only with `--dl-list=1` or disabled with `--dl-list=0`
+  * hides filenames of hidden files, and files from volumes where the viewer doesn't have access
+* #114 async reinit on new [IdP users](https://github.com/9001/copyparty#identity-providers) 44ee07f0
+  * new IdP users can now always auth, even while a filesystem reindex is running
+* ux:
+  * remember batch-rename settings from last time 6a8d5e17
+  * URL parameters to force grid/thumbs on/off 5718caa9
+
+## 🩹 bugfixes
+
+* folders that fail to list due to a corrupt HDD/filesystem will now return a 404 instead of an empty listing 119e88d8
+  * also fixes similar issues in u2c and partyfuse
+* u2c (commandline uploader): detect and adapt to proxies with short connection keepalives c784e528
+* ui/ux:
+  * show the "switch-to-https" button in 404-messages too efd8a32e
+  * the folder-loading indicator could steal keyboard focus d9962f65
+  * hotkey-help was very trigger-happy 71d9e010
+
+## 🔧 other changes
+
+* choose more conservative defaults when server has less than 1 GiB RAM 2bf9055c
+  * runs okay down to 128 MiB, but thumbnails die below 256 MiB
+* update the [comparison to similar software](https://github.com/9001/copyparty/blob/hovudstraum/docs/versus.md) after years of optimizations on both sides 0ce7cf5e
+
+
+
+▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀  
 # 2024-1027-0751  `v1.15.10`  temporary upload links
 
 ## 🧪 new features
