@@ -135,7 +135,7 @@ class HttpSrv(object):
         dls: dict[str, tuple[float, int]] = {}  # state
         self.dli = self.tdli = dli
         self.dls = self.tdls = dls
-        self.iiam = '<img src="%s.cpr/iiam.gif" />' % (self.args.SRS,)
+        self.iiam = '<img src="%s.cpr/iiam.gif?cache=i" />' % (self.args.SRS,)
 
         self.bound: set[tuple[str, int]] = set()
         self.name = "hsrv" + nsuf

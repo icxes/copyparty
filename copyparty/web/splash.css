@@ -94,6 +94,9 @@ table {
 .vols th:empty {
 	padding: 0;
 }
+.vols img {
+	margin: -4px 0;
+}
 .num {
 	border-right: 1px solid #bbb;
 }
