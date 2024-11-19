@@ -42,6 +42,7 @@ def vf_bmap() -> dict[str, str]:
         "magic",
         "no_sb_md",
         "no_sb_lg",
+        "nsort",
         "og",
         "og_no_head",
         "og_s_title",

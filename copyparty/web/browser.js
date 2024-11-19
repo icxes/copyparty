@@ -4214,6 +4214,8 @@ function eval_hash() {
 
 
 function read_dsort(txt) {
+	dnsort = dnsort ? 1 : 0;
+	clmod(ebi('nsort'), 'on', (sread('nsort') || dnsort) == 1);
 	try {
 		var zt = (('' + txt).trim() || 'href').split(/,+/g);
 		dsort = [];
@@ -4244,7 +4246,7 @@ function sortfiles(nodes) {
 	var sopts = jread('fsort', jcp(dsort)),
 		dir1st = sread('dir1st') !== '0';
 
-	var collator = sread('nsort') != 1 ? null :
+	var collator = !clgot(ebi('nsort'), 'on') ? null :
 		new Intl.Collator([], {numeric: true});
 
 	try {
@@ -7032,7 +7034,7 @@ var treectl = (function () {
 		xhr.open('GET', SR + '/?setck=dots=' + (v ? 'y' : ''), true);
 		xhr.send();
 	});
-	bcfg_bind(r, 'nsort', 'nsort', false, resort);
+	bcfg_bind(r, 'nsort', 'nsort', dnsort, resort);
 	bcfg_bind(r, 'dir1st', 'dir1st', true, resort);
 	setwrap(bcfg_bind(r, 'wtree', 'wraptree', true, setwrap));
 	setwrap(bcfg_bind(r, 'parpane', 'parpane', true, onscroll));
@@ -7538,6 +7540,7 @@ var treectl = (function () {
 			if (res.files[a].tags === undefined)
 				res.files[a].tags = {};
 
+		dnsort = res.dnsort;
 		read_dsort(res.dsort);
 		dcrop = res.dcrop;
 		dth3x = res.dth3x;
