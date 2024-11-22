@@ -34,6 +34,8 @@ class TestDedup(unittest.TestCase):
         ]
 
     def tearDown(self):
+        if self.conn:
+            self.conn.shutdown()
         os.chdir(tempfile.gettempdir())
         shutil.rmtree(self.td)
 

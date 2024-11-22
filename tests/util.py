@@ -122,7 +122,7 @@ class Cfg(Namespace):
     def __init__(self, a=None, v=None, c=None, **ka0):
         ka = {}
 
-        ex = "chpw daw dav_auth dav_inf dav_mac dav_rt e2d e2ds e2dsa e2t e2ts e2tsr e2v e2vu e2vp early_ban ed emp exp force_js getmod grid gsel hardlink ih ihead magic hardlink_only nid nih no_acode no_athumb no_clone no_cp no_dav no_db_ip no_del no_dirsz no_dupe no_lifetime no_logues no_mv no_pipe no_poll no_readme no_robots no_sb_md no_sb_lg no_scandir no_tarcmp no_thumb no_vthumb no_zip nrand nw og og_no_head og_s_title ohead q rand re_dirsz rss smb srch_dbg stats uqe vague_403 vc ver write_uplog xdev xlink xvol zs"
+        ex = "chpw daw dav_auth dav_inf dav_mac dav_rt e2d e2ds e2dsa e2t e2ts e2tsr e2v e2vu e2vp early_ban ed emp exp force_js getmod grid gsel hardlink ih ihead magic hardlink_only nid nih no_acode no_athumb no_clone no_cp no_dav no_db_ip no_del no_dirsz no_dupe no_lifetime no_logues no_mv no_pipe no_poll no_readme no_robots no_sb_md no_sb_lg no_scandir no_tarcmp no_thumb no_vthumb no_zip nrand nsort nw og og_no_head og_s_title ohead q rand re_dirsz rss smb srch_dbg stats uqe vague_403 vc ver write_uplog xdev xlink xvol zs"
         ka.update(**{k: False for k in ex.split()})
 
         ex = "dedup dotpart dotsrch hook_v no_dhash no_fastboot no_fpool no_htp no_rescan no_sendfile no_ses no_snap no_up_list no_voldump re_dhash plain_ip"
@@ -278,12 +278,21 @@ class VHttpSrv(object):
         self.u2idx = self.u2idx or U2idx(self)
         return self.u2idx
 
+    def shutdown(self):
+        if self.u2idx:
+            self.u2idx.shutdown()
+
 
 class VHttpSrvUp2k(VHttpSrv):
     def __init__(self, args, asrv, log):
         super(VHttpSrvUp2k, self).__init__(args, asrv, log)
         self.hub = VHub(args, asrv, log)
         self.broker = VBrokerThr(self.hub)
+
+    def shutdown(self):
+        self.hub.up2k.shutdown()
+        if self.u2idx:
+            self.u2idx.shutdown()
 
 
 class VHttpConn(object):
@@ -321,6 +330,9 @@ class VHttpConn(object):
         self.s = VSock(buf)
         self.sr = Unrecv(self.s, None)  # type: ignore
         return self
+
+    def shutdown(self):
+        self.hsrv.shutdown()
 
 
 if WINDOWS:

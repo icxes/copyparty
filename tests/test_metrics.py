@@ -27,6 +27,8 @@ class TestMetrics(unittest.TestCase):
         os.chdir(self.td)
 
     def tearDown(self):
+        if self.conn:
+            self.conn.shutdown()
         os.chdir(tempfile.gettempdir())
         shutil.rmtree(self.td)
 

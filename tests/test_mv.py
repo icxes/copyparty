@@ -25,6 +25,8 @@ class TestDedup(unittest.TestCase):
         self.td = tu.get_ramdisk()
 
     def tearDown(self):
+        if not PY2 and self.conn:
+            self.conn.shutdown()
         os.chdir(tempfile.gettempdir())
         shutil.rmtree(self.td)
 

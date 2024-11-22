@@ -70,6 +70,9 @@ class U2idx(object):
         self.log_func("u2idx", msg, c)
 
     def shutdown(self) -> None:
+        if not HAVE_SQLITE3:
+            return
+
         for cur in self.cur.values():
             db = cur.connection
             try:
@@ -79,6 +82,12 @@ class U2idx(object):
 
             cur.close()
             db.close()
+
+        for cur in (self.mem_cur, self.sh_cur):
+            if cur:
+                db = cur.connection
+                cur.close()
+                db.close()
 
     def fsearch(
         self, uname: str, vols: list[VFS], body: dict[str, Any]

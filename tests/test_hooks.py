@@ -12,6 +12,11 @@ from copyparty.httpcli import HttpCli
 from tests import util as tu
 from tests.util import Cfg
 
+try:
+    from typing import Optional
+except:
+    pass
+
 
 def hdr(query):
     h = "GET /{} HTTP/1.1\r\nPW: o\r\nConnection: close\r\n\r\n"
@@ -20,6 +25,7 @@ def hdr(query):
 
 class TestHooks(unittest.TestCase):
     def setUp(self):
+        self.conn: Optional[tu.VHttpConn] = None
         self.td = tu.get_ramdisk()
 
     def tearDown(self):
@@ -33,6 +39,12 @@ class TestHooks(unittest.TestCase):
         os.mkdir(td)
         os.chdir(td)
         return td
+
+    def cinit(self):
+        if self.conn:
+            self.conn.shutdown()
+            self.conn = None
+        self.conn = tu.VHttpConn(self.args, self.asrv, self.log, b"")
 
     def test(self):
         vcfg = ["a/b/c/d:c/d:A", "a:a:r"]
@@ -59,6 +71,7 @@ class TestHooks(unittest.TestCase):
                     ka = {hooktype: ["j,c1,h.py"]}
                     self.args = Cfg(v=vcfg, a=["o:o"], e2d=True, **ka)
                     self.asrv = AuthSrv(self.args, self.log)
+                    self.cinit()
 
                     h, b = upfun(url_up)
                     self.assertIn("201 Created", h)
@@ -73,7 +86,7 @@ class TestHooks(unittest.TestCase):
         buf = "PUT /{0} HTTP/1.1\r\nPW: o\r\nConnection: close\r\nContent-Length: {1}\r\n\r\nok {0}\n"
         buf = buf.format(url, len(url) + 4).encode("utf-8")
         print("PUT -->", buf)
-        conn = tu.VHttpConn(self.args, self.asrv, self.log, buf)
+        conn = self.conn.setbuf(buf)
         HttpCli(conn).run()
         ret = conn.s._reply.decode("utf-8").split("\r\n\r\n", 1)
         print("PUT <--", ret)
@@ -92,14 +105,14 @@ class TestHooks(unittest.TestCase):
         buf = (bdy % (fn,) + "ok %s/%s\n" % (url, fn) + ftr).encode("utf-8")
         buf = (hdr % (url, len(buf))).encode("utf-8") + buf
         print("PoST -->", buf)
-        conn = tu.VHttpConn(self.args, self.asrv, self.log, buf)
+        conn = self.conn.setbuf(buf)
         HttpCli(conn).run()
         ret = conn.s._reply.decode("utf-8").split("\r\n\r\n", 1)
         print("POST <--", ret)
         return ret
 
     def curl(self, url, binary=False):
-        conn = tu.VHttpConn(self.args, self.asrv, self.log, hdr(url))
+        conn = self.conn.setbuf(hdr(url))
         HttpCli(conn).run()
         if binary:
             h, b = conn.s._reply.split(b"\r\n\r\n", 1)

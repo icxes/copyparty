@@ -178,6 +178,8 @@ class TestHttpCli(unittest.TestCase):
                     ap = os.path.join(vn.realpath, rem)
                     os.unlink(ap)
 
+            self.conn.shutdown()
+
     def can_rw(self, fp):
         # lowest non-neutral folder declares permissions
         expect = fp.split("/")[:-1]

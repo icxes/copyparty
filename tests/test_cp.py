@@ -19,6 +19,8 @@ class TestDedup(unittest.TestCase):
         self.td = tu.get_ramdisk()
 
     def tearDown(self):
+        if self.conn:
+            self.conn.shutdown()
         os.chdir(tempfile.gettempdir())
         shutil.rmtree(self.td)
 
@@ -62,7 +64,6 @@ class TestDedup(unittest.TestCase):
 
         self.conn = None
         self.fstab = None
-        self.ctr = 0  # 2304
         for dedup, act_exp in product(tc_dedup, tcs):
             action, expect = act_exp.split(" ", 1)
             t = "dedup:%s  action:%s" % (dedup, action)

@@ -17,6 +17,11 @@ from copyparty.up2k import Up2k
 from tests import util as tu
 from tests.util import Cfg
 
+try:
+    from typing import Optional
+except:
+    pass
+
 
 def hdr(query, uname):
     h = "GET /%s HTTP/1.1\r\nPW: %s\r\nConnection: close\r\n\r\n"
@@ -29,11 +34,20 @@ class TestDots(unittest.TestCase):
         self.is_dut = True
 
     def setUp(self):
+        self.conn: Optional[tu.VHttpConn] = None
         self.td = tu.get_ramdisk()
 
     def tearDown(self):
+        if self.conn:
+            self.conn.shutdown()
         os.chdir(tempfile.gettempdir())
         shutil.rmtree(self.td)
+
+    def cinit(self):
+        if self.conn:
+            self.conn.shutdown()
+            self.conn = None
+        self.conn = tu.VHttpConn(self.args, self.asrv, self.log, b"")
 
     def test_dots(self):
         td = os.path.join(self.td, "vfs")
@@ -57,6 +71,7 @@ class TestDots(unittest.TestCase):
         vcfg = [".::r,u1:r.,u2", "a:a:r,u1:r,u2", ".b:.b:r.,u1:r,u2"]
         self.args = Cfg(v=vcfg, a=["u1:u1", "u2:u2"], e2dsa=True)
         self.asrv = AuthSrv(self.args, self.log)
+        self.cinit()
 
         self.assertEqual(self.tardir("", "u1"), "f0 t/f1 a/f3 a/da/f4")
         self.assertEqual(self.tardir(".t", "u1"), "f2")
@@ -88,6 +103,7 @@ class TestDots(unittest.TestCase):
         self.args = Cfg(v=vcfg, a=["u1:u1", "u2:u2"], dotsrch=False, e2d=True)
         self.asrv = AuthSrv(self.args, self.log)
         u2idx = U2idx(self)
+        self.cinit()
 
         x = u2idx.search("u1", self.asrv.vfs.all_vols.values(), "", 999)
         x = " ".join(sorted([x["rp"] for x in x[0]]))
@@ -113,6 +129,8 @@ class TestDots(unittest.TestCase):
         ]
         self.args = Cfg(v=vcfg, a=["u1:u1", "u2:u2"])
         self.asrv = AuthSrv(self.args, self.log)
+        self.cinit()
+
         zj = json.loads(self.curl("?ls", "u1")[1])
         url = "?k=" + zj["dk"]
         # should descend into folders, but not other volumes:
@@ -148,6 +166,7 @@ class TestDots(unittest.TestCase):
 
         self.args = Cfg(v=vcfg, a=["u1:u1", "u2:u2"])
         self.asrv = AuthSrv(self.args, self.log)
+        self.cinit()
 
         dk = {}
         for d in "dk dks dk,fk dks,fk".split():
@@ -353,7 +372,7 @@ class TestDots(unittest.TestCase):
 
     def curl(self, url, uname, binary=False, req=b""):
         req = req or hdr(url, uname)
-        conn = tu.VHttpConn(self.args, self.asrv, self.log, req)
+        conn = self.conn.setbuf(req)
         HttpCli(conn).run()
         if binary:
             h, b = conn.s._reply.split(b"\r\n\r\n", 1)

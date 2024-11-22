@@ -5297,6 +5297,11 @@ class Up2k(object):
             cur.close()
             db.close()
 
+        if self.mem_cur:
+            db = self.mem_cur.connection
+            self.mem_cur.close()
+            db.close()
+
         self.registry = {}
 
 
