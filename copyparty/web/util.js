@@ -5,8 +5,8 @@ if (!window.console || !console.log)
         "log": function (msg) { }
     };
 
-if (!Object.prototype.assign)
-    Object.prototype.assign = function (a, b) {
+if (!Object.assign)
+    Object.assign = function (a, b) {
         for (var k in b)
             a[k] = b[k];
     };
