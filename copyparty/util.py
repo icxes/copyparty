@@ -2709,12 +2709,21 @@ def build_netmap(csv: str, defer_mutex: bool = False):
     if csv in ("any", "all", "no", ",", ""):
         return None
 
-    if csv in ("lan", "local", "private", "prvt"):
-        csv = "10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, fd00::/8"  # lan
-        csv += ", 169.254.0.0/16, fe80::/10"  # link-local
-        csv += ", 127.0.0.0/8, ::1/128"  # loopback
-
     srcs = [x.strip() for x in csv.split(",") if x.strip()]
+
+    expanded_shorthands = False
+    for shorthand in ("lan", "local", "private", "prvt"):
+        if shorthand in srcs:
+            if not expanded_shorthands:
+                srcs += [
+                    "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "fd00::/8",  # lan
+                    "169.254.0.0/16", "fe80::/10",  # link-local
+                    "127.0.0.0/8, ::1/128",  # loopback
+                ]
+                expanded_shorthands = True
+
+            srcs.remove(shorthand)
+
     if not HAVE_IPV6:
         srcs = [x for x in srcs if ":" not in x]
 
