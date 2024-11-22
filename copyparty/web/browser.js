@@ -7518,6 +7518,7 @@ var treectl = (function () {
 
 		try {
 			var res = JSON.parse(this.responseText);
+			Object.assign(res, res.cfg);
 		}
 		catch (ex) {
 			if (r.ls_cb) {
@@ -7784,6 +7785,7 @@ var treectl = (function () {
 			r.ls_cb = showfile.addlinks;
 			return r.reqls(get_evpath(), false, undefined, true);
 		}
+		ls0.unlist = unlist0;
 
 		var top = get_evpath();
 		if (r.chk_index_html(top, ls0))

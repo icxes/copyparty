@@ -132,16 +132,15 @@
 
 	<script>
 		var SR = {{ r|tojson }},
+			CGV1 = {{ cgv1 }},
 			CGV = {{ cgv|tojson }},
 			TS = "{{ ts }}",
 			dtheme = "{{ dtheme }}",
 			srvinf = "{{ srv_info }}",
-			s_name = "{{ s_name }}",
 			lang = "{{ lang }}",
 			dfavico = "{{ favico }}",
-			have_tags_idx = {{ have_tags_idx|tojson }},
+			have_tags_idx = {{ have_tags_idx }},
 			sb_lg = "{{ sb_lg }}",
-			txt_ext = "{{ txt_ext }}",
 			logues = {{ logues|tojson if sb_lg else "[]" }},
 			ls0 = {{ ls0|tojson }};
 

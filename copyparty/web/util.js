@@ -5,10 +5,17 @@ if (!window.console || !console.log)
         "log": function (msg) { }
     };
 
+if (!Object.prototype.assign)
+    Object.prototype.assign = function (a, b) {
+        for (var k in b)
+            a[k] = b[k];
+    };
+
+if (window.CGV1)
+    Object.assign(window, window.CGV1);
 
 if (window.CGV)
-    for (var k in CGV)
-        window[k] = CGV[k];
+    Object.assign(window, window.CGV);
 
 
 var wah = '',

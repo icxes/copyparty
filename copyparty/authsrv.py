@@ -367,6 +367,8 @@ class VFS(object):
         self.ahtml: dict[str, list[str]] = {}
         self.aadmin: dict[str, list[str]] = {}
         self.adot: dict[str, list[str]] = {}
+        self.js_ls = {}
+        self.js_htm = ""
 
         if realpath:
             rp = realpath + ("" if realpath.endswith(os.sep) else os.sep)
@@ -2303,6 +2305,69 @@ class AuthSrv(object):
             cur2.close()
             cur.close()
             db.close()
+
+        self.js_ls = {}
+        self.js_htm = {}
+        for vn in self.vfs.all_nodes.values():
+            vf = vn.flags
+            vn.js_ls = {
+                "idx": "e2d" in vf,
+                "itag": "e2t" in vf,
+                "dnsort": "nsort" in vf,
+                "dsort": vf["sort"],
+                "dcrop": vf["crop"],
+                "dth3x": vf["th3x"],
+                "u2ts": vf["u2ts"],
+                "frand": bool(vf.get("rand")),
+                "lifetime": vf.get("lifetime") or 0,
+                "unlist": vf.get("unlist") or "",
+            }
+            js_htm = {
+                "s_name": self.args.bname,
+                "have_up2k_idx": "e2d" in vf,
+                "have_acode": not self.args.no_acode,
+                "have_shr": self.args.shr,
+                "have_zip": not self.args.no_zip,
+                "have_mv": not self.args.no_mv,
+                "have_del": not self.args.no_del,
+                "have_unpost": int(self.args.unpost),
+                "have_emp": self.args.emp,
+                "sb_md": "" if "no_sb_md" in vf else (vf.get("md_sbf") or "y"),
+                "txt_ext": self.args.textfiles.replace(",", " "),
+                "def_hcols": list(vf.get("mth") or []),
+                "unlist0": vf.get("unlist") or "",
+                "dgrid": "grid" in vf,
+                "dgsel": "gsel" in vf,
+                "dnsort": "nsort" in vf,
+                "dsort": vf["sort"],
+                "dcrop": vf["crop"],
+                "dth3x": vf["th3x"],
+                "dvol": self.args.au_vol,
+                "idxh": int(self.args.ih),
+                "themes": self.args.themes,
+                "turbolvl": self.args.turbo,
+                "u2j": self.args.u2j,
+                "u2sz": self.args.u2sz,
+                "u2ts": vf["u2ts"],
+                "frand": bool(vf.get("rand")),
+                "lifetime": vn.js_ls["lifetime"],
+                "u2sort": self.args.u2sort,
+            }
+            vn.js_htm = json.dumps(js_htm)
+
+        vols = list(vfs.all_nodes.values())
+        if enshare:
+            assert shv  # type: ignore  # !rm
+            vols.append(shv)
+            vols.extend(list(shv.nodes.values()))
+
+        for vol in vols:
+            dbv = vol.get_dbv("")[0]
+            vol.js_ls = vol.js_ls or dbv.js_ls or {}
+            vol.js_htm = vol.js_htm or dbv.js_htm or "{}"
+
+            zs = str(vol.flags.get("tcolor") or self.args.tcolor)
+            vol.flags["tcolor"] = zs.lstrip("#")
 
     def load_sessions(self, quiet=False) -> None:
         # mutex me

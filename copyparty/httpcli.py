@@ -248,7 +248,6 @@ class HttpCli(object):
         ka["ts"] = self.conn.hsrv.cachebuster()
         ka["lang"] = self.args.lang
         ka["favico"] = self.args.favico
-        ka["s_name"] = self.args.bname
         ka["s_doctitle"] = self.args.doctitle
         ka["tcolor"] = self.vn.flags["tcolor"]
 
@@ -5496,63 +5495,28 @@ class HttpCli(object):
             is_js = False
 
         vf = vn.flags
-        unlist = vf.get("unlist", "")
         ls_ret = {
             "dirs": [],
             "files": [],
             "taglist": [],
             "srvinf": srv_infot,
             "acct": self.uname,
-            "idx": e2d,
-            "itag": e2t,
-            "dnsort": "nsort" in vf,
-            "dsort": vf["sort"],
-            "dcrop": vf["crop"],
-            "dth3x": vf["th3x"],
-            "u2ts": vf["u2ts"],
-            "lifetime": vn.flags.get("lifetime") or 0,
-            "frand": bool(vn.flags.get("rand")),
-            "unlist": unlist,
             "perms": perms,
+            "cfg": vn.js_ls,
         }
         cgv = {
             "ls0": None,
             "acct": self.uname,
             "perms": perms,
-            "u2ts": vf["u2ts"],
-            "lifetime": ls_ret["lifetime"],
-            "frand": bool(vn.flags.get("rand")),
-            "def_hcols": [],
-            "have_emp": self.args.emp,
-            "have_up2k_idx": e2d,
-            "have_acode": (not self.args.no_acode),
-            "have_mv": (not self.args.no_mv),
-            "have_del": (not self.args.no_del),
-            "have_zip": (not self.args.no_zip),
-            "have_shr": self.args.shr,
-            "have_unpost": int(self.args.unpost),
-            "sb_md": "" if "no_sb_md" in vf else (vf.get("md_sbf") or "y"),
-            "dgrid": "grid" in vf,
-            "dgsel": "gsel" in vf,
-            "dnsort": "nsort" in vf,
-            "dsort": vf["sort"],
-            "dcrop": vf["crop"],
-            "dth3x": vf["th3x"],
-            "dvol": self.args.au_vol,
-            "themes": self.args.themes,
-            "turbolvl": self.args.turbo,
-            "u2j": self.args.u2j,
-            "u2sz": self.args.u2sz,
-            "idxh": int(self.args.ih),
-            "u2sort": self.args.u2sort,
         }
         j2a = {
+            "cgv1": vn.js_htm,
             "cgv": cgv,
             "vpnodes": vpnodes,
             "files": [],
             "ls0": None,
             "taglist": [],
-            "have_tags_idx": e2t,
+            "have_tags_idx": int(e2t),
             "have_b_u": (self.can_write and self.uparam.get("b") == "u"),
             "sb_lg": "" if "no_sb_lg" in vf else (vf.get("lg_sbf") or "y"),
             "url_suf": url_suf,
@@ -5924,17 +5888,12 @@ class HttpCli(object):
                 "dirs": dirs,
                 "files": files,
                 "taglist": taglist,
-                "unlist": unlist,
             }
             j2a["files"] = []
         else:
             j2a["files"] = dirs + files
 
         j2a["taglist"] = taglist
-        j2a["txt_ext"] = self.args.textfiles.replace(",", " ")
-
-        if "mth" in vn.flags:
-            j2a["def_hcols"] = list(vn.flags["mth"])
 
         if add_og and "raw" not in self.uparam:
             j2a["this"] = self
