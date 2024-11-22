@@ -45,7 +45,7 @@ function qr(e) {
 
 function showqr(href) {
     var vhref = href.replace('?qr&', '?').replace('?qr', '');
-    modal.alert(esc(vhref) + '<img class="b64" src="' + href + '" />');
+    modal.alert(esc(vhref) + '<img class="b64" width="100" height="100" src="' + href + '" />');
 }
 
 (function() {

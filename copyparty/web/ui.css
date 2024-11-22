@@ -322,6 +322,8 @@ html.y #tth {
 	margin: .1em auto;
 	width: 60%;
 	height: 60%;
+	background: #999;
+	background: rgba(128,128,128,0.2);
 }
 #modalb {
 	position: sticky;
