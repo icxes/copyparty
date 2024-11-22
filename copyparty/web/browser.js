@@ -1,7 +1,7 @@
 "use strict";
 
 var XHR = XMLHttpRequest,
-	img_re = /\.(a?png|avif|bmp|gif|heif|jpe?g|jfif|svg|webp|webm|mkv|mp4|m4v)(\?|$)/i;
+	img_re = /\.(a?png|avif|bmp|gif|heif|jpe?g|jfif|svg|webp|webm|mkv|mp4|m4v|mov)(\?|$)/i;
 
 var Ls = {
 	"eng": {
