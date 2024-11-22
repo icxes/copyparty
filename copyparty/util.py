@@ -2716,9 +2716,17 @@ def build_netmap(csv: str, defer_mutex: bool = False):
         if shorthand in srcs:
             if not expanded_shorthands:
                 srcs += [
-                    "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "fd00::/8",  # lan
-                    "169.254.0.0/16", "fe80::/10",  # link-local
-                    "127.0.0.0/8, ::1/128",  # loopback
+                    # lan:
+                    "10.0.0.0/8",
+                    "172.16.0.0/12",
+                    "192.168.0.0/16",
+                    "fd00::/8",
+                    # link-local:
+                    "169.254.0.0/16",
+                    "fe80::/10",
+                    # loopback:
+                    "127.0.0.0/8",
+                    "::1/128",
                 ]
                 expanded_shorthands = True
 
