@@ -4672,7 +4672,7 @@ var fileman = (function () {
 				toast.err(9, msg);
 				return;
 			}
-			surl = surl.slice(15);
+			surl = surl.slice(15).trim();
 			var txt = esc(surl) + '<img class="b64" src="' + surl + '?qr" />';
 			modal.confirm(txt + L.fs_ok, function() {
 				cliptxt(surl, function () {
