@@ -704,7 +704,7 @@ class HttpCli(object):
 
                 if pex.code != 404 or self.do_log:
                     self.log(
-                        "%s\033[0m, %s" % (msg, self.vpath),
+                        "http%d: %s\033[0m, %s" % (pex.code, msg, self.vpath),
                         6 if em.startswith("client d/c ") else 3,
                     )
 
@@ -1413,12 +1413,13 @@ class HttpCli(object):
         vst = os.stat_result((16877, -1, -1, 1, 1000, 1000, 8, zi, zi, zi))
 
         try:
-            topdir = {"vp": "", "st": bos.stat(tap)}
+            st = bos.stat(tap)
         except OSError as ex:
             if ex.errno not in (errno.ENOENT, errno.ENOTDIR):
                 raise
             raise Pebkac(404)
 
+        topdir = {"vp": "", "st": st}
         fgen: Iterable[dict[str, Any]] = []
 
         depth = self.headers.get("depth", "infinity").lower()
@@ -1454,6 +1455,12 @@ class HttpCli(object):
                 wrap=False,
             )
 
+        elif depth == "0" or not stat.S_ISDIR(st.st_mode):
+            # propfind on a file; return as topdir
+            if not self.can_read and not self.can_get:
+                self.log("inaccessible: [%s]" % (self.vpath,))
+                raise Pebkac(401, "authenticate")
+
         elif depth == "1":
             _, vfs_ls, vfs_virt = vn.ls(
                 rem,
@@ -1471,9 +1478,6 @@ class HttpCli(object):
 
             fgen = [{"vp": vp, "st": st} for vp, st in vfs_ls]
             fgen += [{"vp": v, "st": vst} for v in vfs_virt]
-
-        elif depth == "0":
-            pass
 
         else:
             t = "invalid depth value '{}' (must be either '0' or '1'{})"
