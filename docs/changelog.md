@@ -1,4 +1,25 @@
 ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀  
+# 2024-1115-2218  `v1.16.1`  cbz thumbnails
+
+## 🧪 new features
+
+* thumbnails of .cbz manga archives 4d15dd6e
+
+## 🩹 bugfixes
+
+* when running with `-j0`, download-ETA could break in complex volume layouts 10fc4768
+* linking to the image gallery didn't quite work if multiselect was enabled 56a04996
+* password-hashing parameters (cpu/ram cost) could not be customized 1f177528
+  * the defaults must be perfect considering nobody ever tried changing them ¯\\_(ツ)_/¯
+
+## 🔧 other changes
+
+* add intentional crash on startup if two volumes are configured to use the same histpath 2b63d7d1
+  * prevents funky deadlocks and an eventual database loss in case of a no-thoughts-head-empty moment, purely hypothetical of course 🗿
+
+
+
+▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀  
 # 2024-1110-1932  `v1.16.0`  COPYparty
 
 ## 🧪 new features
