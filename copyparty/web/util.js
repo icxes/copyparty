@@ -881,6 +881,8 @@ if (window.Number && Number.isFinite)
 
 function f2f(val, nd) {
     // 10.toFixed(1) returns 10.00 for certain values of 10
+    if (!isNum(val))
+        val = 999;
     val = (val * Math.pow(10, nd)).toFixed(0).split('.')[0];
     return nd ? (val.slice(0, -nd) || '0') + '.' + val.slice(-nd) : val;
 }

@@ -1090,6 +1090,8 @@ class Ctl(object):
 
             spd = humansize(spd)
             self.eta = str(datetime.timedelta(seconds=int(eta)))
+            if eta > 2591999:
+                self.eta = self.eta.split(",")[0]  # truncate HH:MM:SS
             sleft = humansize(self.nbytes - self.up_b)
             nleft = self.nfiles - self.up_f
             tail = "\033[K\033[u" if VT100 and not self.ar.ns else "\r"
