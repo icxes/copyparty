@@ -191,6 +191,7 @@ flagcats = {
         "xvol": "do not follow symlinks leaving the volume root",
         "dotsrch": "show dotfiles in search results",
         "nodotsrch": "hide dotfiles in search results (default)",
+        "srch_excl": "exclude search results with URL matching this regex",
     },
     'database, audio tags\n"mte", "mth", "mtp", "mtm" all work the same as -mte, -mth, ...': {
         "mtp=.bpm=f,audio-bpm.py": 'uses the "audio-bpm.py" program to\ngenerate ".bpm" tags from uploads (f = overwrite tags)',

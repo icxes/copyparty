@@ -1078,7 +1078,8 @@ class Up2k(object):
         ft = "\033[0;32m{}{:.0}"
         ff = "\033[0;35m{}{:.0}"
         fv = "\033[0;36m{}:\033[90m{}"
-        fx = set(("html_head", "rm_re_t", "rm_re_r", "mv_re_t", "mv_re_r"))
+        zs = "html_head mv_re_r mv_re_t rm_re_r rm_re_t srch_re_dots srch_re_nodot"
+        fx = set(zs.split())
         fd = vf_bmap()
         fd.update(vf_cmap())
         fd.update(vf_vmap())
@@ -1241,9 +1242,9 @@ class Up2k(object):
 
         # also consider volflags which affect indexing
         for vp in vps:
-            vf = self.vfs.all_vols[vp].flags.items()
-            vf = {k: v for k, v in vf if k in VF_AFFECTS_INDEXING}
-            seed.append(str(vf))
+            vf = self.vfs.all_vols[vp].flags
+            vf = {k: v for k, v in vf.items() if k in VF_AFFECTS_INDEXING}
+            seed.append(str(sorted(vf.items())))
 
         zb = hashlib.sha1("\n".join(seed).encode("utf-8", "replace")).digest()
         vcfg = ub64enc(zb[:18]).decode("ascii")

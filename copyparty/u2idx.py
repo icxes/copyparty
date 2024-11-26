@@ -324,7 +324,8 @@ class U2idx(object):
         sort: bool,
         lim: int,
     ) -> tuple[list[dict[str, Any]], list[str], bool]:
-        if self.args.srch_dbg:
+        dbg = self.args.srch_dbg
+        if dbg:
             t = "searching across all %s volumes in which the user has 'r' (full read access):\n  %s"
             zs = "\n  ".join(["/%s = %s" % (x.vpath, x.realpath) for x in vols])
             self.log(t % (len(vols), zs), 5)
@@ -367,14 +368,14 @@ class U2idx(object):
             if not cur:
                 continue
 
-            excl = []
-            for vp2 in self.asrv.vfs.all_vols.keys():
-                if vp2.startswith((vtop + "/").lstrip("/")) and vtop != vp2:
-                    excl.append(vp2[len(vtop) :].lstrip("/"))
+            dots = flags.get("dotsrch") and uname in vol.axs.udot
+            zs = "srch_re_dots" if dots else "srch_re_nodot"
+            rex: re.Pattern = flags.get(zs)  # type: ignore
 
-            if self.args.srch_dbg:
-                t = "searching in volume /%s (%s), excludelist %s"
-                self.log(t % (vtop, ptop, excl), 5)
+            if dbg:
+                t = "searching in volume /%s (%s), excluding %s"
+                self.log(t % (vtop, ptop, rex.pattern), 5)
+                rex_cfg: Optional[re.Pattern] = flags.get("srch_excl")
 
             self.active_cur = cur
 
@@ -387,7 +388,6 @@ class U2idx(object):
 
             sret = []
             fk = flags.get("fk")
-            dots = flags.get("dotsrch") and uname in vol.axs.udot
             fk_alg = 2 if "fka" in flags else 1
             c = cur.execute(uq, tuple(vuv))
             for hit in c:
@@ -396,20 +396,23 @@ class U2idx(object):
                 if rd.startswith("//") or fn.startswith("//"):
                     rd, fn = s3dec(rd, fn)
 
-                if rd in excl or any([x for x in excl if rd.startswith(x + "/")]):
-                    if self.args.srch_dbg:
-                        zs = vjoin(vjoin(vtop, rd), fn)
-                        t = "database inconsistency in volume '/%s'; ignoring: %s"
-                        self.log(t % (vtop, zs), 1)
+                vp = vjoin(vjoin(vtop, rd), fn)
+
+                if vp in seen_rps:
                     continue
 
-                rp = quotep("/".join([x for x in [vtop, rd, fn] if x]))
-                if not dots and "/." in ("/" + rp):
+                if rex.search(vp):
+                    if dbg:
+                        if rex_cfg and rex_cfg.search(vp):  # type: ignore
+                            self.log("filtered by srch_excl: %s" % (vp,), 6)
+                        elif not dots and "/." in ("/" + vp):
+                            pass
+                        else:
+                            t = "database inconsistency in volume '/%s'; ignoring: %s"
+                            self.log(t % (vtop, vp), 1)
                     continue
 
-                if rp in seen_rps:
-                    continue
-
+                rp = quotep(vp)
                 if not fk:
                     suf = ""
                 else:
@@ -431,7 +434,7 @@ class U2idx(object):
                 if lim < 0:
                     break
 
-                if self.args.srch_dbg:
+                if dbg:
                     t = "in volume '/%s': hit: %s"
                     self.log(t % (vtop, rp), 5)
 
@@ -461,7 +464,7 @@ class U2idx(object):
             ret.extend(sret)
             # print("[{}] {}".format(ptop, sret))
 
-            if self.args.srch_dbg:
+            if dbg:
                 t = "in volume '/%s': got %d hits, %d total so far"
                 self.log(t % (vtop, len(sret), len(ret)), 5)
 

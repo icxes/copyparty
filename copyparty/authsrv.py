@@ -1880,6 +1880,7 @@ class AuthSrv(object):
                 ["no_hash", "nohash"],
                 ["no_idx", "noidx"],
                 ["og_ua", "og_ua"],
+                ["srch_excl", "srch_excl"],
             ]:
                 if vf in vol.flags:
                     ptn = re.compile(vol.flags.pop(vf))
@@ -2085,6 +2086,22 @@ class AuthSrv(object):
                 t = 'metadata tag "{}" is defined by "-mtm" or "-mtp", but is not used by "-mte" (or by any "cmte" volflag)'
                 self.log(t.format(mtp), 1)
                 errors = True
+
+        for vol in vfs.all_vols.values():
+            re1: Optional[re.Pattern] = vol.flags.get("srch_excl")
+            excl = [re1.pattern] if re1 else []
+
+            vpaths = []
+            vtop = vol.vpath
+            for vp2 in vfs.all_vols.keys():
+                if vp2.startswith((vtop + "/").lstrip("/")) and vtop != vp2:
+                    vpaths.append(re.escape(vp2[len(vtop) :].lstrip("/")))
+            if vpaths:
+                excl.append("^(%s)/" % ("|".join(vpaths),))
+
+            vol.flags["srch_re_dots"] = re.compile("|".join(excl or ["^$"]))
+            excl.extend([r"^\.", r"/\."])
+            vol.flags["srch_re_nodot"] = re.compile("|".join(excl))
 
         have_daw = False
         for vol in vfs.all_nodes.values():

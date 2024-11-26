@@ -793,7 +793,7 @@ class SvcHub(object):
         al.exp_md = odfusion(exp, al.exp_md.replace(" ", ","))
         al.exp_lg = odfusion(exp, al.exp_lg.replace(" ", ","))
 
-        for k in ["no_hash", "no_idx", "og_ua"]:
+        for k in ["no_hash", "no_idx", "og_ua", "srch_excl"]:
             ptn = getattr(self.args, k)
             if ptn:
                 setattr(self.args, k, re.compile(ptn))

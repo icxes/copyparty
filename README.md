@@ -1097,11 +1097,12 @@ using the GUI  (winXP or later):
   * on winXP only, click the `Sign up for online storage` hyperlink instead and put the URL there
   * providing your password as the username is recommended; the password field can be anything or empty
 
-known client bugs:
+the webdav client that's built into windows has the following list of bugs; you can avoid all of these by connecting with rclone instead:
 * win7+ doesn't actually send the password to the server when reauthenticating after a reboot unless you first try to login with an incorrect password and then switch to the correct password
   * or just type your password into the username field instead to get around it entirely
 * connecting to a folder which allows anonymous read will make writing impossible, as windows has decided it doesn't need to login
   * workaround: connect twice; first to a folder which requires auth, then to the folder you actually want, and leave both of those mounted
+  * or set the server-option `--dav-auth` to force password-auth for all webdav clients
 * win7+ may open a new tcp connection for every file and sometimes forgets to close them, eventually needing a reboot
   * maybe NIC-related (??), happens with win10-ltsc on e1000e but not virtio
 * windows cannot access folders which contain filenames with invalid unicode or forbidden characters (`<>:"/\|?*`), or names ending with `.`
@@ -1268,7 +1269,7 @@ note:
 
 ### exclude-patterns
 
-to save some time,  you can provide a regex pattern for filepaths to only index by filename/path/size/last-modified (and not the hash of the file contents) by setting `--no-hash \.iso$` or the volflag `:c,nohash=\.iso$`, this has the following consequences:
+to save some time,  you can provide a regex pattern for filepaths to only index by filename/path/size/last-modified (and not the hash of the file contents) by setting `--no-hash '\.iso$'` or the volflag `:c,nohash=\.iso$`, this has the following consequences:
 * initial indexing is way faster, especially when the volume is on a network disk
 * makes it impossible to [file-search](#file-search)
 * if someone uploads the same file contents, the upload will not be detected as a dupe, so it will not get symlinked or rejected
@@ -1278,6 +1279,8 @@ similarly, you can fully ignore files/folders using `--no-idx [...]` and `:c,noi
 * when running on macos, all the usual apple metadata files are excluded by default
 
 if you set `--no-hash [...]` globally, you can enable hashing for specific volumes using flag `:c,nohash=`
+
+to exclude certain filepaths from search-results, use `--srch-excl` or volflag `srch_excl` instead of `--no-idx`, for example `--srch-excl 'password|logs/[0-9]'`
 
 ### filesystem guards
 

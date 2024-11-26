@@ -1401,6 +1401,7 @@ def add_db_general(ap, hcores):
     ap2.add_argument("--db-act", metavar="SEC", type=float, default=10.0, help="defer any scheduled volume reindexing until \033[33mSEC\033[0m seconds after last db write (uploads, renames, ...)")
     ap2.add_argument("--srch-time", metavar="SEC", type=int, default=45, help="search deadline -- terminate searches running for more than \033[33mSEC\033[0m seconds")
     ap2.add_argument("--srch-hits", metavar="N", type=int, default=7999, help="max search results to allow clients to fetch; 125 results will be shown initially")
+    ap2.add_argument("--srch-excl", metavar="PTN", type=u, default="", help="regex: exclude files from search results if the file-URL matches \033[33mPTN\033[0m (case-sensitive). Example: [\033[32mpassword|logs/[0-9]\033[0m] any URL containing 'password' or 'logs/DIGIT' (volflag=srch_excl)")
     ap2.add_argument("--dotsrch", action="store_true", help="show dotfiles in search results (volflags: dotsrch | nodotsrch)")
 
 
