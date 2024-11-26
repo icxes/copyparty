@@ -95,9 +95,10 @@ HINT_HISTPATH = "you could try moving the database to another location (preferab
 
 
 class Dbw(object):
-    def __init__(self, c: "sqlite3.Cursor", n: int, t: float) -> None:
+    def __init__(self, c: "sqlite3.Cursor", n: int, nf: int, t: float) -> None:
         self.c = c
         self.n = n
+        self.nf = nf
         self.t = t
 
 
@@ -1267,7 +1268,7 @@ class Up2k(object):
             assert reg and self.pp  # !rm
             cur, db_path = reg
 
-            db = Dbw(cur, 0, time.time())
+            db = Dbw(cur, 0, 0, time.time())
             self.pp.n = next(db.c.execute("select count(w) from up"))[0]
 
             excl = [
@@ -1319,7 +1320,7 @@ class Up2k(object):
                     self.hub.log_stacks()
 
             if db.n:
-                self.log("commit {} new files".format(db.n))
+                self.log("commit %d new files; %d updates" % (db.nf, db.n))
 
             if self.args.no_dhash:
                 if db.c.execute("select d from dh").fetchone():
@@ -1621,12 +1622,13 @@ class Up2k(object):
             # skip upload hooks by not providing vflags
             self.db_add(db.c, {}, rd, fn, lmod, sz, "", "", wark, wark, "", "", ip, at)
             db.n += 1
+            db.nf += 1
             tfa += 1
             td = time.time() - db.t
             if db.n >= 4096 or td >= 60:
-                self.log("commit {} new files".format(db.n))
+                self.log("commit %d new files; %d updates" % (db.nf, db.n))
                 db.c.connection.commit()
-                db.n = 0
+                db.n = db.nf = 0
                 db.t = time.time()
 
         if not self.args.no_dhash:
