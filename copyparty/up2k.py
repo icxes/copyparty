@@ -88,6 +88,9 @@ if TYPE_CHECKING:
 zsg = "avif,avifs,bmp,gif,heic,heics,heif,heifs,ico,j2p,j2k,jp2,jpeg,jpg,jpx,png,tga,tif,tiff,webp"
 CV_EXTS = set(zsg.split(","))
 
+zsg = "nohash noidx xdev xvol"
+VF_AFFECTS_INDEXING = set(zsg.split(" "))
+
 
 SBUSY = "cannot receive uploads right now;\nserver busy with %s.\nPlease wait; the client will retry..."
 
@@ -1232,10 +1235,17 @@ class Up2k(object):
     def _verify_db_cache(self, cur: "sqlite3.Cursor", vpath: str) -> None:
         # check if list of intersecting volumes changed since last use; drop caches if so
         prefix = (vpath + "/").lstrip("/")
-        zsl = [x for x in self.vfs.all_vols if x.startswith(prefix)]
-        zsl = [x[len(prefix) :] for x in zsl]
-        zsl.sort()
-        zb = hashlib.sha1("\n".join(zsl).encode("utf-8", "replace")).digest()
+        vps = [x for x in self.vfs.all_vols if x.startswith(prefix)]
+        vps.sort()
+        seed = [x[len(prefix) :] for x in vps]
+
+        # also consider volflags which affect indexing
+        for vp in vps:
+            vf = self.vfs.all_vols[vp].flags.items()
+            vf = {k: v for k, v in vf if k in VF_AFFECTS_INDEXING}
+            seed.append(str(vf))
+
+        zb = hashlib.sha1("\n".join(seed).encode("utf-8", "replace")).digest()
         vcfg = ub64enc(zb[:18]).decode("ascii")
 
         c = cur.execute("select v from kv where k = 'volcfg'")
