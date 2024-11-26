@@ -100,14 +100,13 @@ load_env || {
 # cleanup
 rm -rf unt build/pypi
 
-# grab licenses
-scripts/genlic.sh copyparty/res/COPYING.txt
+# generate license list
+scripts/genlic.py copyparty/res/COPYING.txt
 
 # clean-ish packaging env
 rm -rf build/pypi
 mkdir -p build/pypi
 cp -pR pyproject.toml README.md LICENSE copyparty contrib bin scripts/strip_hints build/pypi/
-tar -c docs/lics.txt scripts/genlic.sh build/*.txt | tar -xC build/pypi/
 cd build/pypi
 
 # delete junk

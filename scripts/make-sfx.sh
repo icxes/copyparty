@@ -308,8 +308,7 @@ necho() {
 	# remove type hints before build instead
 	(cd copyparty; PYTHONPATH="..:$PYTHONPATH" "$pybin" ../../scripts/strip_hints/a.py; rm uh)
 
-	licfile=$(realpath copyparty/res/COPYING.txt)
-	(cd ../scripts; ./genlic.sh "$licfile")
+	(cd ../scripts; ./genlic.py ../copyparty/res/COPYING.txt)
 }
 
 [ ! -e copyparty/web/deps/mini-fa.woff ] && [ $dl_wd ] && {

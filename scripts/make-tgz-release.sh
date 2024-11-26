@@ -64,7 +64,7 @@ git archive hovudstraum | tar -xC "$rls_dir"
 echo ">>> export untracked deps"
 tar -c copyparty/web/deps | tar -xC "$rls_dir"
 
-scripts/genlic.sh "$rls_dir/copyparty/res/COPYING.txt"
+scripts/genlic.py "$rls_dir/copyparty/res/COPYING.txt"
 
 cd "$rls_dir"
 find -type d -exec chmod 755 '{}' \+
