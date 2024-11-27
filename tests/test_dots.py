@@ -286,8 +286,8 @@ class TestDots(unittest.TestCase):
         self.assertIn('">folder</text>', self.curl(zs, "u2")[1])
 
         # fk enabled, so this should fail
-        self.assertIn('">e404</text>', self.curl("dk,fk/f.t1?th=x", "u2")[1])
-        self.assertIn('">e404</text>', self.curl("dk,fk/s1/f.t2?th=x", "u2")[1])
+        self.assertIn('">e403</text>', self.curl("dk,fk/f.t1?th=x", "u2")[1])
+        self.assertIn('">e403</text>', self.curl("dk,fk/s1/f.t2?th=x", "u2")[1])
 
         # but dk should return correct filekeys, so try that
         zs = "dk,fk/%s&th=x" % (zj["files"][0]["href"])
@@ -332,8 +332,8 @@ class TestDots(unittest.TestCase):
         self.assertIn('">folder</text>', self.curl(zs, "u2")[1])
 
         # fk enabled, so this should fail
-        self.assertIn('">e404</text>', self.curl("dks,fk/f.t1?th=x", "u2")[1])
-        self.assertIn('">e404</text>', self.curl("dks,fk/s1/f.t2?th=x", "u2")[1])
+        self.assertIn('">e403</text>', self.curl("dks,fk/f.t1?th=x", "u2")[1])
+        self.assertIn('">e403</text>', self.curl("dks,fk/s1/f.t2?th=x", "u2")[1])
 
         # but dk should return correct filekeys, so try that
         zs = "dks,fk/%s&th=x" % (zj["files"][0]["href"])

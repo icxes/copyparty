@@ -1243,7 +1243,7 @@ class HttpCli(object):
             self.log("RSS  %s @%s" % (self.req, self.uname))
 
         if not self.can_read:
-            return self.tx_404()
+            return self.tx_404(True)
 
         vn = self.vn
         if not vn.flags.get("rss"):
@@ -1484,7 +1484,7 @@ class HttpCli(object):
             t2 = " or 'infinity'" if self.args.dav_inf else ""
             raise Pebkac(412, t.format(depth, t2))
 
-        if not self.can_read and not self.can_write and not self.can_get and not fgen:
+        if not self.can_read and not self.can_write and not fgen:
             self.log("inaccessible: [%s]" % (self.vpath,))
             raise Pebkac(401, "authenticate")
 
@@ -1766,7 +1766,7 @@ class HttpCli(object):
 
         if not self.can_write:
             t = "user %s does not have write-access under /%s"
-            raise Pebkac(403, t % (self.uname, self.vn.vpath))
+            raise Pebkac(403 if self.pw else 401, t % (self.uname, self.vn.vpath))
 
         if not self.args.no_dav and self._applesan():
             return self.headers.get("content-length") == "0"
@@ -4624,6 +4624,19 @@ class HttpCli(object):
         if "th" in self.ouparam:
             return self.tx_svg("e" + pt[:3])
 
+        # most webdav clients will not send credentials until they
+        # get 401'd, so send a challenge if we're Absolutely Sure
+        # that the client is not a graphical browser
+        if (
+            rc == 403
+            and not self.pw
+            and not self.ua.startswith("Mozilla/")
+            and "sec-fetch-site" not in self.headers
+            and "referer" not in self.headers
+        ):
+            rc = 401
+            self.out_headers["WWW-Authenticate"] = 'Basic realm="a"'
+
         t = t.format(self.args.SR)
         qv = quotep(self.vpaths) + self.ourlq()
         html = self.j2s(
@@ -5265,7 +5278,7 @@ class HttpCli(object):
             st = bos.stat(abspath)
         except:
             if "on404" not in vn.flags:
-                return self.tx_404()
+                return self.tx_404(not self.can_read)
 
             ret = self.on40x(vn.flags["on404"], vn, rem)
             if ret == "true":
@@ -5276,9 +5289,9 @@ class HttpCli(object):
                 try:
                     st = bos.stat(abspath)
                 except:
-                    return self.tx_404()
+                    return self.tx_404(not self.can_read)
             else:
-                return self.tx_404()
+                return self.tx_404(not self.can_read)
 
         if rem.startswith(".hist/up2k.") or (
             rem.endswith("/dir.txt") and rem.startswith(".hist/th/")
@@ -5411,7 +5424,7 @@ class HttpCli(object):
         if not is_dir and (self.can_read or self.can_get):
             if not self.can_read and not fk_pass and "fk" in vn.flags:
                 if not use_filekey:
-                    return self.tx_404()
+                    return self.tx_404(True)
 
             if add_og and not abspath.lower().endswith(".md"):
                 if og_ua or self.host not in self.headers.get("referer", ""):
