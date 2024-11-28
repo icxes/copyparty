@@ -1652,7 +1652,7 @@ class Up2k(object):
         # drop shadowed folders
         for sh_rd in unreg:
             n = 0
-            q = "select count(w) from up where (rd=? or rd like ?||'/%') and +at == 0"
+            q = "select count(w) from up where (rd=? or rd like ?||'/%')"
             for sh_erd in [sh_rd, "//" + w8b64enc(sh_rd)]:
                 try:
                     erd_erd = (sh_erd, sh_erd)
@@ -1670,7 +1670,7 @@ class Up2k(object):
                 q = "delete from dh where (d = ? or d like ?||'/%')"
                 db.c.execute(q, erd_erd)
 
-                q = "delete from up where (rd=? or rd like ?||'/%') and +at == 0"
+                q = "delete from up where (rd=? or rd like ?||'/%')"
                 db.c.execute(q, erd_erd)
                 tfa += n
 
