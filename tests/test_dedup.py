@@ -15,7 +15,7 @@ from tests import util as tu
 from tests.util import Cfg
 
 
-class TestDedup(unittest.TestCase):
+class TestDedup(tu.TC):
     def setUp(self):
         self.td = tu.get_ramdisk()
 
@@ -73,7 +73,7 @@ class TestDedup(unittest.TestCase):
             sfn, hs = self.do_post_hs(dn, fns[0], f1, True)
             for fn in fns[1:]:
                 h, b = self.handshake(dn, fn, f1)
-                self.assertIn(" 422 Unpro", h)
+                self.assertStart("HTTP/1.1 422 Unpro", h)
                 self.assertIn("a different location;", b)
             self.do_post_data(dn, fns[0], f1, True, sfn, hs)
             if not e2d:
@@ -158,10 +158,10 @@ class TestDedup(unittest.TestCase):
         rm = cms[irm]
         dn, fn, _ = rm
         h, b = self.curl("%s/%s?delete" % (dn, fn), meth="POST")
-        self.assertIn(" 200 OK", h)
+        self.assertStart("HTTP/1.1 200 OK", h)
         self.assertIn("deleted 1 files", b)
         h, b = self.curl("%s/%s" % (dn, fn))
-        self.assertIn(" 404 Not Fo", h)
+        self.assertStart("HTTP/1.1 404 Not Fo", h)
         for cm in cms:
             if cm == rm:
                 continue

@@ -14,7 +14,7 @@ from tests import util as tu
 from tests.util import Cfg
 
 
-class TestDedup(unittest.TestCase):
+class TestDedup(tu.TC):
     def setUp(self):
         self.td = tu.get_ramdisk()
 
@@ -92,7 +92,7 @@ class TestDedup(unittest.TestCase):
         HttpCli(self.conn.setbuf(buf)).run()
         ret = self.conn.s._reply.decode("utf-8").split("\r\n\r\n", 1)
         print("CP <-- ", ret)
-        self.assertIn(" 201 Created", ret[0])
+        self.assertStart("HTTP/1.1 201 Created\r", ret[0])
         self.assertEqual("k\r\n", ret[1])
         return ret
 

@@ -23,7 +23,7 @@ def hdr(query):
     return h.format(query).encode("utf-8")
 
 
-class TestHooks(unittest.TestCase):
+class TestHooks(tu.TC):
     def setUp(self):
         self.conn: Optional[tu.VHttpConn] = None
         self.td = tu.get_ramdisk()
@@ -74,7 +74,7 @@ class TestHooks(unittest.TestCase):
                     self.cinit()
 
                     h, b = upfun(url_up)
-                    self.assertIn("201 Created", h)
+                    self.assertStart("HTTP/1.1 201 Created\r", h)
                     h, b = self.curl(url_dl)
                     self.assertEqual(b, "ok %s\n" % (url_up))
 

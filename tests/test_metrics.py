@@ -21,7 +21,7 @@ def hdr(query):
     return h.format(query).encode("utf-8")
 
 
-class TestMetrics(unittest.TestCase):
+class TestMetrics(tu.TC):
     def setUp(self):
         self.td = tu.get_ramdisk()
         os.chdir(self.td)
@@ -55,7 +55,7 @@ class TestMetrics(unittest.TestCase):
         self.conn = self.fstab = self.metrics = None
         self.cinit()
         h, b = self.curl(".cpr/metrics")
-        self.assertIn(".1 200 OK", h)
+        self.assertStart("HTTP/1.1 200 OK\r", h)
         ptns = r"""
 cpp_uptime_seconds [0-9]\.[0-9]{3}$
 cpp_boot_unixtime_seconds [0-9]{7,10}\.[0-9]{3}$

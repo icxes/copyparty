@@ -124,7 +124,7 @@ class TestDXML(unittest.TestCase):
         lk = parse_xml(txt)
         self.assertEqual(lk.tag, "{DAV:}lockinfo")
 
-        if not lk.find(r"./{DAV:}depth"):
+        if lk.find(r"./{DAV:}depth") is None:
             lk.append(mktnod("D:depth", "infinity"))
 
         lk.append(mkenod("D:timeout", mktnod("D:href", "Second-3600")))
