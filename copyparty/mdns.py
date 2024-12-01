@@ -336,6 +336,9 @@ class MDNS(MCast):
                         self.log("stopped", 2)
                         return
 
+                    if self.args.zm_no_pe:
+                        continue
+
                     t = "{} {} \033[33m|{}| {}\n{}".format(
                         self.srv[sck].name, addr, len(buf), repr(buf)[2:-1], min_ex()
                     )
