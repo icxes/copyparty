@@ -12,6 +12,7 @@ import sys
 import tempfile
 import threading
 import time
+import unittest
 from argparse import Namespace
 
 import jinja2
@@ -118,14 +119,28 @@ def get_ramdisk():
     return subdir(ret)
 
 
+def pfind2ls(xml):
+    return [x.split("<", 1)[0] for x in xml.split("<D:href>")[1:]]
+
+
+class TC(unittest.TestCase):
+    def __init__(self, *a, **ka):
+        super(TC, self).__init__(*a, **ka)
+
+    def assertStart(self, member, container, msg=None):
+        if not container.startswith(member):
+            standardMsg = "%s not found in %s" % (member, container)
+            self.fail(self._formatMessage(msg, standardMsg))
+
+
 class Cfg(Namespace):
     def __init__(self, a=None, v=None, c=None, **ka0):
         ka = {}
 
-        ex = "chpw daw dav_auth dav_inf dav_mac dav_rt e2d e2ds e2dsa e2t e2ts e2tsr e2v e2vu e2vp early_ban ed emp exp force_js getmod grid gsel hardlink ih ihead magic hardlink_only nid nih no_acode no_athumb no_clone no_cp no_dav no_db_ip no_del no_dirsz no_dupe no_lifetime no_logues no_mv no_pipe no_poll no_readme no_robots no_sb_md no_sb_lg no_scandir no_tarcmp no_thumb no_vthumb no_zip nrand nsort nw og og_no_head og_s_title ohead q rand re_dirsz rss smb srch_dbg srch_excl stats uqe vague_403 vc ver write_uplog xdev xlink xvol zs"
+        ex = "chpw daw dav_auth dav_mac dav_rt e2d e2ds e2dsa e2t e2ts e2tsr e2v e2vu e2vp early_ban ed emp exp force_js getmod grid gsel hardlink ih ihead magic hardlink_only nid nih no_acode no_athumb no_bauth no_clone no_cp no_dav no_db_ip no_del no_dirsz no_dupe no_lifetime no_logues no_mv no_pipe no_poll no_readme no_robots no_sb_md no_sb_lg no_scandir no_tarcmp no_thumb no_vthumb no_zip nrand nsort nw og og_no_head og_s_title ohead q rand re_dirsz rss smb srch_dbg srch_excl stats uqe vague_403 vc ver write_uplog xdev xlink xvol zs"
         ka.update(**{k: False for k in ex.split()})
 
-        ex = "dedup dotpart dotsrch hook_v no_dhash no_fastboot no_fpool no_htp no_rescan no_sendfile no_ses no_snap no_up_list no_voldump re_dhash plain_ip"
+        ex = "dav_inf dedup dotpart dotsrch hook_v no_dhash no_fastboot no_fpool no_htp no_rescan no_sendfile no_ses no_snap no_up_list no_voldump re_dhash plain_ip"
         ka.update(**{k: True for k in ex.split()})
 
         ex = "ah_cli ah_gen css_browser hist ipu js_browser js_other mime mimes no_forget no_hash no_idx nonsus_urls og_tpl og_ua"

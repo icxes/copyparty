@@ -15,7 +15,7 @@ import zipfile
 from copyparty.authsrv import AuthSrv
 from copyparty.httpcli import HttpCli
 from tests import util as tu
-from tests.util import Cfg, eprint
+from tests.util import Cfg, eprint, pfind2ls
 
 
 def hdr(query):
@@ -129,6 +129,24 @@ class TestHttpCli(unittest.TestCase):
                 else:
                     ref = []
 
+                h, b = self.propfind(durl, 1)
+                fns = [x for x in pfind2ls(b) if not x.endswith("/")]
+                if ref:
+                    self.assertIn("<D:propstat>", b)
+                elif not rok and not wok:
+                    self.assertListEqual([], fns)
+                else:
+                    self.assertIn("<D:multistatus", b)
+
+                h, b = self.propfind(durl, 0)
+                fns = [x for x in pfind2ls(b) if not x.endswith("/")]
+                if ref:
+                    self.assertIn("<D:propstat>", b)
+                elif not rok:
+                    self.assertListEqual([], fns)
+                else:
+                    self.assertIn("<D:multistatus", b)
+
                 if test_tar:
                     url = durl + "?tar"
                     h, b = self.curl(url, True)
@@ -223,6 +241,13 @@ class TestHttpCli(unittest.TestCase):
             h, b = conn.s._reply.split(b"\r\n\r\n", 1)
             return [h.decode("utf-8"), b]
 
+        return conn.s._reply.decode("utf-8").split("\r\n\r\n", 1)
+
+    def propfind(self, url, depth=1):
+        zs = "PROPFIND /%s HTTP/1.1\r\nDepth: %d\r\nPW: o\r\nConnection: close\r\n\r\n"
+        buf = zs % (url, depth)
+        conn = self.conn.setbuf(buf.encode("utf-8"))
+        HttpCli(conn).run()
         return conn.s._reply.decode("utf-8").split("\r\n\r\n", 1)
 
     def log(self, src, msg, c=0):

@@ -1424,7 +1424,8 @@ class HttpCli(object):
 
         depth = self.headers.get("depth", "infinity").lower()
         if depth == "infinity":
-            if not self.can_read:
+            # allow depth:0 from unmapped root, but require read-axs otherwise
+            if not self.can_read and (self.vpath or self.asrv.vfs.realpath):
                 t = "depth:infinity requires read-access in /%s"
                 t = t % (self.vpath,)
                 self.log(t, 3)
@@ -4632,7 +4633,6 @@ class HttpCli(object):
             and not self.pw
             and not self.ua.startswith("Mozilla/")
             and "sec-fetch-site" not in self.headers
-            and "referer" not in self.headers
         ):
             rc = 401
             self.out_headers["WWW-Authenticate"] = 'Basic realm="a"'
