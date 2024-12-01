@@ -11,6 +11,25 @@ LDH = set(range(33, 127))
 ESCAPE = re.compile(r"\\([0-9][0-9][0-9])")
 
 
+avahi_379 = 0
+
+
+def set_avahi_379():
+    global avahi_379
+    avahi_379 = 1
+
+
+def log_avahi_379(args):
+    global avahi_379
+    n = avahi_379
+    if n == 2:
+        return
+    if n == 1:
+        avahi_379 = 2
+    t = "Invalid pointer in DNSLabel [offset=%d,pointer=%d,length=%d]; this is probably avahi-bug #379, packet corruption in Avahi's mDNS reflection feature. Copyparty has a workaround and is OK, but other devices need either --zm4 or --zm6"
+    raise BufferError(t % args)
+
+
 class DNSLabelError(Exception):
     pass
 
@@ -96,8 +115,9 @@ class DNSBuffer(Buffer):
                     )
                 if pointer < self.offset:
                     self.offset = pointer
+                elif avahi_379:
+                    log_avahi_379((self.offset, pointer, len(self.data)))
                 else:
-
                     raise BufferError(
                         "Invalid pointer in DNSLabel [offset=%d,pointer=%d,length=%d]"
                         % (self.offset, pointer, len(self.data))

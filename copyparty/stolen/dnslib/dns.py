@@ -8,7 +8,7 @@ from itertools import chain
 from .bimap import Bimap, BimapError
 from .bit import get_bits, set_bits
 from .buffer import BufferError
-from .label import DNSBuffer, DNSLabel
+from .label import DNSBuffer, DNSLabel, set_avahi_379
 from .ranges import IP4, IP6, H, I, check_bytes
 
 
@@ -426,7 +426,7 @@ class RR(object):
             if rdlength:
                 rdata = RDMAP.get(QTYPE.get(rtype), RD).parse(buffer, rdlength)
             else:
-                rdata = ""
+                rdata = RD(b"a")
             return cls(rname, rtype, rclass, ttl, rdata)
         except (BufferError, BimapError) as e:
             raise DNSError("Error unpacking RR [offset=%d]: %s" % (buffer.offset, e))

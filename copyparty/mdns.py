@@ -25,6 +25,7 @@ from .stolen.dnslib import (
     DNSHeader,
     DNSQuestion,
     DNSRecord,
+    set_avahi_379,
 )
 from .util import CachedSet, Daemon, Netdev, list_ips, min_ex
 
@@ -71,6 +72,9 @@ class MDNS(MCast):
         self.logsrc = "mDNS-{}".format(ngen)
         self.ngen = ngen
         self.ttl = 300
+
+        if not self.args.zm_nwa_1:
+            set_avahi_379()
 
         zs = self.args.name + ".local."
         zs = zs.encode("ascii", "replace").decode("ascii", "replace")

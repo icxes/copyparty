@@ -1125,6 +1125,7 @@ def add_zc_mdns(ap):
     ap2.add_argument("--zmv", action="store_true", help="verbose mdns")
     ap2.add_argument("--zmvv", action="store_true", help="verboser mdns")
     ap2.add_argument("--zm-no-pe", action="store_true", help="mute parser errors (invalid incoming MDNS packets)")
+    ap2.add_argument("--zm-nwa-1", action="store_true", help="disable workaround for avahi-bug #379 (corruption in Avahi's mDNS reflection feature)")
     ap2.add_argument("--zms", metavar="dhf", type=u, default="", help="list of services to announce -- d=webdav h=http f=ftp s=smb -- lowercase=plaintext uppercase=TLS -- default: all enabled services except http/https (\033[32mDdfs\033[0m if \033[33m--ftp\033[0m and \033[33m--smb\033[0m is set, \033[32mDd\033[0m otherwise)")
     ap2.add_argument("--zm-ld", metavar="PATH", type=u, default="", help="link a specific folder for webdav shares")
     ap2.add_argument("--zm-lh", metavar="PATH", type=u, default="", help="link a specific folder for http shares")
