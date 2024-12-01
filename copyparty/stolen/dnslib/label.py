@@ -21,12 +21,10 @@ def set_avahi_379():
 
 def log_avahi_379(args):
     global avahi_379
-    n = avahi_379
-    if n == 2:
+    if avahi_379 == 2:
         return
-    if n == 1:
-        avahi_379 = 2
-    t = "Invalid pointer in DNSLabel [offset=%d,pointer=%d,length=%d]; this is probably avahi-bug #379, packet corruption in Avahi's mDNS reflection feature. Copyparty has a workaround and is OK, but other devices need either --zm4 or --zm6"
+    avahi_379 = 2
+    t = "Invalid pointer in DNSLabel [offset=%d,pointer=%d,length=%d];\n\033[35m  NOTE: this is probably avahi-bug #379, packet corruption in Avahi's mDNS-reflection feature. Copyparty has a workaround and is OK, but other devices need either --zm4 or --zm6"
     raise BufferError(t % args)
 
 
@@ -117,6 +115,8 @@ class DNSBuffer(Buffer):
                     self.offset = pointer
                 elif avahi_379:
                     log_avahi_379((self.offset, pointer, len(self.data)))
+                    label.extend(b"a")
+                    break
                 else:
                     raise BufferError(
                         "Invalid pointer in DNSLabel [offset=%d,pointer=%d,length=%d]"
