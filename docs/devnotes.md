@@ -170,10 +170,14 @@ authenticate using header `Cookie: cppwd=foo` or url param `&pw=foo`
 | method | params | body | result |
 |--|--|--|--|
 | PUT | | (binary data) | upload into file at URL |
+| PUT | `?ck` | (binary data) | upload without checksum gen (faster) |
+| PUT | `?ck=md5` | (binary data) | return md5 instead of sha512 |
 | PUT | `?gz` | (binary data) | compress with gzip and write into file at URL |
 | PUT | `?xz` | (binary data) | compress with xz and write into file at URL |
 | mPOST | | `f=FILE` | upload `FILE` into the folder at URL |
 | mPOST | `?j` | `f=FILE` | ...and reply with json |
+| mPOST | `?ck` | `f=FILE` | ...and disable checksum gen (faster) |
+| mPOST | `?ck=md5` | `f=FILE` | ...and return md5 instead of sha512 |
 | mPOST | `?replace` | `f=FILE` | ...and overwrite existing files |
 | mPOST | `?media` | `f=FILE` | ...and return medialink (not hotlink) |
 | mPOST | | `act=mkdir`, `name=foo` | create directory `foo` at URL |
@@ -192,6 +196,12 @@ upload modifiers:
 | `Accept: url` | `want=url` | return just the file URL |
 | `Rand: 4` | `rand=4` | generate random filename with 4 characters |
 | `Life: 30` | `life=30` | delete file after 30 seconds |
+| `CK: no` | `ck` | disable serverside checksum (maybe faster) |
+| `CK: md5` | `ck=md5` | return md5 checksum instead of sha512 |
+| `CK: sha1` | `ck=sha1` | return sha1 checksum |
+| `CK: sha256` | `ck=sha256` | return sha256 checksum |
+| `CK: b2` | `ck=b2` | return blake2b checksum |
+| `CK: b2s` | `ck=b2s` | return blake2s checksum |
 
 * `life` only has an effect if the volume has a lifetime, and the volume lifetime must be greater than the file's
 

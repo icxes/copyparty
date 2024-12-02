@@ -2796,6 +2796,26 @@ def yieldfile(fn: str, bufsz: int) -> Generator[bytes, None, None]:
             yield buf
 
 
+def justcopy(
+    fin: Generator[bytes, None, None],
+    fout: Union[typing.BinaryIO, typing.IO[Any]],
+    hashobj: Optional["hashlib._Hash"],
+    max_sz: int,
+    slp: float,
+) -> tuple[int, str, str]:
+    tlen = 0
+    for buf in fin:
+        tlen += len(buf)
+        if max_sz and tlen > max_sz:
+            continue
+
+        fout.write(buf)
+        if slp:
+            time.sleep(slp)
+
+    return tlen, "checksum-disabled", "checksum-disabled"
+
+
 def hashcopy(
     fin: Generator[bytes, None, None],
     fout: Union[typing.BinaryIO, typing.IO[Any]],
@@ -3506,7 +3526,6 @@ def runhook(
     txt: str,
 ) -> dict[str, Any]:
     assert broker or up2k  # !rm
-    asrv = (broker or up2k).asrv
     args = (broker or up2k).args
     vp = vp.replace("\\", "/")
     ret = {"rc": 0}

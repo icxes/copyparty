@@ -521,6 +521,7 @@ var Ls = {
 		"u_pott": "<p>files: &nbsp; <b>{0}</b> finished, &nbsp; <b>{1}</b> failed, &nbsp; <b>{2}</b> busy, &nbsp; <b>{3}</b> queued</p>",
 		"u_ever": "this is the basic uploader; up2k needs at least<br>chrome 21 // firefox 13 // edge 12 // opera 12 // safari 5.1",
 		"u_su2k": 'this is the basic uploader; <a href="#" id="u2yea">up2k</a> is better',
+		"u_uput": 'optimize for speed (skip checksum)',
 		"u_ewrite": 'you do not have write-access to this folder',
 		"u_eread": 'you do not have read-access to this folder',
 		"u_enoi": 'file-search is not enabled in server config',
@@ -1105,6 +1106,7 @@ var Ls = {
 		"u_pott": "<p>filer: &nbsp; <b>{0}</b> ferdig, &nbsp; <b>{1}</b> feilet, &nbsp; <b>{2}</b> behandles, &nbsp; <b>{3}</b> i kø</p>",
 		"u_ever": "dette er den primitive opplasteren; up2k krever minst:<br>chrome 21 // firefox 13 // edge 12 // opera 12 // safari 5.1",
 		"u_su2k": 'dette er den primitive opplasteren; <a href="#" id="u2yea">up2k</a> er bedre',
+		"u_uput": 'litt raskere (uten sha512)',
 		"u_ewrite": 'du har ikke skrivetilgang i denne mappen',
 		"u_eread": 'du har ikke lesetilgang i denne mappen',
 		"u_enoi": 'filsøk er deaktivert i serverkonfigurasjonen',
@@ -1689,6 +1691,7 @@ var Ls = {
 		"u_pott": "<p>个文件： &nbsp; <b>{0}</b> 已完成， &nbsp; <b>{1}</b> 失败， &nbsp; <b>{2}</b> 正在处理， &nbsp; <b>{3}</b> 排队中</p>",
 		"u_ever": "这是基本的上传工具； up2k 需要至少<br>chrome 21 // firefox 13 // edge 12 // opera 12 // safari 5.1",
 		"u_su2k": '这是基本的上传工具；<a href="#" id="u2yea">up2k</a> 更好',
+		"u_uput": '提高速度（跳过校验和）',
 		"u_ewrite": '你对这个文件夹没有写入权限',
 		"u_eread": '你对这个文件夹没有读取权限',
 		"u_enoi": '文件搜索在服务器配置中未启用',
@@ -1934,6 +1937,10 @@ ebi('op_up2k').innerHTML = (
 
 
 ebi('wrap').insertBefore(mknod('div', 'lazy'), ebi('epi'));
+
+var x = ebi('bbsw');
+x.parentNode.insertBefore(mknod('div', null,
+	'<input type="checkbox" id="uput" name="uput"><label for="uput">' + L.u_uput + '</label>'), x);
 
 
 (function () {
@@ -4210,6 +4217,11 @@ function eval_hash() {
 	}
 	bcfg_bind(props, 'mcmp', 'au_compact', false, setacmp);
 	setacmp();
+
+	// toggle bup checksums
+	ebi('uput').onchange = function() {
+		QS('#op_bup input[name="act"]').value = this.checked ? 'uput' : 'bput';
+	};
 })();
 
 

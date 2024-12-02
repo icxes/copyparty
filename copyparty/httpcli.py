@@ -14,6 +14,7 @@ import re
 import socket
 import stat
 import string
+import sys
 import threading  # typechk
 import time
 import uuid
@@ -76,6 +77,7 @@ from .util import (
     html_escape,
     humansize,
     ipnorm,
+    justcopy,
     load_resource,
     loadpy,
     log_reloc,
@@ -124,6 +126,8 @@ if not hasattr(socket, "AF_UNIX"):
 
 _ = (argparse, threading)
 
+USED4SEC = {"usedforsecurity": False} if sys.version_info > (3, 9) else {}
+
 NO_CACHE = {"Cache-Control": "no-cache"}
 
 ALL_COOKIES = "k304 no304 js idxh dots cppwd cppws".split()
@@ -136,6 +140,10 @@ LOGUES = [[0, ".prologue.html"], [1, ".epilogue.html"]]
 READMES = [[0, ["preadme.md", "PREADME.md"]], [1, ["readme.md", "README.md"]]]
 
 RSS_SORT = {"m": "mt", "u": "at", "n": "fn", "s": "sz"}
+
+A_FILE = os.stat_result(
+    (0o644, -1, -1, 1, 1000, 1000, 8, 0x39230101, 0x39230101, 0x39230101)
+)
 
 
 class HttpCli(object):
@@ -2060,10 +2068,31 @@ class HttpCli(object):
                 # small toctou, but better than clobbering a hardlink
                 wunlink(self.log, path, vfs.flags)
 
+        hasher = None
+        copier = hashcopy
+        if "ck" in self.ouparam or "ck" in self.headers:
+            zs = self.ouparam.get("ck") or self.headers.get("ck") or ""
+            if not zs or zs == "no":
+                copier = justcopy
+            elif zs == "md5":
+                hasher = hashlib.md5(**USED4SEC)
+            elif zs == "sha1":
+                hasher = hashlib.sha1(**USED4SEC)
+            elif zs == "sha256":
+                hasher = hashlib.sha256(**USED4SEC)
+            elif zs in ("blake2", "b2"):
+                hasher = hashlib.blake2b(**USED4SEC)
+            elif zs in ("blake2s", "b2s"):
+                hasher = hashlib.blake2s(**USED4SEC)
+            elif zs == "sha512":
+                pass
+            else:
+                raise Pebkac(500, "unknown hash alg")
+
         f, fn = ren_open(fn, *open_a, **params)
         try:
             path = os.path.join(fdir, fn)
-            post_sz, sha_hex, sha_b64 = hashcopy(reader, f, None, 0, self.args.s_wr_slp)
+            post_sz, sha_hex, sha_b64 = copier(reader, f, hasher, 0, self.args.s_wr_slp)
         finally:
             f.close()
 
@@ -2300,8 +2329,8 @@ class HttpCli(object):
             # kinda silly but has the least side effects
             return self.handle_new_md()
 
-        if act == "bput":
-            return self.handle_plain_upload(file0)
+        if act in ("bput", "uput"):
+            return self.handle_plain_upload(file0, act == "uput")
 
         if act == "tput":
             return self.handle_text_upload()
@@ -2918,12 +2947,40 @@ class HttpCli(object):
         )
 
     def handle_plain_upload(
-        self, file0: list[tuple[str, Optional[str], Generator[bytes, None, None]]]
+        self,
+        file0: list[tuple[str, Optional[str], Generator[bytes, None, None]]],
+        nohash: bool,
     ) -> bool:
         assert self.parser
         nullwrite = self.args.nw
         vfs, rem = self.asrv.vfs.get(self.vpath, self.uname, False, True)
         self._assert_safe_rem(rem)
+
+        halg = "sha512"
+        hasher = None
+        copier = hashcopy
+        if nohash:
+            halg = ""
+            copier = justcopy
+        elif "ck" in self.ouparam or "ck" in self.headers:
+            halg = self.ouparam.get("ck") or self.headers.get("ck") or ""
+            if not halg or halg == "no":
+                copier = justcopy
+                halg = ""
+            elif halg == "md5":
+                hasher = hashlib.md5(**USED4SEC)
+            elif halg == "sha1":
+                hasher = hashlib.sha1(**USED4SEC)
+            elif halg == "sha256":
+                hasher = hashlib.sha256(**USED4SEC)
+            elif halg in ("blake2", "b2"):
+                hasher = hashlib.blake2b(**USED4SEC)
+            elif halg in ("blake2s", "b2s"):
+                hasher = hashlib.blake2s(**USED4SEC)
+            elif halg == "sha512":
+                pass
+            else:
+                raise Pebkac(500, "unknown hash alg")
 
         upload_vpath = self.vpath
         lim = vfs.get_dbv(rem)[0].lim
@@ -3054,8 +3111,8 @@ class HttpCli(object):
                     try:
                         tabspath = os.path.join(fdir, tnam)
                         self.log("writing to {}".format(tabspath))
-                        sz, sha_hex, sha_b64 = hashcopy(
-                            p_data, f, None, max_sz, self.args.s_wr_slp
+                        sz, sha_hex, sha_b64 = copier(
+                            p_data, f, hasher, max_sz, self.args.s_wr_slp
                         )
                         if sz == 0:
                             raise Pebkac(400, "empty files in post")
@@ -3187,10 +3244,15 @@ class HttpCli(object):
             jmsg["error"] = errmsg
             errmsg = "ERROR: " + errmsg
 
+        if halg:
+            file_fmt = '{0}: {1} // {2} // {3} bytes // <a href="/{4}">{5}</a> {6}\n'
+        else:
+            file_fmt = '{3} bytes // <a href="/{4}">{5}</a> {6}\n'
+
         for sz, sha_hex, sha_b64, ofn, lfn, ap in files:
             vsuf = ""
             if (self.can_read or self.can_upget) and "fk" in vfs.flags:
-                st = bos.stat(ap)
+                st = A_FILE if nullwrite else bos.stat(ap)
                 alg = 2 if "fka" in vfs.flags else 1
                 vsuf = "?k=" + self.gen_fk(
                     alg,
@@ -3205,7 +3267,8 @@ class HttpCli(object):
 
             vpath = "{}/{}".format(upload_vpath, lfn).strip("/")
             rel_url = quotep(self.args.RS + vpath) + vsuf
-            msg += 'sha512: {} // {} // {} bytes // <a href="/{}">{}</a> {}\n'.format(
+            msg += file_fmt.format(
+                halg,
                 sha_hex[:56],
                 sha_b64,
                 sz,
@@ -3221,13 +3284,14 @@ class HttpCli(object):
                     self.host,
                     rel_url,
                 ),
-                "sha512": sha_hex[:56],
-                "sha_b64": sha_b64,
                 "sz": sz,
                 "fn": lfn,
                 "fn_orig": ofn,
                 "path": rel_url,
             }
+            if halg:
+                jpart[halg] = sha_hex[:56]
+                jpart["sha_b64"] = sha_b64
             jmsg["files"].append(jpart)
 
         vspd = self._spd(sz_total, False)
