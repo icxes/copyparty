@@ -97,6 +97,9 @@ SBUSY = "cannot receive uploads right now;\nserver busy with %s.\nPlease wait; t
 HINT_HISTPATH = "you could try moving the database to another location (preferably an SSD or NVME drive) using either the --hist argument (global option for all volumes), or the hist volflag (just for this volume)"
 
 
+NULLSTAT = os.stat_result((0, -1, -1, 0, 0, 0, 0, 0, 0, 0))
+
+
 class Dbw(object):
     def __init__(self, c: "sqlite3.Cursor", n: int, nf: int, t: float) -> None:
         self.c = c
@@ -2942,7 +2945,7 @@ class Up2k(object):
                             raise Exception()
                     except Exception as ex:
                         if n4g:
-                            st = os.stat_result((0, -1, -1, 0, 0, 0, 0, 0, 0, 0))
+                            st = NULLSTAT
                         else:
                             lost.append((cur, dp_dir, dp_fn))
                             continue

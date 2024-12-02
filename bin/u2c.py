@@ -1132,7 +1132,9 @@ class Ctl(object):
             isdir = stat.S_ISDIR(inf.st_mode)
             if self.ar.z or self.ar.drd:
                 rd = rel if isdir else os.path.dirname(rel)
-                srd = rd.decode("utf-8", "replace").replace("\\", "/")
+                srd = rd.decode("utf-8", "replace").replace("\\", "/").rstrip("/")
+                if srd:
+                    srd += "/"
                 if prd != rd:
                     prd = rd
                     ls = {}
@@ -1167,11 +1169,11 @@ class Ctl(object):
                         bnames = [x for x in ls if x not in lnodes and x != b".hist"]
                         vpath = self.ar.url.split("://")[-1].split("/", 1)[-1]
                         names = [x.decode("utf-8", WTF8) for x in bnames]
-                        locs = [vpath + srd + "/" + x for x in names]
+                        locs = [vpath + srd + x for x in names]
                         while locs:
                             req = locs
                             while req:
-                                print("DELETING ~%s/#%s" % (srd, len(req)))
+                                print("DELETING ~%s#%s" % (srd, len(req)))
                                 body = json.dumps(req).encode("utf-8")
                                 sc, txt = web.req(
                                     "POST", self.ar.url + "?delete", {}, body, MJ
