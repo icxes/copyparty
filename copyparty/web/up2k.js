@@ -1556,8 +1556,10 @@ function up2k_init(subtle) {
         if (nhash) {
             st.time.hashing += td;
             t.push(['u2etah', st.bytes.hashed, st.bytes.hashed, st.time.hashing]);
-            if (uc.fsearch)
+            if (uc.fsearch) {
+                st.time.busy += td;
                 t.push(['u2etat', st.bytes.hashed, st.bytes.hashed, st.time.hashing]);
+            }
         }
 
         var b_up = st.bytes.inflight + st.bytes.uploaded,
