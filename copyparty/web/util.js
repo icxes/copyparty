@@ -617,10 +617,13 @@ function sortTable(table, col, cb) {
         tr = Array.prototype.slice.call(tb.rows, 0),
         i, reverse = /s0[^r]/.exec(th[col].className + ' ') ? -1 : 1;
 
-    var stype = th[col].getAttribute('sort');
+    var kname = th[col].getAttribute('name'),
+        stype = th[col].getAttribute('sort');
     try {
-        var nrules = [], rules = jread("fsort", []);
-        rules.unshift([th[col].getAttribute('name'), reverse, stype || '']);
+        var nrules = [],
+            rules = kname == 'href' ? [] : jread("fsort", []);
+
+        rules.unshift([kname, reverse, stype || '']);
         for (var a = 0; a < rules.length; a++) {
             var add = true;
             for (var b = 0; b < a; b++)
