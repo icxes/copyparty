@@ -1,11 +1,11 @@
 FROM    alpine:3.18
 WORKDIR /z
 ENV     ver_asmcrypto=c72492f4a66e17a0e5dd8ad7874de354f3ccdaa5 \
-        ver_hashwasm=4.10.0 \
+        ver_hashwasm=4.12.0 \
         ver_marked=4.3.0 \
-        ver_dompf=3.1.7 \
+        ver_dompf=3.2.2 \
         ver_mde=2.18.0 \
-        ver_codemirror=5.65.16 \
+        ver_codemirror=5.65.18 \
         ver_fontawesome=5.13.0 \
         ver_prism=1.29.0 \
         ver_zopfli=1.0.3
@@ -16,7 +16,7 @@ ENV     ver_asmcrypto=c72492f4a66e17a0e5dd8ad7874de354f3ccdaa5 \
 # https://github.com/codemirror/codemirror5/releases
 # https://github.com/cure53/DOMPurify/releases
 # https://github.com/Daninet/hash-wasm/releases
-# https://github.com/openpgpjs/asmcrypto.js
+# https://github.com/openpgpjs/asmcrypto.js/commits/main/
 # https://github.com/google/zopfli/tags
 
 
