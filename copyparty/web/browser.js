@@ -2185,6 +2185,29 @@ if (window.og_fn) {
 }
 
 
+(function() {
+	var args = ('' + hash0).split(/,sort/g);
+	if (args.length < 2)
+		return;
+
+	var ret = [];
+	for (var a = 1; a < args.length; a++) {
+		var t = '', n = 1, z = args[a].split(',')[0];
+		if (z.startsWith('-')) {
+			z = z.slice(1);
+			n = -1;
+		}
+		if (z == "sz" || z.indexOf('/.') + 1)
+			t = "int";
+		ret.push([z, n, t]);
+	}
+	var cmp = jread('fsort', []);
+	if (JSON.stringify(ret.slice(0, 2) !=
+		JSON.stringify(cmp.slice(0, 2))))
+		jwrite('fsort', ret);
+})();
+
+
 var mpl = (function () {
 	var have_mctl = 'mediaSession' in navigator && window.MediaMetadata;
 
@@ -3942,7 +3965,7 @@ function play(tid, is_ev, seek) {
 			var o = ebi(oid);
 			o.setAttribute('id', 'thx_js');
 			if (mpl.aplay)
-				sethash(oid);
+				sethash(oid + getsort());
 			o.setAttribute('id', oid);
 		}
 
@@ -4251,6 +4274,19 @@ function read_dsort(txt) {
 read_dsort(dsort);
 
 
+function getsort() {
+	var ret = '',
+		sopts = jread('fsort');
+
+	sopts = sopts && sopts.length ? sopts : dsort;
+
+	for (var a = 0; a < Math.min(2, sopts.length); a++)
+		ret += ',sort' + (sopts[a][1] < 0 ? '-' : '') + sopts[a][0];
+
+	return ret;
+}
+
+
 function sortfiles(nodes) {
 	if (!nodes.length)
 		return nodes;
@@ -4277,6 +4313,8 @@ function sortfiles(nodes) {
 			var name = sopts[a][0], rev = sopts[a][1], typ = sopts[a][2];
 			if (!name)
 				continue;
+
+			name = name.toLowerCase();
 
 			if (name == 'ts')
 				typ = 'int';
@@ -6205,7 +6243,7 @@ var thegrid = (function () {
 					esc(uricom_dec(h.split('/').pop())) + '</a>';
 			},
 			onChange: function (i) {
-				sethash('g' + r.bbox[i].imageElement.getAttribute('ref'));
+				sethash('g' + r.bbox[i].imageElement.getAttribute('ref') + getsort());
 			}
 		});
 		r.bbox = br[0][0];
