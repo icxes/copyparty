@@ -5482,7 +5482,7 @@ class HttpCli(object):
                     vrem = vjoin(vrem, fn)
                     abspath = ap2
                     break
-            elif self.vpath.rsplit("/", 1)[1] in ("index.htm", "index.html"):
+            elif self.vpath.rsplit("/", 1)[-1] in ("index.htm", "index.html"):
                 fk_pass = True
 
         if not is_dir and (self.can_read or self.can_get):
