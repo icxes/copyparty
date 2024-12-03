@@ -70,6 +70,7 @@ def vf_vmap() -> dict[str, str]:
     }
     for k in (
         "dbd",
+        "hsortn",
         "html_head",
         "lg_sbf",
         "md_sbf",

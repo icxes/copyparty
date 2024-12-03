@@ -206,6 +206,7 @@ var Ls = {
 		"cl_uopts": "up2k switches",
 		"cl_favico": "favicon",
 		"cl_bigdir": "big dirs",
+		"cl_hsort": "#sort",
 		"cl_keytype": "key notation",
 		"cl_hiddenc": "hidden columns",
 		"cl_hidec": "hide",
@@ -248,6 +249,7 @@ var Ls = {
 
 		"cdt_lim": "max number of files to show in a folder",
 		"cdt_ask": "when scrolling to the bottom,$Ninstead of loading more files,$Nask what to do",
+		"cdt_hsort": "how many sorting rules (&lt;code&gt;,sorthref&lt;/code&gt;) to include in media-URLs. Setting this to 0 will also ignore sorting-rules included in media links when clicking them",
 
 		"tt_entree": "show navpane (directory tree sidebar)$NHotkey: B",
 		"tt_detree": "show breadcrumbs$NHotkey: B",
@@ -791,6 +793,7 @@ var Ls = {
 		"cl_uopts": "up2k-brytere",
 		"cl_favico": "favicon",
 		"cl_bigdir": "store mapper",
+		"cl_hsort": "#sort",
 		"cl_keytype": "notasjon for musikalsk dur",
 		"cl_hiddenc": "skjulte kolonner",
 		"cl_hidec": "skjul",
@@ -833,6 +836,7 @@ var Ls = {
 
 		"cdt_lim": "maks antall filer å vise per mappe",
 		"cdt_ask": "vis knapper for å laste flere filer nederst på siden istedenfor å gradvis laste mer av mappen når man scroller ned",
+		"cdt_hsort": "antall sorterings-regler (&lt;code&gt;,sorthref&lt;/code&gt;) som skal inkluderes når media-URL'er genereres. Hvis denne er 0 så vil sorterings-regler i URL'er hverken bli generert eller lest",
 
 		"tt_entree": "bytt til mappehierarki$NSnarvei: B",
 		"tt_detree": "bytt til tradisjonell sti-visning$NSnarvei: B",
@@ -1376,6 +1380,7 @@ var Ls = {
 		"cl_uopts": "up2k 开关",
 		"cl_favico": "网站图标",
 		"cl_bigdir": "最大目录数",
+		"cl_hsort": "#sort", //m
 		"cl_keytype": "键位符号",
 		"cl_hiddenc": "隐藏列",
 		"cl_hidec": "隐藏",
@@ -1418,6 +1423,7 @@ var Ls = {
 
 		"cdt_lim": "文件夹中显示的最大文件数",
 		"cdt_ask": "滚动到底部时，$N不会加载更多文件，$N而是询问你该怎么做",
+		"cdt_hsort": "包含在媒体 URL 中的排序规则 (&lt;code&gt;,sorthref&lt;/code&gt;) 数量。将其设置为 0 时，点击媒体链接时也会忽略排序规则。", //m
 
 		"tt_entree": "显示导航面板（目录树侧边栏）$N快捷键: B",
 		"tt_detree": "显示面包屑导航$N快捷键: B",
@@ -2021,6 +2027,13 @@ ebi('op_cfg').innerHTML = (
 	'		</td>\n' +
 	'	</div>\n' +
 	'</div>\n' +
+	'<div>\n' +
+	'	<h3>' + L.cl_hsort + '</h3>\n' +
+	'	<div>\n' +
+	'		<input type="text" id="hsortn" value="" ' + NOAC + ' style="width:3em" tt="' + L.cdt_hsort + '" />' +
+	'		</td>\n' +
+	'	</div>\n' +
+	'</div>\n' +
 	'<div><h3>' + L.cl_keytype + '</h3><div id="key_notation"></div></div>\n' +
 	'<div><h3>' + L.cl_hiddenc + ' &nbsp;' + (MOBILE ? '<a href="#" id="hcolsh">' + L.cl_hidec + '</a> / ' : '') + '<a href="#" id="hcolsr">' + L.cl_reset + '</a></h3><div id="hcols"></div></div>'
 );
@@ -2185,6 +2198,11 @@ if (window.og_fn) {
 }
 
 
+var hsortn = ebi('hsortn').value = icfg_get('hsortn', dhsortn);
+ebi('hsortn').oninput = function (e) {
+	var n = parseInt(this.value);
+	swrite('hsortn', hsortn = (isNum(n) ? n : dhsortn));
+};
 (function() {
 	var args = ('' + hash0).split(/,sort/g);
 	if (args.length < 2)
@@ -2201,11 +2219,13 @@ if (window.og_fn) {
 			t = "int";
 		ret.push([z, n, t]);
 	}
-	n = Math.min(ret.length, 2)
-	var cmp = jread('fsort', []);
-	if (JSON.stringify(ret.slice(0, n) !=
-		JSON.stringify(cmp.slice(0, n))))
-		jwrite('fsort', ret);
+	n = Math.min(ret.length, hsortn);
+	if (n) {
+		var cmp = jread('fsort', []);
+		if (JSON.stringify(ret.slice(0, n) !=
+			JSON.stringify(cmp.slice(0, n))))
+			jwrite('fsort', ret);
+	}
 })();
 
 
@@ -4281,7 +4301,7 @@ function getsort() {
 
 	sopts = sopts && sopts.length ? sopts : dsort;
 
-	for (var a = 0; a < Math.min(2, sopts.length); a++)
+	for (var a = 0; a < Math.min(hsortn, sopts.length); a++)
 		ret += ',sort' + (sopts[a][1] < 0 ? '-' : '') + sopts[a][0];
 
 	return ret;
