@@ -1318,7 +1318,7 @@ def add_logging(ap):
     ap2.add_argument("--log-htp", action="store_true", help="debug: print http-server threadpool scaling")
     ap2.add_argument("--ihead", metavar="HEADER", type=u, action='append', help="print request \033[33mHEADER\033[0m; [\033[32m*\033[0m]=all")
     ap2.add_argument("--ohead", metavar="HEADER", type=u, action='append', help="print response \033[33mHEADER\033[0m; [\033[32m*\033[0m]=all")
-    ap2.add_argument("--lf-url", metavar="RE", type=u, default=r"^/\.cpr/|\?th=[wj]$|/\.(_|ql_|DS_Store$|localized$)", help="dont log URLs matching regex \033[33mRE\033[0m")
+    ap2.add_argument("--lf-url", metavar="RE", type=u, default=r"^/\.cpr/|[?&]th=[wjp]|/\.(_|ql_|DS_Store$|localized$)", help="dont log URLs matching regex \033[33mRE\033[0m")
 
 
 def add_admin(ap):
