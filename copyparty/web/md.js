@@ -17,8 +17,8 @@ var chromedbg = function () { console.log(arguments); }
 var dbg = function () { };
 
 // replace dbg with the real deal here or in the console:
-// dbg = chromedbg
-// dbg = console.log
+// dbg = chromedbg;
+// dbg = console.log;
 
 
 // dodge browser issues

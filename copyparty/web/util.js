@@ -578,7 +578,9 @@ function yscroll() {
 
 function showsort(tab) {
     var v, vn, v1, v2, th = tab.tHead,
-        sopts = jread('fsort', jcp(dsort));
+        sopts = jread('fsort');
+
+    sopts = sopts && sopts.length ? sopts : dsort;
 
     th && (th = th.rows[0]) && (th = th.cells);
 
@@ -979,9 +981,31 @@ function apop(arr, v) {
 }
 
 
-function jcp(obj) {
+function jcp1(obj) {
     return JSON.parse(JSON.stringify(obj));
 }
+
+
+function jcp2(src) {
+    if (Array.isArray(src)) {
+        var ret = [];
+        for (var a = 0; a < src.length; ++a) {
+            var sub = src[a];
+            ret.push((sub === null) ? sub : (sub instanceof Date) ? new Date(sub.valueOf()) : (typeof sub === 'object') ? jcp2(sub) : sub);
+        }
+    } else {
+        var ret = {};
+        for (var key in src) {
+            var sub = src[key];
+            ret[key] = sub === null ? sub : (sub instanceof Date) ? new Date(sub.valueOf()) : (typeof sub === 'object') ? jcp2(sub) : sub;
+        }
+    }
+    return ret;
+};
+
+
+// jcp1 50% faster on android-chrome, jcp2 7x everywhere else
+var jcp = MOBILE && CHROME ? jcp1 : jcp2;
 
 
 function sdrop(key) {

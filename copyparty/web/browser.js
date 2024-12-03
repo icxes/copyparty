@@ -4255,8 +4255,10 @@ function sortfiles(nodes) {
 	if (!nodes.length)
 		return nodes;
 
-	var sopts = jread('fsort', jcp(dsort)),
+	var sopts = jread('fsort'),
 		dir1st = sread('dir1st') !== '0';
+
+	sopts = sopts && sopts.length ? sopts : jcp(dsort);
 
 	var collator = !clgot(ebi('nsort'), 'on') ? null :
 		new Intl.Collator([], {numeric: true});
