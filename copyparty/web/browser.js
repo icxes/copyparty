@@ -2201,9 +2201,10 @@ if (window.og_fn) {
 			t = "int";
 		ret.push([z, n, t]);
 	}
+	n = Math.min(ret.length, 2)
 	var cmp = jread('fsort', []);
-	if (JSON.stringify(ret.slice(0, 2) !=
-		JSON.stringify(cmp.slice(0, 2))))
+	if (JSON.stringify(ret.slice(0, n) !=
+		JSON.stringify(cmp.slice(0, n))))
 		jwrite('fsort', ret);
 })();
 
