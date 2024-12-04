@@ -1,4 +1,32 @@
 ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀  
+# 2024-1123-2336  `v1.16.2`  webdav upload fix
+
+## 🧪 new features
+
+* add `--nsort` and volflag `nsort` to default-enable natural sort of filenames with leading digits 8f7ffcf3
+* video-player: support `.mov` files which contain browser-native codecs 2d0cbdf1
+
+## 🩹 bugfixes
+
+* #119 v1.16.0 broke webdav uploads from rclone and possibly other clients 7dfbfc72
+  * a collection of webdav unittests will be added soon to prevent similar issues in the future
+* #118 ip-ranges can be mixed with `lan` when specifying the list of trusted proxies for `x-forwarded-for` with `--xff-src`
+  * found and fixed by @codemicro (thx!) 0e31cfa7
+* ux:
+  * in the grid-view, markdown files would open in the generic text viewer 520ac8f4
+  * qr-codes (create-share, view-share) didn't render on chrome db069c3d
+  * qr-codes could cause layout-shifting 5afb562a
+  * fix layout-shifting for ongoing downloads in controlpanel 9c8507a0
+  * cosmetic eta jank b10843d0
+
+## 🔧 other changes
+
+* upto 7% faster folder listings due to refactoring for more ux knobs 0c43b592 
+* fix resource leaks (only affected tests/debug) 2ab8924e
+
+
+
+▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀  
 # 2024-1115-2218  `v1.16.1`  cbz thumbnails
 
 ## 🧪 new features
