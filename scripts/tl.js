@@ -291,6 +291,7 @@ var tl_browser = {
 		"cl_uopts": "up2k switches",
 		"cl_favico": "favicon",
 		"cl_bigdir": "big dirs",
+		"cl_hsort": "#sort",
 		"cl_keytype": "key notation",
 		"cl_hiddenc": "hidden columns",
 		"cl_hidec": "hide",
@@ -333,6 +334,7 @@ var tl_browser = {
 
 		"cdt_lim": "max number of files to show in a folder",
 		"cdt_ask": "when scrolling to the bottom,$Ninstead of loading more files,$Nask what to do",
+		"cdt_hsort": "how many sorting rules (&lt;code&gt;,sorthref&lt;/code&gt;) to include in media-URLs. Setting this to 0 will also ignore sorting-rules included in media links when clicking them",
 
 		"tt_entree": "show navpane (directory tree sidebar)$NHotkey: B",
 		"tt_detree": "show breadcrumbs$NHotkey: B",
