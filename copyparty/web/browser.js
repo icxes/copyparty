@@ -542,6 +542,7 @@ var Ls = {
 		"u_hashdone": 'hashing done',
 		"u_hashing": 'hash',
 		"u_hs": 'handshaking...',
+		"u_started": "the files are now being uploaded; see [🚀]",
 		"u_dupdefer": "duplicate; will be processed after all other files",
 		"u_actx": "click this text to prevent loss of<br />performance when switching to other windows/tabs",
 		"u_fixed": "OK!&nbsp; Fixed it 👍",
@@ -577,6 +578,7 @@ var Ls = {
 		"ue_la": 'you are currently logged in as "{0}"',
 		"ue_sr": 'you are currently in file-search mode\n\nswitch to upload-mode by clicking the magnifying glass 🔎 (next to the big SEARCH button), and try uploading again\n\nsorry',
 		"ue_ta": 'try uploading again, it should work now',
+		"ue_ab": "this file is already being uploaded into another folder, and that upload must be completed before the file can be uploaded elsewhere.\n\nYou can abort and forget the initial upload using the top-left 🧯",
 		"ur_1uo": "OK: File uploaded successfully",
 		"ur_auo": "OK: All {0} files uploaded successfully",
 		"ur_1so": "OK: File found on server",
@@ -1129,6 +1131,7 @@ var Ls = {
 		"u_hashdone": 'befaring ferdig',
 		"u_hashing": 'les',
 		"u_hs": 'serveren tenker...',
+		"u_started": "filene blir nå lastet opp 🚀",
 		"u_dupdefer": "duplikat; vil bli håndtert til slutt",
 		"u_actx": "klikk her for å forhindre tap av<br />ytelse ved bytte til andre vinduer/faner",
 		"u_fixed": "OK!&nbsp; Løste seg 👍",
@@ -1164,6 +1167,7 @@ var Ls = {
 		"ue_la": 'du er logget inn som "{0}"',
 		"ue_sr": 'du er i filsøk-modus\n\nbytt til opplastning ved å klikke på forstørrelsesglasset 🔎 (ved siden av den store FILSØK-knappen) og prøv igjen\n\nsorry',
 		"ue_ta": 'prøv å laste opp igjen, det burde funke nå',
+		"ue_ab": "den samme filen er allerede under opplastning til en annen mappe, og den må fullføres der før filen kan lastes opp andre steder.\n\nDu kan avbryte og glemme den påbegynte opplastningen ved hjelp av 🧯 oppe til venstre",
 		"ur_1uo": "OK: Filen ble lastet opp",
 		"ur_auo": "OK: Alle {0} filene ble lastet opp",
 		"ur_1so": "OK: Filen ble funnet på serveren",
@@ -1716,6 +1720,7 @@ var Ls = {
 		"u_hashdone": '哈希完成',
 		"u_hashing": '哈希',
 		"u_hs": '正在等待服务器...',
+		"u_started": "文件现在正在上传 🚀", //m
 		"u_dupdefer": "这是一个重复文件。它将在所有其他文件上传后进行处理",
 		"u_actx": "单击此文本以防止切换到其他窗口/选项卡时性能下降",
 		"u_fixed": "好！&nbsp;已修复 👍",
@@ -1751,6 +1756,7 @@ var Ls = {
 		"ue_la": '你当前以 "{0}" 登录',
 		"ue_sr": '你当前处于文件搜索模式\n\n通过点击大搜索按钮旁边的放大镜 🔎 切换到上传模式，然后重试上传\n\n抱歉',
 		"ue_ta": '尝试再次上传，现在应该能正常工作',
+		"ue_ab": "这份文件正在上传到另一个文件夹，必须完成该上传后，才能将文件上传到其他位置。\n\n您可以通过左上角的🧯中止并忘记该上传。", //m
 		"ur_1uo": "成功：文件上传成功",
 		"ur_auo": "成功：所有 {0} 个文件上传成功",
 		"ur_1so": "成功：文件在服务器上找到",
@@ -9465,7 +9471,23 @@ var unpost = (function () {
 		toast.ok(5, this.responseText);
 
 		if (!QS('#op_unpost a[me]'))
-			ebi(goto_unpost());
+			goto_unpost();
+
+		var fi = window.up2k && up2k.st.files;
+		if (fi && fi.length < 9) {
+			for (var a = 0; a < fi.length; a++) {
+				var f = fi[a];
+				if (!f.done && (f.rechecks || f.want_recheck) &&
+					!has(up2k.st.todo.handshake, f) &&
+					!has(up2k.st.busy.handshake, f)
+				) {
+					up2k.st.todo.handshake.push(f);
+					up2k.ui.seth(f.n, 2, L.u_hashdone);
+					up2k.ui.seth(f.n, 1, '📦 wait');
+					up2k.ui.move(f.n, 'bz');
+				}
+			}
+		}
 	}
 
 	ct.onclick = function (e) {

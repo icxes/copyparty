@@ -3093,7 +3093,8 @@ class Up2k(object):
                         if cur:
                             dupe = (cj["prel"], cj["name"], cj["lmod"])
                             try:
-                                self.dupesched[src].append(dupe)
+                                if dupe not in self.dupesched[src]:
+                                    self.dupesched[src].append(dupe)
                             except:
                                 self.dupesched[src] = [dupe]
 
@@ -4676,6 +4677,13 @@ class Up2k(object):
                     t = "forgetting partial upload {} ({})"
                     p = self._vis_job_progress(job)
                     self.log(t.format(wark, p))
+
+                src = djoin(ptop, vrem)
+                zi = len(self.dupesched.pop(src, []))
+                if zi:
+                    t = "...and forgetting %d links in dupesched"
+                    self.log(t % (zi,))
+
                 assert wark
                 del reg[wark]
 

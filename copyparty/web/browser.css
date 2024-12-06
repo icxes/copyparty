@@ -2785,6 +2785,7 @@ html.b #u2conf a.b:hover {
 	padding-left: .2em;
 }
 .fsearch_explain {
+	color: var(--a-dark);
 	padding-left: .7em;
 	font-size: 1.1em;
 	line-height: 0;

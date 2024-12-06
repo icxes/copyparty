@@ -2408,6 +2408,9 @@ function up2k_init(subtle) {
                     msg = 'done';
 
                 if (t.postlist.length) {
+                    if (t.rechecks && QS('#opa_del.act'))
+                        toast.inf(30, L.u_started, L.u_unpt);
+
                     var arr = st.todo.upload,
                         sort = arr.length && arr[arr.length - 1].nfile > t.n;
 
@@ -2518,8 +2521,13 @@ function up2k_init(subtle) {
                     if (!t.rechecks && (err_pend || err_srcb)) {
                         t.rechecks = 0;
                         t.want_recheck = true;
-                        err = L.u_dupdefer;
-                        cls = 'defer';
+                        if (st.busy.upload.length || st.busy.handshake.length || st.bytes.uploaded) {
+                            err = L.u_dupdefer;
+                            cls = 'defer';
+                        }
+                    }
+                    if (err_pend) {
+                        err += ' <a href="#" onclick="toast.inf(60, L.ue_ab);" class="fsearch_explain">(' + L.u_expl + ')</a>';
                     }
                 }
 
