@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 from __future__ import print_function, unicode_literals
 
-S_VERSION = "2.6"
-S_BUILD_DT = "2024-11-10"
+S_VERSION = "2.7"
+S_BUILD_DT = "2024-12-06"
 
 """
 u2c.py: upload to copyparty
@@ -1033,8 +1033,8 @@ class Ctl(object):
             handshake(self.ar, file, False)
 
     def _fancy(self):
+        atexit.register(self.cleanup_vt100)
         if VT100 and not self.ar.ns:
-            atexit.register(self.cleanup_vt100)
             ss.scroll_region(3)
 
         Daemon(self.hasher)
@@ -1042,6 +1042,7 @@ class Ctl(object):
             Daemon(self.handshaker)
             Daemon(self.uploader)
 
+        last_sp = -1
         while True:
             with self.exit_cond:
                 self.exit_cond.wait(0.07)
@@ -1080,6 +1081,12 @@ class Ctl(object):
             else:
                 txt = " "
 
+            if not VT100:  # OSC9;4 (taskbar-progress)
+                sp = int(self.up_b * 100 / self.nbytes) or 1
+                if last_sp != sp:
+                    last_sp = sp
+                    txt += "\033]9;4;1;%d\033\\" % (sp,)
+
             if not self.up_br:
                 spd = self.hash_b / ((time.time() - self.t0) or 1)
                 eta = (self.nbytes - self.hash_b) / (spd or 1)
@@ -1097,6 +1104,8 @@ class Ctl(object):
             tail = "\033[K\033[u" if VT100 and not self.ar.ns else "\r"
 
             t = "%s eta @ %s/s, %s, %d# left\033[K" % (self.eta, spd, sleft, nleft)
+            if not self.hash_b:
+                t = " now hashing..."
             eprint(txt + "\033]0;{0}\033\\\r{0}{1}".format(t, tail))
 
         if self.ar.wlist:
@@ -1117,7 +1126,10 @@ class Ctl(object):
             handshake(self.ar, file, False)
 
     def cleanup_vt100(self):
-        ss.scroll_region(None)
+        if VT100:
+            ss.scroll_region(None)
+        else:
+            eprint("\033]9;4;0\033\\")
         eprint("\033[J\033]0;\033\\")
 
     def cb_hasher(self, file, ofs):
@@ -1537,6 +1549,38 @@ source file/folder selection uses rsync syntax, meaning that:
                 input()
             except:
                 pass
+
+    # msys2 doesn't uncygpath absolute paths with whitespace
+    if not VT100:
+        zsl = []
+        for fn in ar.files:
+            if re.search("^/[a-z]/", fn):
+                fn = r"%s:\%s" % (fn[1:2], fn[3:])
+            zsl.append(fn.replace("/", "\\"))
+        ar.files = zsl
+
+    fok = []
+    fng = []
+    for fn in ar.files:
+        if os.path.exists(fn):
+            fok.append(fn)
+        elif VT100:
+            fng.append(fn)
+        else:
+            # windows leaves glob-expansion to the invoked process... okayyy let's get to work
+            from glob import glob
+
+            fns = glob(fn)
+            if fns:
+                fok.extend(fns)
+            else:
+                fng.append(fn)
+
+    if fng:
+        t = "some files/folders were not found:\n  %s"
+        raise Exception(t % ("\n  ".join(fng),))
+
+    ar.files = fok
 
     if ar.drd:
         ar.dr = True
