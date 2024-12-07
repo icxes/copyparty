@@ -1,4 +1,44 @@
 ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀  
+# 2024-1204-0003  `v1.16.3`  120%
+
+## 🧪 new features
+
+* #120 add option `--srch-excl` and volflag `srch_excl` for excluding certain paths from search results 697a4fa8
+* mDNS: add workaround for https://github.com/avahi/avahi/issues/379 6c1cf68b 94d1924f
+  * Avahi mDNS Reflection, sometimes used in intricate LAN setups, doesn't understand NSEC records and corrupts them
+  * the workaround makes copyparty able to read the corrupted packets, but clients without a similar workaround will require either `--zm4` or `--zm6` so copyparty doesn't include the usual NSEC records
+    * this is mentioned in a very loud warning in the logs when necessary
+* mDNS: option to silently ignore buggy devices instead of spamming the log with parser errors 395af051
+* webdav: support listing unmapped root with infinite recursion (Depth:0) 21a3f369
+* embed current sort config into media URLs (gallery/music) 0f257c93 4cfdc4c5 01670827
+  * ensures that anyone clicking your link will see the files in the same order as you
+  * can be confgured serverside (`--hsortn`, volflag `hsortn`) and clientside (`#sort` in settings)
+* URL and UI options to disable checksum calculation of PUT, bup, basic uploads c5a000d2
+  * also allows [choosing either md5, sha1, sha256, or blake2](https://github.com/9001/copyparty/blob/hovudstraum/docs/devnotes.md#write) instead of the default sha512
+  * can give uploads a nice speed boost when copyparty is running on a potato
+
+## 🩹 bugfixes
+
+* webdav: more correct login challenge 2ce82339
+  * the previous behavior could make some clients reluctant to send the password
+* #120 forget metadata of all files (including uploads) when shadowed d168b2ac
+  * thanks to @Gremious for all the debugging to narrow this down!
+* #120 drop volume caches if relevant config is changed (mainly indexing filters) 2f83c6c7
+* #121 couldn't access arbitrary toplevel files from accounts with `h` permission 1f5f42f2
+
+## 🔧 other changes
+
+* exclude thumbnails from accesslog by default 9082c470
+* filesearch: show a final summary of time-elapsed and average hashing speed 8a631f04
+* improve phrasing of debug messages during indexing at startup 127f414e
+* `--license` no longer depends on opensource.org at build time 33c4ccff
+* update deps 6cedcfbf
+  * copyparty.exe: python 3.12.7 => 3.12.8
+  * webdeps: hashwasm, dompurify
+
+
+
+▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀  
 # 2024-1123-2336  `v1.16.2`  webdav upload fix
 
 ## 🧪 new features
