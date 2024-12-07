@@ -1737,7 +1737,7 @@ def main(argv: Optional[list[str]] = None) -> None:
         except:
             lprint("\nfailed to disable quick-edit-mode:\n" + min_ex() + "\n")
 
-    if al.ansi:
+    if not al.ansi:
         al.wintitle = ""
 
     # propagate implications
