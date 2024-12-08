@@ -1488,7 +1488,9 @@ replace copyparty passwords with oauth and such
 
 you can disable the built-in password-based login system, and instead replace it with a separate piece of software (an identity provider) which will then handle authenticating / authorizing of users; this makes it possible to login with passkeys / fido2 / webauthn / yubikey / ldap / active directory / oauth / many other single-sign-on contraptions
 
-a popular choice is [Authelia](https://www.authelia.com/) (config-file based), another one is [authentik](https://goauthentik.io/) (GUI-based, more complex)
+* the regular config-defined users will be used as a fallback for requests which don't include a valid (trusted) IdP username header
+
+some popular identity providers are [Authelia](https://www.authelia.com/) (config-file based) and [authentik](https://goauthentik.io/) (GUI-based, more complex)
 
 there is a [docker-compose example](./docs/examples/docker/idp-authelia-traefik) which is hopefully a good starting point (alternatively see [./docs/idp.md](./docs/idp.md) if you're the DIY type)
 

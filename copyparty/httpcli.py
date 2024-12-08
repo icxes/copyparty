@@ -542,8 +542,14 @@ class HttpCli(object):
             except:
                 pass
 
+        self.pw = uparam.get("pw") or self.headers.get("pw") or bauth or cookie_pw
+        self.uname = (
+            self.asrv.sesa.get(self.pw)
+            or self.asrv.iacct.get(self.asrv.ah.hash(self.pw))
+            or "*"
+        )
+
         if self.args.idp_h_usr:
-            self.pw = ""
             idp_usr = self.headers.get(self.args.idp_h_usr) or ""
             if idp_usr:
                 idp_grp = (
@@ -588,20 +594,11 @@ class HttpCli(object):
                     idp_grp = ""
 
                 if idp_usr in self.asrv.vfs.aread:
+                    self.pw = ""
                     self.uname = idp_usr
                     self.html_head += "<script>var is_idp=1</script>\n"
                 else:
                     self.log("unknown username: [%s]" % (idp_usr), 1)
-                    self.uname = "*"
-            else:
-                self.uname = "*"
-        else:
-            self.pw = uparam.get("pw") or self.headers.get("pw") or bauth or cookie_pw
-            self.uname = (
-                self.asrv.sesa.get(self.pw)
-                or self.asrv.iacct.get(self.asrv.ah.hash(self.pw))
-                or "*"
-            )
 
         if self.args.ipu and self.uname == "*":
             self.uname = self.conn.ipu_iu[self.conn.ipu_nm.map(self.ip)]
