@@ -1359,7 +1359,15 @@ function up2k_init(subtle) {
             draw_each = good_files.length < 50;
 
         if (WebAssembly && !hws.length) {
-            for (var a = 0; a < Math.min(navigator.hardwareConcurrency || 4, 16); a++)
+            var nw = Math.min(navigator.hardwareConcurrency || 4, 16);
+
+            if (CHROME) {
+                // chrome-bug 383568268 // #124
+                nw = Math.max(1, (nw > 4 ? 4 : (nw - 1)));
+                nw = (subtle && !MOBILE && nw > 2) ? 2 : nw;
+            }
+
+            for (var a = 0; a < nw; a++)
                 hws.push(new Worker(SR + '/.cpr/w.hash.js?_=' + TS));
 
             if (!subtle)

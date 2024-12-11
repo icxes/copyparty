@@ -339,6 +339,9 @@ same order here too
 
 * [Chrome issue 1352210](https://bugs.chromium.org/p/chromium/issues/detail?id=1352210) -- plaintext http may be faster at filehashing than https (but also extremely CPU-intensive)
 
+* [Chrome issue 383568268](https://issues.chromium.org/issues/383568268) -- filereaders in webworkers can OOM / crash the browser-tab
+  * copyparty has a workaround which seems to work well enough
+
 * [Firefox issue 1790500](https://bugzilla.mozilla.org/show_bug.cgi?id=1790500) -- entire browser can crash after uploading ~4000 small files
 
 * Android: music playback randomly stops due to [battery usage settings](#fix-unreliable-playback-on-android)
