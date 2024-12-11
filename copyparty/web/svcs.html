@@ -53,7 +53,6 @@
                 {% if s %}
                 <li>running <code>rclone mount</code> on LAN (or just dont have valid certificates)? add <code>--no-check-certificate</code></li>
                 {% endif %}
-                <li>running <code>rclone mount</code> as root? add <code>--allow-other</code></li>
                 <li>old version of rclone? replace all <code>=</code> with <code>&nbsp;</code> (space)</li>
             </ul>
 
@@ -137,7 +136,6 @@
                 {% if args.ftps %}
                 <li>running on LAN (or just dont have valid certificates)? add <code>no_check_certificate=true</code> to the config command</li>
                 {% endif %}
-                <li>running <code>rclone mount</code> as root? add <code>--allow-other</code></li>
                 <li>old version of rclone? replace all <code>=</code> with <code>&nbsp;</code> (space)</li>
             </ul>
             <p>if you want to use the native FTP client in windows instead (please dont), press <code>win+R</code> and run this command:</p>
