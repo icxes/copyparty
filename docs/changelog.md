@@ -1,4 +1,17 @@
 ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀  
+# 2024-1207-0024  `v1.16.4`  ux is hard
+
+## 🧪 new features
+
+* improve the upload ui so it explains how to abort an unfinished upload when someone uploads to the wrong folder by accident be6afe2d
+  * also reduces serverload slightly when cloning an incoming file to multiple destinations
+* u2c (commandline uploader): windows improvements 91637800
+  * now supports globbing (filename wildcards) on windows
+  * progressbar in the windows taskbar (requires conemu or the "new windows terminal")
+
+
+
+▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀  
 # 2024-1204-0003  `v1.16.3`  120%
 
 ## 🧪 new features
