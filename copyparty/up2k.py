@@ -3937,7 +3937,7 @@ class Up2k(object):
                     if jrem == rem:
                         if job["ptop"] != ptop:
                             t = "job.ptop [%s] != vol.ptop [%s] ??"
-                            raise Exception(t % (job["ptop"] != ptop))
+                            raise Exception(t % (job["ptop"], ptop))
                         partial = vn.canonical(vjoin(job["prel"], job["tnam"]))
                         break
                 if partial:

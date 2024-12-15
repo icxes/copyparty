@@ -33,14 +33,6 @@ def eprint(*a, **ka):
     sys.stderr.flush()
 
 
-if MACOS:
-    import posixpath
-
-    posixpath.islink = nah
-    os.path.islink = nah
-    # 25% faster; until any tests do symlink stuff
-
-
 from copyparty.__main__ import init_E
 from copyparty.broker_thr import BrokerThr
 from copyparty.ico import Ico

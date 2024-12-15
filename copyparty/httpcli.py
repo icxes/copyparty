@@ -1118,6 +1118,8 @@ class HttpCli(object):
                 logmsg += " [\033[36m" + rval + "\033[0m]"
 
             self.log(logmsg)
+            if "%" in self.req:
+                self.log(" `-- %r" % (self.vpath,))
 
         # "embedded" resources
         if self.vpath.startswith(".cpr"):
@@ -1381,6 +1383,8 @@ class HttpCli(object):
     def handle_propfind(self) -> bool:
         if self.do_log:
             self.log("PFIND %s @%s" % (self.req, self.uname))
+            if "%" in self.req:
+                self.log("  `-- %r" % (self.vpath,))
 
         if self.args.no_dav:
             raise Pebkac(405, "WebDAV is disabled in server config")
@@ -1562,6 +1566,8 @@ class HttpCli(object):
     def handle_proppatch(self) -> bool:
         if self.do_log:
             self.log("PPATCH %s @%s" % (self.req, self.uname))
+            if "%" in self.req:
+                self.log("   `-- %r" % (self.vpath,))
 
         if self.args.no_dav:
             raise Pebkac(405, "WebDAV is disabled in server config")
@@ -1617,6 +1623,8 @@ class HttpCli(object):
     def handle_lock(self) -> bool:
         if self.do_log:
             self.log("LOCK %s @%s" % (self.req, self.uname))
+            if "%" in self.req:
+                self.log(" `-- %r" % (self.vpath,))
 
         if self.args.no_dav:
             raise Pebkac(405, "WebDAV is disabled in server config")
@@ -1682,6 +1690,8 @@ class HttpCli(object):
     def handle_unlock(self) -> bool:
         if self.do_log:
             self.log("UNLOCK %s @%s" % (self.req, self.uname))
+            if "%" in self.req:
+                self.log("   `-- %r" % (self.vpath,))
 
         if self.args.no_dav:
             raise Pebkac(405, "WebDAV is disabled in server config")
@@ -1699,6 +1709,8 @@ class HttpCli(object):
 
         if self.do_log:
             self.log("MKCOL %s @%s" % (self.req, self.uname))
+            if "%" in self.req:
+                self.log("  `-- %r" % (self.vpath,))
 
         try:
             return self._mkdir(self.vpath, True)
@@ -1750,6 +1762,8 @@ class HttpCli(object):
     def handle_options(self) -> bool:
         if self.do_log:
             self.log("OPTIONS %s @%s" % (self.req, self.uname))
+            if "%" in self.req:
+                self.log("    `-- %r" % (self.vpath,))
 
         oh = self.out_headers
         oh["Allow"] = ", ".join(self.conn.hsrv.mallow)
@@ -1765,10 +1779,14 @@ class HttpCli(object):
 
     def handle_delete(self) -> bool:
         self.log("DELETE %s @%s" % (self.req, self.uname))
+        if "%" in self.req:
+            self.log("   `-- %r" % (self.vpath,))
         return self.handle_rm([])
 
     def handle_put(self) -> bool:
-        self.log("PUT %s @%s" % (self.req, self.uname))
+        self.log("PUT  %s @%s" % (self.req, self.uname))
+        if "%" in self.req:
+            self.log(" `-- %r" % (self.vpath,))
 
         if not self.can_write:
             t = "user %s does not have write-access under /%s"
@@ -1787,6 +1805,8 @@ class HttpCli(object):
 
     def handle_post(self) -> bool:
         self.log("POST %s @%s" % (self.req, self.uname))
+        if "%" in self.req:
+            self.log(" `-- %r" % (self.vpath,))
 
         if self.headers.get("expect", "").lower() == "100-continue":
             try:
