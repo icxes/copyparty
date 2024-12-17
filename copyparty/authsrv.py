@@ -658,7 +658,7 @@ class VFS(object):
         seen: list[str],
         uname: str,
         permsets: list[list[bool]],
-        wantdots: bool,
+        wantdots: int,
         scandir: bool,
         lstat: bool,
         subvols: bool = True,
@@ -706,7 +706,7 @@ class VFS(object):
                     rm1.append(le)
             _ = [vfs_ls.remove(x) for x in rm1]  # type: ignore
 
-        dots_ok = wantdots and uname in dbv.axs.udot
+        dots_ok = wantdots and (wantdots == 2 or uname in dbv.axs.udot)
         if not dots_ok:
             vfs_ls = [x for x in vfs_ls if "/." not in "/" + x[0]]
 
@@ -760,7 +760,7 @@ class VFS(object):
         # if single folder: the folder itself is the top-level item
         folder = "" if flt or not wrap else (vpath.split("/")[-1].lstrip(".") or "top")
 
-        g = self.walk(folder, vrem, [], uname, [[True, False]], True, scandir, False)
+        g = self.walk(folder, vrem, [], uname, [[True, False]], 1, scandir, False)
         for _, _, vpath, apath, files, rd, vd in g:
             if flt:
                 files = [x for x in files if x[0] in flt]
@@ -2696,7 +2696,7 @@ class AuthSrv(object):
                     [],
                     u,
                     [[True, False]],
-                    True,
+                    1,
                     not self.args.no_scandir,
                     False,
                     False,

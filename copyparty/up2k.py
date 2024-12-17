@@ -3977,7 +3977,7 @@ class Up2k(object):
         if is_dir:
             # note: deletion inside shares would require a rewrite here;
             #   shares necessitate get_dbv which is incompatible with walk
-            g = vn0.walk("", rem0, [], uname, permsets, True, scandir, True)
+            g = vn0.walk("", rem0, [], uname, permsets, 2, scandir, True)
             if unpost:
                 raise Pebkac(400, "cannot unpost folders")
         elif stat.S_ISLNK(st.st_mode) or stat.S_ISREG(st.st_mode):
@@ -4090,6 +4090,7 @@ class Up2k(object):
             raise Pebkac(400, "cp: cannot copy parent into subfolder")
 
         svn, srem = self.vfs.get(svp, uname, True, False)
+        dvn, drem = self.vfs.get(dvp, uname, False, True)
         svn_dbv, _ = svn.get_dbv(srem)
         sabs = svn.canonical(srem, False)
         curs: set["sqlite3.Cursor"] = set()
@@ -4112,8 +4113,12 @@ class Up2k(object):
         permsets = [[True, False]]
         scandir = not self.args.no_scandir
 
+        # if user can see dotfiles in target volume, only include
+        # dots from source vols where user also has the dot perm
+        dots = 1 if uname in dvn.axs.udot else 2
+
         # don't use svn_dbv; would skip subvols due to _ls `if not rem:`
-        g = svn.walk("", srem, [], uname, permsets, True, scandir, True)
+        g = svn.walk("", srem, [], uname, permsets, dots, scandir, True)
         with self.mutex:
             try:
                 for dbv, vrem, _, atop, files, rd, vd in g:
@@ -4325,13 +4330,13 @@ class Up2k(object):
         scandir = not self.args.no_scandir
 
         # following symlinks is too scary
-        g = svn.walk("", srem, [], uname, permsets, True, scandir, True)
+        g = svn.walk("", srem, [], uname, permsets, 2, scandir, True)
         for dbv, vrem, _, atop, files, rd, vd in g:
             if dbv != jail:
                 # fail early (prevent partial moves)
                 raise Pebkac(400, "mv: source folder contains other volumes")
 
-        g = svn.walk("", srem, [], uname, permsets, True, scandir, True)
+        g = svn.walk("", srem, [], uname, permsets, 2, scandir, True)
         with self.mutex:
             try:
                 for dbv, vrem, _, atop, files, rd, vd in g:
