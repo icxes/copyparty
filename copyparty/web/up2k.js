@@ -695,8 +695,9 @@ function Donut(uc, st) {
         }
 
         if (++r.tc >= 10) {
+            var s = r.eta === null ? 'paused' : r.eta > 60 ? shumantime(r.eta) : (r.eta + 's');
             wintitle("{0}%, {1}, #{2}, ".format(
-                f2f(v * 100 / t, 1), shumantime(r.eta), st.files.length - st.nfile.upload), true);
+                f2f(v * 100 / t, 1), s, st.files.length - st.nfile.upload), true);
             r.tc = 0;
         }
 
