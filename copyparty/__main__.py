@@ -1250,7 +1250,6 @@ def add_optouts(ap):
     ap2.add_argument("--no-zip", action="store_true", help="disable download as zip/tar")
     ap2.add_argument("--no-tarcmp", action="store_true", help="disable download as compressed tar (?tar=gz, ?tar=bz2, ?tar=xz, ?tar=gz:9, ...)")
     ap2.add_argument("--no-lifetime", action="store_true", help="do not allow clients (or server config) to schedule an upload to be deleted after a given time")
-    ap2.add_argument("--no-up-list", action="store_true", help="don't show list of incoming files in controlpanel")
     ap2.add_argument("--no-pipe", action="store_true", help="disable race-the-beam (lockstep download of files which are currently being uploaded) (volflag=nopipe)")
     ap2.add_argument("--no-db-ip", action="store_true", help="do not write uploader IPs into the database")
 
@@ -1326,7 +1325,10 @@ def add_admin(ap):
     ap2.add_argument("--no-reload", action="store_true", help="disable ?reload=cfg (reload users/volumes/volflags from config file)")
     ap2.add_argument("--no-rescan", action="store_true", help="disable ?scan (volume reindexing)")
     ap2.add_argument("--no-stack", action="store_true", help="disable ?stack (list all stacks)")
+    ap2.add_argument("--no-ups-page", action="store_true", help="disable ?ru (list of recent uploads)")
+    ap2.add_argument("--no-up-list", action="store_true", help="don't show list of incoming files in controlpanel")
     ap2.add_argument("--dl-list", metavar="LVL", type=int, default=2, help="who can see active downloads in the controlpanel? [\033[32m0\033[0m]=nobody, [\033[32m1\033[0m]=admins, [\033[32m2\033[0m]=everyone")
+    ap2.add_argument("--ups-when", action="store_true", help="let everyone see upload timestamps on the ?ru page, not just admins")
 
 
 def add_thumbnail(ap):

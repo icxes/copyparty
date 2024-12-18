@@ -172,15 +172,16 @@ class HttpSrv(object):
         env = jinja2.Environment()
         env.loader = jinja2.FunctionLoader(lambda f: load_jinja2_resource(self.E, f))
         jn = [
-            "splash",
-            "shares",
-            "svcs",
             "browser",
             "browser2",
-            "msg",
+            "cf",
             "md",
             "mde",
-            "cf",
+            "msg",
+            "rups",
+            "shares",
+            "splash",
+            "svcs",
         ]
         self.j2 = {x: env.get_template(x + ".html") for x in jn}
         self.prism = has_resource(self.E, "web/deps/prism.js.gz")

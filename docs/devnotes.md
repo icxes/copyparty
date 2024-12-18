@@ -143,6 +143,9 @@ authenticate using header `Cookie: cppwd=foo` or url param `&pw=foo`
 | GET | `?dls` | show active downloads (do this as admin) |
 | GET | `?ups` | show recent uploads from your IP |
 | GET | `?ups&filter=f` | ...where URL contains `f` |
+| GET | `?ru` | show all recent uploads |
+| GET | `?ru&filter=f` | ...where URL contains `f` |
+| GET | `?ru&j` | ...as json |
 | GET | `?mime=foo` | specify return mimetype `foo` |
 | GET | `?v` | render markdown file at URL |
 | GET | `?v` | open image/video/audio in mediaplayer |

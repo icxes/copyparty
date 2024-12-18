@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<title>{{ s_doctitle }}</title>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=0.8">
+	<meta name="theme-color" content="#{{ tcolor }}">
+	<link rel="stylesheet" media="screen" href="{{ r }}/.cpr/rups.css?_={{ ts }}">
+	<link rel="stylesheet" media="screen" href="{{ r }}/.cpr/ui.css?_={{ ts }}">
+{{ html_head }}
+</head>
+
+<body>
+	<div id="wrap">
+        <a id="a" href="{{ r }}/?ru" class="af">refresh</a>
+        <a id="a" href="{{ r }}/?h" class="af">control-panel</a>
+        <form method="get" enctype="application/x-www-form-urlencoded" accept-charset="utf-8" action="{{ r }}">
+            <input type="hidden" name="ru" value="a" />
+            Filter: <input type="text" name="filter" size="20" placeholder="documents/passwords" value="{{ filt }}" />
+            <input type="submit" />
+        </form>
+        <span id="hits"></span>
+        <table id="tab"><thead><tr>
+            <th>size</th>
+            <th>who</th>
+            <th>when</th>
+            <th>age</th>
+            <th>dir</th>
+            <th>file</th>
+        </tr></thead><tbody>
+        {% for vp, evp, sz, ip, at in rows %}
+        <tr>
+            <td>{{ sz }}</td>
+            <td>{{ ip }}</td>
+            <td>{{ at }}</td>
+            <td>{{ (now-at) }}</td>
+            <td></td>
+            <td><a href="{{ r }}{{ evp }}">{{ vp|e }}</a></td>
+        </tr>
+        {% endfor %}
+        </tbody></table>
+        {% if not rows %}
+        (the database is not aware of any uploads)
+        {% endif %}
+    </div>
+	<a href="#" id="repl">π</a>
+	<script>
+
+var SR = {{ r|tojson }},
+    NOW = {{ now }},
+	lang="{{ lang }}",
+	dfavico="{{ favico }}";
+
+var STG = window.localStorage;
+document.documentElement.className = (STG && STG.cpp_thm) || "{{ this.args.theme }}";
+
+</script>
+<script src="{{ r }}/.cpr/util.js?_={{ ts }}"></script>
+<script src="{{ r }}/.cpr/rups.js?_={{ ts }}"></script>
+{%- if js %}
+<script src="{{ js }}_={{ ts }}"></script>
+{%- endif %}
+</body>
+</html>
+

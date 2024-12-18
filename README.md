@@ -48,6 +48,7 @@ turn almost any device into a file server with resumable uploads/downloads using
     * [shares](#shares) - share a file or folder by creating a temporary link
     * [batch rename](#batch-rename) - select some files and press `F2` to bring up the rename UI
     * [rss feeds](#rss-feeds) - monitor a folder with your RSS reader
+    * [recent uploads](#recent-uploads) - list all recent uploads
     * [media player](#media-player) - plays almost every audio format there is
         * [audio equalizer](#audio-equalizer) - and [dynamic range compressor](https://en.wikipedia.org/wiki/Dynamic_range_compression)
         * [fix unreliable playback on android](#fix-unreliable-playback-on-android) - due to phone / app settings
@@ -717,7 +718,7 @@ files go into `[ok]` if they exist (and you get a link to where it is), otherwis
 
 ### unpost
 
-undo/delete accidental uploads
+undo/delete accidental uploads  using the `[🧯]` tab in the UI
 
 ![copyparty-unpost-fs8](https://user-images.githubusercontent.com/241032/129635368-3afa6634-c20f-418c-90dc-ec411f3b3897.png)
 
@@ -874,6 +875,17 @@ url parameters:
   * `n` = filename
   * `a` = filesize
   * uppercase = reverse-sort; `M` = oldest file first
+
+
+## recent uploads
+
+list all recent uploads  by clicking "show recent uploads" in the controlpanel
+
+will show uploader IP and upload-time if the visitor has the admin permission
+
+* global-option `--ups-when` makes upload-time visible to all users, and not just admins
+
+note that the [🧯 unpost](#unpost) feature is better suited for viewing *your own* recent uploads, as it includes the option to undo/delete them
 
 
 ## media player

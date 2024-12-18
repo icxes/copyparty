@@ -91,6 +91,9 @@ web/mde.html
 web/mde.js
 web/msg.css
 web/msg.html
+web/rups.css
+web/rups.html
+web/rups.js
 web/shares.css
 web/shares.html
 web/shares.js

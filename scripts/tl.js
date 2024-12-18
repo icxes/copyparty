@@ -80,6 +80,7 @@ var tl_cpanel = {
 		"ac1": "enable no304",
 		"ad1": "enabling no304 will disable all caching; try this if k304 wasn't enough. This will waste a huge amount of network traffic!",
 		"ae1": "active downloads:",
+        "af1": "show recent uploads",
 	},
 };
 

@@ -1233,6 +1233,9 @@ class HttpCli(object):
             if "dls" in self.uparam:
                 return self.tx_dls()
 
+            if "ru" in self.uparam:
+                return self.tx_rups()
+
         if "h" in self.uparam:
             return self.tx_mounts()
 
@@ -4919,9 +4922,9 @@ class HttpCli(object):
                 raise Pebkac(500, "sqlite3 not found on server; unpost is disabled")
             raise Pebkac(500, "server busy, cannot unpost; please retry in a bit")
 
-        filt = self.uparam.get("filter") or ""
-        lm = "ups %r" % (filt,)
-        self.log(lm)
+        zs = self.uparam.get("filter") or ""
+        filt = re.compile(zs, re.I) if zs else None
+        lm = "ups %r" % (zs,)
 
         if self.args.shr and self.vpath.startswith(self.args.shr1):
             shr_dbv, shr_vrem = self.vn.get_dbv(self.rem)
@@ -4962,13 +4965,18 @@ class HttpCli(object):
 
             nfk, fk_alg = fk_vols.get(vol) or (0, 0)
 
-            q = "select sz, rd, fn, at from up where ip=? and at>?"
+            n = 2000
+            q = "select sz, rd, fn, at from up where ip=? and at>? order by at desc"
             for sz, rd, fn, at in cur.execute(q, (self.ip, lim)):
                 vp = "/" + "/".join(x for x in [vol.vpath, rd, fn] if x)
-                if filt and filt not in vp:
+                if filt and not filt.search(vp):
                     continue
 
-                rv = {"vp": quotep(vp), "sz": sz, "at": at, "nfk": nfk}
+                n -= 1
+                if not n:
+                    break
+
+                rv = {"vp": vp, "sz": sz, "at": at, "nfk": nfk}
                 if nfk:
                     rv["ap"] = vol.canonical(vjoin(rd, fn))
                     rv["fk_alg"] = fk_alg
@@ -4978,9 +4986,13 @@ class HttpCli(object):
                     ret.sort(key=lambda x: x["at"], reverse=True)  # type: ignore
                     ret = ret[:2000]
 
+        if len(ret) > 2000:
+            ret = ret[:2000]
+
         ret.sort(key=lambda x: x["at"], reverse=True)  # type: ignore
-        n = 0
-        for rv in ret[:11000]:
+
+        for rv in ret:
+            rv["vp"] = quotep(rv["vp"])
             nfk = rv.pop("nfk")
             if not nfk:
                 continue
@@ -4996,12 +5008,6 @@ class HttpCli(object):
                 alg, self.args.fk_salt, ap, st.st_size, 0 if ANYWIN else st.st_ino
             )
             rv["vp"] += "?k=" + fk[:nfk]
-
-            n += 1
-            if n > 2000:
-                break
-
-        ret = ret[:2000]
 
         if shr_dbv:
             # translate vpaths from share-target to share-url
@@ -5024,6 +5030,125 @@ class HttpCli(object):
         zi = len(uret.split('\n"pd":')) - 1
         self.log("%s #%d+%d %.2fsec" % (lm, zi, len(ret), time.time() - t0))
         self.reply(jtxt.encode("utf-8", "replace"), mime="application/json")
+        return True
+
+    def tx_rups(self) -> bool:
+        if self.args.no_ups_page:
+            raise Pebkac(500, "listing of recent uploads is disabled in server config")
+
+        idx = self.conn.get_u2idx()
+        if not idx or not hasattr(idx, "p_end"):
+            if not HAVE_SQLITE3:
+                raise Pebkac(500, "sqlite3 not found on server; recent-uploads n/a")
+            raise Pebkac(500, "server busy, cannot list recent uploads; please retry")
+
+        sfilt = self.uparam.get("filter") or ""
+        filt = re.compile(sfilt, re.I) if sfilt else None
+        lm = "ru %r" % (sfilt,)
+        self.log(lm)
+
+        ret: list[dict[str, Any]] = []
+        t0 = time.time()
+        allvols = [
+            x
+            for x in self.asrv.vfs.all_vols.values()
+            if "e2d" in x.flags and ("*" in x.axs.uread or self.uname in x.axs.uread)
+        ]
+        fk_vols = {
+            vol: (vol.flags["fk"], 2 if "fka" in vol.flags else 1)
+            for vol in allvols
+            if "fk" in vol.flags and "*" not in vol.axs.uread
+        }
+
+        for vol in allvols:
+            cur = idx.get_cur(vol)
+            if not cur:
+                continue
+
+            nfk, fk_alg = fk_vols.get(vol) or (0, 0)
+            adm = "*" in vol.axs.uadmin or self.uname in vol.axs.uadmin
+            dots = "*" in vol.axs.udot or self.uname in vol.axs.udot
+
+            n = 2000
+            q = "select sz, rd, fn, ip, at from up where at>0 order by at desc"
+            for sz, rd, fn, ip, at in cur.execute(q):
+                vp = "/" + "/".join(x for x in [vol.vpath, rd, fn] if x)
+                if filt and not filt.search(vp):
+                    continue
+
+                if not dots and "/." in vp:
+                    continue
+
+                n -= 1
+                if not n:
+                    break
+
+                rv = {
+                    "vp": vp,
+                    "sz": sz,
+                    "ip": ip,
+                    "at": at,
+                    "nfk": nfk,
+                    "adm": adm,
+                }
+                if nfk:
+                    rv["ap"] = vol.canonical(vjoin(rd, fn))
+                    rv["fk_alg"] = fk_alg
+
+                ret.append(rv)
+                if len(ret) > 3000:
+                    ret.sort(key=lambda x: x["at"], reverse=True)  # type: ignore
+                    ret = ret[:2000]
+
+        if len(ret) > 2000:
+            ret = ret[:2000]
+
+        ret.sort(key=lambda x: x["at"], reverse=True)  # type: ignore
+
+        for rv in ret:
+            rv["evp"] = quotep(rv["vp"])
+            nfk = rv.pop("nfk")
+            if not nfk:
+                continue
+
+            alg = rv.pop("fk_alg")
+            ap = rv.pop("ap")
+            try:
+                st = bos.stat(ap)
+            except:
+                continue
+
+            fk = self.gen_fk(
+                alg, self.args.fk_salt, ap, st.st_size, 0 if ANYWIN else st.st_ino
+            )
+            rv["vp"] += "?k=" + fk[:nfk]
+
+        if self.args.ups_when:
+            for rv in ret:
+                adm = rv.pop("adm")
+                if not adm:
+                    rv["ip"] = "(You)" if rv["ip"] == self.ip else "(?)"
+        else:
+            for rv in ret:
+                adm = rv.pop("adm")
+                if not adm:
+                    rv["ip"] = "(You)" if rv["ip"] == self.ip else "(?)"
+                    rv["at"] = 0
+
+        if self.is_vproxied:
+            for v in ret:
+                v["vp"] = self.args.SR + v["vp"]
+
+        self.log("%s #%d %.2fsec" % (lm, len(ret), time.time() - t0))
+
+        if "j" in self.ouparam:
+            jtxt = json.dumps(ret, separators=(",\n", ": "))
+            self.reply(jtxt.encode("utf-8", "replace"), mime="application/json")
+            return True
+
+        rows = [[x["vp"], x["evp"], x["sz"], x["ip"], x["at"]] for x in ret]
+        html = self.j2s("rups", this=self, rows=rows, filt=sfilt, now=int(time.time()))
+        self.reply(html.encode("utf-8"), status=200)
         return True
 
     def tx_shares(self) -> bool:
