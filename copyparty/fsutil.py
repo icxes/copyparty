@@ -42,14 +42,14 @@ class Fstab(object):
             self.cache = {}
 
         fs = "ext4"
-        msg = "failed to determine filesystem at [{}]; assuming {}\n{}"
+        msg = "failed to determine filesystem at %r; assuming %s\n%s"
 
         if ANYWIN:
             fs = "vfat"
             try:
                 path = self._winpath(path)
             except:
-                self.log(msg.format(path, fs, min_ex()), 3)
+                self.log(msg % (path, fs, min_ex()), 3)
                 return fs
 
         path = undot(path)
@@ -61,11 +61,11 @@ class Fstab(object):
         try:
             fs = self.get_w32(path) if ANYWIN else self.get_unix(path)
         except:
-            self.log(msg.format(path, fs, min_ex()), 3)
+            self.log(msg % (path, fs, min_ex()), 3)
 
         fs = fs.lower()
         self.cache[path] = fs
-        self.log("found {} at {}".format(fs, path))
+        self.log("found %s at %r" % (fs, path))
         return fs
 
     def _winpath(self, path: str) -> str:

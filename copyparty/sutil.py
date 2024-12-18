@@ -110,7 +110,7 @@ def errdesc(
     report = ["copyparty failed to add the following files to the archive:", ""]
 
     for fn, err in errors:
-        report.extend([" file: {}".format(fn), "error: {}".format(err), ""])
+        report.extend([" file: %r" % (fn,), "error: %s" % (err,), ""])
 
     btxt = "\r\n".join(report).encode("utf-8", "replace")
     btxt = vol_san(list(vfs.all_vols.values()), btxt)

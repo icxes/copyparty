@@ -239,7 +239,7 @@ class ThumbSrv(object):
     def get(self, ptop: str, rem: str, mtime: float, fmt: str) -> Optional[str]:
         histpath = self.asrv.vfs.histtab.get(ptop)
         if not histpath:
-            self.log("no histpath for [{}]".format(ptop))
+            self.log("no histpath for %r" % (ptop,))
             return None
 
         tpath = thumb_path(histpath, rem, mtime, fmt, self.fmt_ffa)
@@ -249,7 +249,7 @@ class ThumbSrv(object):
         with self.mutex:
             try:
                 self.busy[tpath].append(cond)
-                self.log("joined waiting room for %s" % (tpath,))
+                self.log("joined waiting room for %r" % (tpath,))
             except:
                 thdir = os.path.dirname(tpath)
                 bos.makedirs(os.path.join(thdir, "w"))
@@ -266,11 +266,11 @@ class ThumbSrv(object):
             allvols = list(self.asrv.vfs.all_vols.values())
             vn = next((x for x in allvols if x.realpath == ptop), None)
             if not vn:
-                self.log("ptop [{}] not in {}".format(ptop, allvols), 3)
+                self.log("ptop %r not in %s" % (ptop, allvols), 3)
                 vn = self.asrv.vfs.all_aps[0][1]
 
             self.q.put((abspath, tpath, fmt, vn))
-            self.log("conv {} :{} \033[0m{}".format(tpath, fmt, abspath), c=6)
+            self.log("conv %r :%s \033[0m%r" % (tpath, fmt, abspath), 6)
 
         while not self.stopping:
             with self.mutex:
@@ -375,8 +375,8 @@ class ThumbSrv(object):
                     fun(ap_unpk, ttpath, fmt, vn)
                     break
                 except Exception as ex:
-                    msg = "{} could not create thumbnail of {}\n{}"
-                    msg = msg.format(fun.__name__, abspath, min_ex())
+                    msg = "%s could not create thumbnail of %r\n%s"
+                    msg = msg % (fun.__name__, abspath, min_ex())
                     c: Union[str, int] = 1 if "<Signals.SIG" in msg else "90"
                     self.log(msg, c)
                     if getattr(ex, "returncode", 0) != 321:

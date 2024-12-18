@@ -194,7 +194,7 @@ def au_unpk(
 
     except Exception as ex:
         if ret:
-            t = "failed to decompress audio file [%s]: %r"
+            t = "failed to decompress audio file %r: %r"
             log(t % (abspath, ex))
             wunlink(log, ret, vn.flags if vn else VF_CAREFUL)
 
@@ -582,7 +582,7 @@ class MTag(object):
                 raise Exception()
         except Exception as ex:
             if self.args.mtag_v:
-                self.log("mutagen-err [{}] @ [{}]".format(ex, abspath), "90")
+                self.log("mutagen-err [%s] @ %r" % (ex, abspath), "90")
 
             return self.get_ffprobe(abspath) if self.can_ffprobe else {}
 
@@ -699,8 +699,8 @@ class MTag(object):
                             ret[tag] = zj[tag]
             except:
                 if self.args.mtag_v:
-                    t = "mtag error: tagname {}, parser {}, file {} => {}"
-                    self.log(t.format(tagname, parser.bin, abspath, min_ex()))
+                    t = "mtag error: tagname %r, parser %r, file %r => %r"
+                    self.log(t % (tagname, parser.bin, abspath, min_ex()), 6)
 
         if ap != abspath:
             wunlink(self.log, ap, VF_CAREFUL)

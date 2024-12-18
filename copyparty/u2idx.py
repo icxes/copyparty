@@ -136,7 +136,7 @@ class U2idx(object):
         ptop = vn.realpath
         histpath = self.asrv.vfs.histtab.get(ptop)
         if not histpath:
-            self.log("no histpath for [{}]".format(ptop))
+            self.log("no histpath for %r" % (ptop,))
             return None
 
         db_path = os.path.join(histpath, "up2k.db")
@@ -151,7 +151,7 @@ class U2idx(object):
                 db = sqlite3.connect(uri, timeout=2, uri=True, check_same_thread=False)
                 cur = db.cursor()
                 cur.execute('pragma table_info("up")').fetchone()
-                self.log("ro: {}".format(db_path))
+                self.log("ro: %r" % (db_path,))
             except:
                 self.log("could not open read-only: {}\n{}".format(uri, min_ex()))
                 # may not fail until the pragma so unset it
@@ -161,7 +161,7 @@ class U2idx(object):
             # on windows, this steals the write-lock from up2k.deferred_init --
             # seen on win 10.0.17763.2686, py 3.10.4, sqlite 3.37.2
             cur = sqlite3.connect(db_path, timeout=2, check_same_thread=False).cursor()
-            self.log("opened {}".format(db_path))
+            self.log("opened %r" % (db_path,))
 
         self.cur[ptop] = cur
         return cur

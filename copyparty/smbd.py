@@ -263,7 +263,7 @@ class SMB(object):
                 time.time(),
                 "",
             ):
-                yeet("blocked by xbu server config: " + vpath)
+                yeet("blocked by xbu server config: %r" % (vpath,))
 
         ret = bos.open(ap, flags, *a, mode=chmod, **ka)
         if wr:

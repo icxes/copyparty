@@ -1024,7 +1024,7 @@ class ProgressPrinter(threading.Thread):
             now = time.time()
             if msg and now - tp > 10:
                 tp = now
-                self.log("progress: %s" % (msg,), 6)
+                self.log("progress: %r" % (msg,), 6)
 
             if no_stdout:
                 continue
@@ -1626,7 +1626,7 @@ class MultipartParser(object):
         (only the fallback non-js uploader relies on these filenames)
         """
         for ln in read_header(self.sr, 2, 2592000):
-            self.log(ln)
+            self.log(repr(ln))
 
             m = self.re_ctype.match(ln)
             if m:
@@ -1917,11 +1917,11 @@ def gen_filekey_dbg(
             if p2 != fspath:
                 raise Exception()
         except:
-            t = "maybe wrong abspath for filekey;\norig: {}\nreal: {}"
-            log(t.format(fspath, p2), 1)
+            t = "maybe wrong abspath for filekey;\norig: %r\nreal: %r"
+            log(t % (fspath, p2), 1)
 
-        t = "fk({}) salt({}) size({}) inode({}) fspath({}) at({})"
-        log(t.format(ret[:8], salt, fsize, inode, fspath, ctx), 5)
+        t = "fk(%s) salt(%s) size(%d) inode(%d) fspath(%r) at(%s)"
+        log(t % (ret[:8], salt, fsize, inode, fspath, ctx), 5)
 
     return ret
 
@@ -2277,7 +2277,7 @@ def log_reloc(
     rem: str,
 ) -> None:
     nap, nvp, nfn, (nvn, nrem) = pm
-    t = "reloc %s:\nold ap [%s]\nnew ap [%s\033[36m/%s\033[0m]\nold vp [%s]\nnew vp [%s\033[36m/%s\033[0m]\nold fn [%s]\nnew fn [%s]\nold vfs [%s]\nnew vfs [%s]\nold rem [%s]\nnew rem [%s]"
+    t = "reloc %s:\nold ap %r\nnew ap %r\033[36m/%r\033[0m\nold vp %r\nnew vp %r\033[36m/%r\033[0m\nold fn %r\nnew fn %r\nold vfs %r\nnew vfs %r\nold rem %r\nnew rem %r"
     log(t % (re, ap, nap, nfn, vp, nvp, nfn, fn, nfn, vn.vpath, nvn.vpath, rem, nrem))
 
 
@@ -2448,7 +2448,7 @@ def lsof(log: "NamedLogger", abspath: str) -> None:
     try:
         rc, so, se = runcmd([b"lsof", b"-R", fsenc(abspath)], timeout=45)
         zs = (so.strip() + "\n" + se.strip()).strip()
-        log("lsof {} = {}\n{}".format(abspath, rc, zs), 3)
+        log("lsof %r = %s\n%s" % (abspath, rc, zs), 3)
     except:
         log("lsof failed; " + min_ex(), 3)
 
@@ -2484,17 +2484,17 @@ def _fs_mvrm(
     for attempt in range(90210):
         try:
             if ino and os.stat(bsrc).st_ino != ino:
-                t = "src inode changed; aborting %s %s"
+                t = "src inode changed; aborting %s %r"
                 log(t % (act, src), 1)
                 return False
             if (dst and not atomic) and os.path.exists(bdst):
-                t = "something appeared at dst; aborting rename [%s] ==> [%s]"
+                t = "something appeared at dst; aborting rename %r ==> %r"
                 log(t % (src, dst), 1)
                 return False
             osfun(*args)
             if attempt:
                 now = time.time()
-                t = "%sd in %.2f sec, attempt %d: %s"
+                t = "%sd in %.2f sec, attempt %d: %r"
                 log(t % (act, now - t0, attempt + 1, src))
             return True
         except OSError as ex:
@@ -2506,7 +2506,7 @@ def _fs_mvrm(
             if not attempt:
                 if not PY2:
                     ino = os.stat(bsrc).st_ino
-                t = "%s failed (err.%d); retrying for %d sec: [%s]"
+                t = "%s failed (err.%d); retrying for %d sec: %r"
                 log(t % (act, ex.errno, maxtime + 0.99, src))
 
         time.sleep(chill)
@@ -3535,7 +3535,7 @@ def runhook(
                 log, src, cmd, ap, vp, host, uname, perms, mt, sz, ip, at, txt
             )
             if log and args.hook_v:
-                log("hook(%s) [%s] => \033[32m%s" % (src, cmd, hr), 6)
+                log("hook(%s) %r => \033[32m%s" % (src, cmd, hr), 6)
             if not hr:
                 return {}
             for k, v in hr.items():

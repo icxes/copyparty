@@ -794,7 +794,7 @@ class Up2k(object):
             if ccd != cd:
                 continue
 
-            self.log("xiu: {}# {}".format(len(wrfs), cmd))
+            self.log("xiu: %d# %r" % (len(wrfs), cmd))
             runihook(self.log, cmd, vol, ups)
 
     def _vis_job_progress(self, job: dict[str, Any]) -> str:
@@ -1060,7 +1060,7 @@ class Up2k(object):
         """mutex(main,reg) me"""
         histpath = self.vfs.histtab.get(ptop)
         if not histpath:
-            self.log("no histpath for [{}]".format(ptop))
+            self.log("no histpath for %r" % (ptop,))
             return None
 
         db_path = os.path.join(histpath, "up2k.db")
@@ -1154,7 +1154,7 @@ class Up2k(object):
                     job["poke"] = time.time()
                     job["busy"] = {}
                 else:
-                    self.log("ign deleted file in snap: [{}]".format(fp))
+                    self.log("ign deleted file in snap: %r" % (fp,))
                     if not n4g:
                         rm.append(k)
                         continue
@@ -1386,12 +1386,12 @@ class Up2k(object):
         xvol: bool,
     ) -> tuple[int, int, int]:
         if xvol and not rcdir.startswith(top):
-            self.log("skip xvol: [{}] -> [{}]".format(cdir, rcdir), 6)
+            self.log("skip xvol: %r -> %r" % (cdir, rcdir), 6)
             return 0, 0, 0
 
         if rcdir in seen:
-            t = "bailing from symlink loop,\n  prev: {}\n  curr: {}\n  from: {}"
-            self.log(t.format(seen[-1], rcdir, cdir), 3)
+            t = "bailing from symlink loop,\n  prev: %r\n  curr: %r\n  from: %r"
+            self.log(t % (seen[-1], rcdir, cdir), 3)
             return 0, 0, 0
 
         # total-files-added, total-num-files, recursive-size
@@ -1447,7 +1447,7 @@ class Up2k(object):
                     and inf.st_dev != dev
                     and not (ANYWIN and bos.stat(rap).st_dev == dev)
                 ):
-                    self.log("skip xdev {}->{}: {}".format(dev, inf.st_dev, abspath), 6)
+                    self.log("skip xdev %s->%s: %r" % (dev, inf.st_dev, abspath), 6)
                     continue
                 if abspath in excl or rap in excl:
                     unreg.append(rp)
@@ -1476,10 +1476,10 @@ class Up2k(object):
                     tnf += i2
                     rsz += i3
                 except:
-                    t = "failed to index subdir [{}]:\n{}"
-                    self.log(t.format(abspath, min_ex()), c=1)
+                    t = "failed to index subdir %r:\n%s"
+                    self.log(t % (abspath, min_ex()), 1)
             elif not stat.S_ISREG(inf.st_mode):
-                self.log("skip type-0%o file [%s]" % (inf.st_mode, abspath))
+                self.log("skip type-0%o file %r" % (inf.st_mode, abspath))
             else:
                 # self.log("file: {}".format(abspath))
                 if rp.endswith(".PARTIAL") and time.time() - lmod < 60:
@@ -1562,7 +1562,7 @@ class Up2k(object):
                     db.c.execute("insert into cv values (?,?,?)", (crd, cdn, cv))
                     db.n += 1
             except Exception as ex:
-                self.log("cover {}/{} failed: {}".format(rd, cv, ex), 6)
+                self.log("cover %r/%r failed: %s" % (rd, cv, ex), 6)
 
         seen_files = set([x[2] for x in files])  # for dropcheck
         for sz, lmod, fn in files:
@@ -1584,9 +1584,9 @@ class Up2k(object):
                 self.pp.n -= 1
                 dw, dts, dsz, ip, at = in_db[0]
                 if len(in_db) > 1:
-                    t = "WARN: multiple entries: [{}] => [{}] |{}|\n{}"
+                    t = "WARN: multiple entries: %r => %r |%d|\n%r"
                     rep_db = "\n".join([repr(x) for x in in_db])
-                    self.log(t.format(top, rp, len(in_db), rep_db))
+                    self.log(t % (top, rp, len(in_db), rep_db))
                     dts = -1
 
                 if fat32 and abs(dts - lmod) == 1:
@@ -1595,10 +1595,8 @@ class Up2k(object):
                 if dts == lmod and dsz == sz and (nohash or dw[0] != "#" or not sz):
                     continue
 
-                t = "reindex [{}] => [{}] mtime({}/{}) size({}/{})".format(
-                    top, rp, dts, lmod, dsz, sz
-                )
-                self.log(t)
+                t = "reindex %r => %r mtime(%s/%s) size(%s/%s)"
+                self.log(t % (top, rp, dts, lmod, dsz, sz))
                 self.db_rm(db.c, rd, fn, 0)
                 tfa += 1
                 db.n += 1
@@ -1614,14 +1612,14 @@ class Up2k(object):
                 wark = up2k_wark_from_metadata(self.salt, sz, lmod, rd, fn)
             else:
                 if sz > 1024 * 1024:
-                    self.log("file: {}".format(abspath))
+                    self.log("file: %r" % (abspath,))
 
                 try:
                     hashes, _ = self._hashlist_from_file(
                         abspath, "a{}, ".format(self.pp.n)
                     )
                 except Exception as ex:
-                    self.log("hash: {} @ [{}]".format(repr(ex), abspath))
+                    self.log("hash: %r @ %r" % (ex, abspath))
                     continue
 
                 if not hashes:
@@ -1667,8 +1665,8 @@ class Up2k(object):
             assert erd_erd  # type: ignore  # !rm
 
             if n:
-                t = "forgetting {} shadowed autoindexed files in [{}] > [{}]"
-                self.log(t.format(n, top, sh_rd))
+                t = "forgetting %d shadowed autoindexed files in %r > %r"
+                self.log(t % (n, top, sh_rd))
 
                 q = "delete from dh where (d = ? or d like ?||'/%')"
                 db.c.execute(q, erd_erd)
@@ -1865,7 +1863,7 @@ class Up2k(object):
                     stl = bos.lstat(abspath)
                     st = bos.stat(abspath) if stat.S_ISLNK(stl.st_mode) else stl
                 except Exception as ex:
-                    self.log("missing file: %s" % (abspath,), 3)
+                    self.log("missing file: %r" % (abspath,), 3)
                     f404.append((drd, dfn, w))
                     continue
 
@@ -1876,12 +1874,12 @@ class Up2k(object):
                     w2 = up2k_wark_from_metadata(self.salt, sz2, mt2, rd, fn)
                 else:
                     if sz2 > 1024 * 1024 * 32:
-                        self.log("file: {}".format(abspath))
+                        self.log("file: %r" % (abspath,))
 
                     try:
                         hashes, _ = self._hashlist_from_file(abspath, pf)
                     except Exception as ex:
-                        self.log("hash: {} @ [{}]".format(repr(ex), abspath))
+                        self.log("hash: %r @ %r" % (ex, abspath))
                         continue
 
                     if not hashes:
@@ -1901,9 +1899,8 @@ class Up2k(object):
 
                 rewark.append((drd, dfn, w2, sz2, mt2))
 
-                t = "hash mismatch: {}\n  db: {} ({} byte, {})\n  fs: {} ({} byte, {})"
-                t = t.format(abspath, w, sz, mt, w2, sz2, mt2)
-                self.log(t, 1)
+                t = "hash mismatch: %r\n  db: %s (%d byte, %d)\n  fs: %s (%d byte, %d)"
+                self.log(t % (abspath, w, sz, mt, w2, sz2, mt2), 1)
 
         if e2vp and (rewark or f404):
             self.hub.retcode = 1
@@ -2451,7 +2448,7 @@ class Up2k(object):
             q.task_done()
 
     def _log_tag_err(self, parser: Any, abspath: str, ex: Any) -> None:
-        msg = "{} failed to read tags from {}:\n{}".format(parser, abspath, ex)
+        msg = "%s failed to read tags from %r:\n%s" % (parser, abspath, ex)
         self.log(msg.lstrip(), c=1 if "<Signals.SIG" in msg else 3)
 
     def _tagscan_file(
@@ -2991,11 +2988,11 @@ class Up2k(object):
                     job = rj
                     break
                 else:
-                    self.log("asserting contents of %s" % (orig_ap,))
+                    self.log("asserting contents of %r" % (orig_ap,))
                     hashes2, st = self._hashlist_from_file(orig_ap)
                     wark2 = up2k_wark_from_hashlist(self.salt, st.st_size, hashes2)
                     if dwark != wark2:
-                        t = "will not dedup (fs index desync): fs=%s, db=%s, file: %s\n%s"
+                        t = "will not dedup (fs index desync): fs=%s, db=%s, file: %r\n%s"
                         self.log(t % (wark2, dwark, orig_ap, rj))
                         lost.append(dupe[3:])
                         continue
@@ -3013,8 +3010,8 @@ class Up2k(object):
             if lost:
                 c2 = None
                 for cur, dp_dir, dp_fn in lost:
-                    t = "forgetting desynced db entry: /{}"
-                    self.log(t.format(vjoin(vjoin(vfs.vpath, dp_dir), dp_fn)))
+                    t = "forgetting desynced db entry: %r"
+                    self.log(t % ("/" + vjoin(vjoin(vfs.vpath, dp_dir), dp_fn)))
                     self.db_rm(cur, dp_dir, dp_fn, cj["size"])
                     if c2 and c2 != cur:
                         c2.connection.commit()
@@ -3043,8 +3040,8 @@ class Up2k(object):
                     except:
                         # missing; restart
                         if not self.args.nw and not n4g:
-                            t = "forgetting deleted partial upload at {}"
-                            self.log(t.format(path))
+                            t = "forgetting deleted partial upload at %r"
+                            self.log(t % (path,))
                             del reg[wark]
                         break
 
@@ -3055,19 +3052,25 @@ class Up2k(object):
                     pass
 
                 elif st.st_size != rj["size"]:
-                    t = "will not dedup (fs index desync): {}, size fs={} db={}, mtime fs={} db={}, file: {}\n{}"
-                    t = t.format(
-                        wark, st.st_size, rj["size"], st.st_mtime, rj["lmod"], path, rj
+                    t = "will not dedup (fs index desync): %s, size fs=%d db=%d, mtime fs=%d db=%d, file: %r\n%s"
+                    t = t % (
+                        wark,
+                        st.st_size,
+                        rj["size"],
+                        st.st_mtime,
+                        rj["lmod"],
+                        path,
+                        rj,
                     )
                     self.log(t)
                     del reg[wark]
 
                 elif inc_ap != orig_ap and not data_ok and "done" in reg[wark]:
-                    self.log("asserting contents of %s" % (orig_ap,))
+                    self.log("asserting contents of %r" % (orig_ap,))
                     hashes2, _ = self._hashlist_from_file(orig_ap)
                     wark2 = up2k_wark_from_hashlist(self.salt, st.st_size, hashes2)
                     if wark != wark2:
-                        t = "will not dedup (fs index desync): fs=%s, idx=%s, file: %s\n%s"
+                        t = "will not dedup (fs index desync): fs=%s, idx=%s, file: %r\n%s"
                         self.log(t % (wark2, wark, orig_ap, rj))
                         del reg[wark]
 
@@ -3084,7 +3087,7 @@ class Up2k(object):
                     vsrc = djoin(job["vtop"], job["prel"], job["name"])
                     vsrc = vsrc.replace("\\", "/")  # just for prints anyways
                     if "done" not in job:
-                        self.log("unfinished:\n  {0}\n  {1}".format(src, dst))
+                        self.log("unfinished:\n  %r\n  %r" % (src, dst))
                         err = "partial upload exists at a different location; please resume uploading here instead:\n"
                         err += "/" + quotep(vsrc) + " "
 
@@ -3101,7 +3104,7 @@ class Up2k(object):
                         raise Pebkac(422, err)
 
                     elif "nodupe" in vfs.flags:
-                        self.log("dupe-reject:\n  {0}\n  {1}".format(src, dst))
+                        self.log("dupe-reject:\n  %r\n  %r" % (src, dst))
                         err = "upload rejected, file already exists:\n"
                         err += "/" + quotep(vsrc) + " "
                         raise Pebkac(409, err)
@@ -3163,7 +3166,7 @@ class Up2k(object):
                                 "",
                             )
                             if not hr:
-                                t = "upload blocked by xbu server config: %s" % (dst,)
+                                t = "upload blocked by xbu server config: %r" % (dst,)
                                 self.log(t, 1)
                                 raise Pebkac(403, t)
                             if hr.get("reloc"):
@@ -3304,7 +3307,7 @@ class Up2k(object):
                     times = (int(time.time()), int(cj["lmod"]))
                     bos.utime(ap, times, False)
 
-                    self.log("touched %s from %d to %d" % (ap, job["lmod"], cj["lmod"]))
+                    self.log("touched %r from %d to %d" % (ap, job["lmod"], cj["lmod"]))
                 except Exception as ex:
                     self.log("umod failed, %r" % (ex,), 3)
 
@@ -3319,7 +3322,7 @@ class Up2k(object):
 
         fp = djoin(fdir, fname)
         if job.get("replace") and bos.path.exists(fp):
-            self.log("replacing existing file at {}".format(fp))
+            self.log("replacing existing file at %r" % (fp,))
             cur = None
             ptop = job["ptop"]
             vf = self.flags.get(ptop) or {}
@@ -3362,9 +3365,9 @@ class Up2k(object):
             raise Exception(t % (src, fsrc, dst))
 
         if verbose:
-            t = "linking dupe:\n  point-to: {0}\n  link-loc: {1}"
+            t = "linking dupe:\n  point-to: {0!r}\n  link-loc: {1!r}"
             if fsrc:
-                t += "\n  data-src: {2}"
+                t += "\n  data-src: {2!r}"
             self.log(t.format(src, dst, fsrc))
 
         if self.args.nw:
@@ -3434,7 +3437,7 @@ class Up2k(object):
             elif fsrc and bos.path.isfile(fsrc):
                 csrc = fsrc
             else:
-                t = "BUG: no valid sources to link from! orig(%s) fsrc(%s) link(%s)"
+                t = "BUG: no valid sources to link from! orig(%r) fsrc(%r) link(%r)"
                 self.log(t, 1)
                 raise Exception(t % (src, fsrc, dst))
             shutil.copy2(fsenc(csrc), fsenc(dst))
@@ -3612,15 +3615,12 @@ class Up2k(object):
         atomic_move(self.log, src, dst, vflags)
 
         times = (int(time.time()), int(job["lmod"]))
-        self.log(
-            "no more chunks, setting times {} ({}) on {}".format(
-                times, bos.path.getsize(dst), dst
-            )
-        )
+        t = "no more chunks, setting times %s (%d) on %r"
+        self.log(t % (times, bos.path.getsize(dst), dst))
         try:
             bos.utime(dst, times)
         except:
-            self.log("failed to utime ({}, {})".format(dst, times))
+            self.log("failed to utime (%r, %s)" % (dst, times))
 
         zs = "prel name lmod size ptop vtop wark dwrk host user addr"
         z2 = [job[x] for x in zs.split()]
@@ -3985,7 +3985,7 @@ class Up2k(object):
             vpath_dir = vsplit(vpath)[0]
             g = [(vn, voldir, vpath_dir, adir, [(fn, 0)], [], {})]  # type: ignore
         else:
-            self.log("rm: skip type-0%o file [%s]" % (st.st_mode, atop))
+            self.log("rm: skip type-0%o file %r" % (st.st_mode, atop))
             return 0, [], []
 
         xbd = vn.flags.get("xbd")
@@ -4009,7 +4009,7 @@ class Up2k(object):
 
                 volpath = ("%s/%s" % (vrem, fn)).strip("/")
                 vpath = ("%s/%s" % (dbv.vpath, volpath)).strip("/")
-                self.log("rm %s\n  %s" % (vpath, abspath))
+                self.log("rm %r\n  %r" % (vpath, abspath))
                 if not unpost:
                     # recursion-only sanchk
                     _ = dbv.get(volpath, uname, *permsets[0])
@@ -4032,8 +4032,8 @@ class Up2k(object):
                         time.time(),
                         "",
                     ):
-                        t = "delete blocked by xbd server config: {}"
-                        self.log(t.format(abspath), 1)
+                        t = "delete blocked by xbd server config: %r"
+                        self.log(t % (abspath,), 1)
                         continue
 
                 n_files += 1
@@ -4127,7 +4127,7 @@ class Up2k(object):
                         svpf = "/".join(x for x in [dbv.vpath, vrem, fn[0]] if x)
                         if not svpf.startswith(svp + "/"):  # assert
                             self.log(min_ex(), 1)
-                            t = "cp: bug at %s, top %s%s"
+                            t = "cp: bug at %r, top %r%s"
                             raise Pebkac(500, t % (svpf, svp, SEESLOG))
 
                         dvpf = dvp + svpf[len(svp) :]
@@ -4167,7 +4167,7 @@ class Up2k(object):
             except:
                 pass  # broken symlink; keep as-is
         elif not stat.S_ISREG(st.st_mode):
-            self.log("skipping type-0%o file [%s]" % (st.st_mode, sabs))
+            self.log("skipping type-0%o file %r" % (st.st_mode, sabs))
             return ""
         else:
             is_link = False
@@ -4195,7 +4195,7 @@ class Up2k(object):
                 time.time(),
                 "",
             ):
-                t = "copy blocked by xbr server config: {}".format(svp)
+                t = "copy blocked by xbr server config: %r" % (svp,)
                 self.log(t, 1)
                 raise Pebkac(405, t)
 
@@ -4232,7 +4232,7 @@ class Up2k(object):
                 )
                 curs.add(c2)
         else:
-            self.log("not found in src db: [{}]".format(svp))
+            self.log("not found in src db: %r" % (svp,))
 
         try:
             if is_link and st != stl:
@@ -4249,7 +4249,7 @@ class Up2k(object):
             if ex.errno != errno.EXDEV:
                 raise
 
-            self.log("using plain copy (%s):\n  %s\n  %s" % (ex.strerror, sabs, dabs))
+            self.log("using plain copy (%s):\n  %r\n  %r" % (ex.strerror, sabs, dabs))
             b1, b2 = fsenc(sabs), fsenc(dabs)
             is_link = os.path.islink(b1)  # due to _relink
             try:
@@ -4349,7 +4349,7 @@ class Up2k(object):
                         svpf = "/".join(x for x in [dbv.vpath, vrem, fn[0]] if x)
                         if not svpf.startswith(svp + "/"):  # assert
                             self.log(min_ex(), 1)
-                            t = "mv: bug at %s, top %s%s"
+                            t = "mv: bug at %r, top %r%s"
                             raise Pebkac(500, t % (svpf, svp, SEESLOG))
 
                         dvpf = dvp + svpf[len(svp) :]
@@ -4368,7 +4368,7 @@ class Up2k(object):
             for ap in reversed(zsl):
                 if not ap.startswith(sabs):
                     self.log(min_ex(), 1)
-                    t = "mv_d: bug at %s, top %s%s"
+                    t = "mv_d: bug at %r, top %r%s"
                     raise Pebkac(500, t % (ap, sabs, SEESLOG))
 
                 rem = ap[len(sabs) :].replace(os.sep, "/").lstrip("/")
@@ -4439,7 +4439,7 @@ class Up2k(object):
                 time.time(),
                 "",
             ):
-                t = "move blocked by xbr server config: {}".format(svp)
+                t = "move blocked by xbr server config: %r" % (svp,)
                 self.log(t, 1)
                 raise Pebkac(405, t)
 
@@ -4449,8 +4449,8 @@ class Up2k(object):
 
         if is_dirlink:
             dlabs = absreal(sabs)
-            t = "moving symlink from [{}] to [{}], target [{}]"
-            self.log(t.format(sabs, dabs, dlabs))
+            t = "moving symlink from %r to %r, target %r"
+            self.log(t % (sabs, dabs, dlabs))
             mt = bos.path.getmtime(sabs, False)
             wunlink(self.log, sabs, svn.flags)
             self._symlink(dlabs, dabs, dvn.flags, False, lmod=mt)
@@ -4522,7 +4522,7 @@ class Up2k(object):
                 )
                 curs.add(c2)
         else:
-            self.log("not found in src db: [{}]".format(svp))
+            self.log("not found in src db: %r" % (svp,))
 
         try:
             if is_xvol and has_dupes:
@@ -4543,7 +4543,7 @@ class Up2k(object):
             if ex.errno != errno.EXDEV:
                 raise
 
-            self.log("using copy+delete (%s):\n  %s\n  %s" % (ex.strerror, sabs, dabs))
+            self.log("using copy+delete (%s):\n  %r\n  %r" % (ex.strerror, sabs, dabs))
             b1, b2 = fsenc(sabs), fsenc(dabs)
             is_link = os.path.islink(b1)  # due to _relink
             try:
@@ -4651,7 +4651,7 @@ class Up2k(object):
         """
         srd, sfn = vsplit(vrem)
         has_dupes = False
-        self.log("forgetting {}".format(vrem))
+        self.log("forgetting %r" % (vrem,))
         if wark and cur:
             self.log("found {} in db".format(wark))
             if drop_tags:
@@ -4727,7 +4727,7 @@ class Up2k(object):
                 dvrem = vjoin(rd, fn).strip("/")
                 if ptop != sptop or srem != dvrem:
                     dupes.append([ptop, dvrem])
-                    self.log("found {} dupe: [{}] {}".format(wark, ptop, dvrem))
+                    self.log("found %s dupe: %r %r" % (wark, ptop, dvrem))
 
         if not dupes:
             return 0
@@ -4740,7 +4740,7 @@ class Up2k(object):
                 d = links if bos.path.islink(ap) else full
                 d[ap] = (ptop, vp)
             except:
-                self.log("relink: not found: [{}]".format(ap))
+                self.log("relink: not found: %r" % (ap,))
 
         # self.log("full:\n" + "\n".join("  {:90}: {}".format(*x) for x in full.items()))
         # self.log("links:\n" + "\n".join("  {:90}: {}".format(*x) for x in links.items()))
@@ -4748,7 +4748,7 @@ class Up2k(object):
             # deleting final remaining full copy; swap it with a symlink
             slabs = list(sorted(links.keys()))[0]
             ptop, rem = links.pop(slabs)
-            self.log("linkswap [{}] and [{}]".format(sabs, slabs))
+            self.log("linkswap %r and %r" % (sabs, slabs))
             mt = bos.path.getmtime(slabs, False)
             flags = self.flags.get(ptop) or {}
             atomic_move(self.log, sabs, slabs, flags)
@@ -4783,7 +4783,7 @@ class Up2k(object):
 
                 zs = absreal(alink)
                 if ldst != zs:
-                    t = "relink because computed != actual destination:\n  %s\n  %s"
+                    t = "relink because computed != actual destination:\n  %r\n  %r"
                     self.log(t % (ldst, zs), 3)
                     ldst = zs
                     faulty = True
@@ -4798,7 +4798,7 @@ class Up2k(object):
                 t = "relink because symlink verification failed: %s; %r"
                 self.log(t % (ex, ex), 3)
 
-            self.log("relinking [%s] to [%s]" % (alink, dabs))
+            self.log("relinking %r to %r" % (alink, dabs))
             flags = self.flags.get(parts[0]) or {}
             try:
                 lmod = bos.path.getmtime(alink, False)
@@ -4913,7 +4913,7 @@ class Up2k(object):
                 "",
             )
             if not hr:
-                t = "upload blocked by xbu server config: {}".format(vp_chk)
+                t = "upload blocked by xbu server config: %r" % (vp_chk,)
                 self.log(t, 1)
                 raise Pebkac(403, t)
             if hr.get("reloc"):
@@ -4963,7 +4963,7 @@ class Up2k(object):
                 try:
                     sp.check_call(["fsutil", "sparse", "setflag", abspath])
                 except:
-                    self.log("could not sparse [{}]".format(abspath), 3)
+                    self.log("could not sparse %r" % (abspath,), 3)
                     relabel = True
                     sprs = False
 
@@ -5150,7 +5150,7 @@ class Up2k(object):
                 self._tag_file(cur, entags, wark, abspath, tags)
                 cur.connection.commit()
 
-            self.log("tagged {} ({}+{})".format(abspath, ntags1, len(tags) - ntags1))
+            self.log("tagged %r (%d+%d)" % (abspath, ntags1, len(tags) - ntags1))
 
     def _hasher(self) -> None:
         with self.hashq_mutex:
@@ -5169,7 +5169,7 @@ class Up2k(object):
                 if not self._hash_t(task) and self.stop:
                     return
             except Exception as ex:
-                self.log("failed to hash %s: %s" % (task, ex), 1)
+                self.log("failed to hash %r: %s" % (task, ex), 1)
 
     def _hash_t(
         self, task: tuple[str, str, dict[str, Any], str, str, str, float, str, bool]
@@ -5181,7 +5181,7 @@ class Up2k(object):
                 return True
 
         abspath = djoin(ptop, rd, fn)
-        self.log("hashing " + abspath)
+        self.log("hashing %r" % (abspath,))
         inf = bos.stat(abspath)
         if not inf.st_size:
             wark = up2k_wark_from_metadata(
@@ -5274,7 +5274,7 @@ class Up2k(object):
 
             x = pathmod(self.vfs, "", req_vp, {"vp": fvp, "fn": fn})
             if not x:
-                t = "hook_fx(%s): failed to resolve %s based on %s"
+                t = "hook_fx(%s): failed to resolve %r based on %r"
                 self.log(t % (act, fvp, req_vp))
                 continue
 

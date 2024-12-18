@@ -479,8 +479,8 @@ class HttpCli(object):
             if vpath.startswith(self.args.R):
                 vpath = vpath[len(self.args.R) + 1 :]
             else:
-                t = "incorrect --rp-loc or webserver config; expected vpath starting with [{}] but got [{}]"
-                self.log(t.format(self.args.R, vpath), 1)
+                t = "incorrect --rp-loc or webserver config; expected vpath starting with %r but got %r"
+                self.log(t % (self.args.R, vpath), 1)
 
         self.ouparam = uparam.copy()
 
@@ -518,7 +518,7 @@ class HttpCli(object):
             return self.tx_qr()
 
         if relchk(self.vpath) and (self.vpath != "*" or self.mode != "OPTIONS"):
-            self.log("invalid relpath [{}]".format(self.vpath))
+            self.log("invalid relpath %r" % ("/" + self.vpath,))
             self.cbonk(self.conn.hsrv.gmal, self.req, "bad_vp", "invalid relpaths")
             return self.tx_404() and self.keepalive
 
@@ -598,7 +598,7 @@ class HttpCli(object):
                     self.uname = idp_usr
                     self.html_head += "<script>var is_idp=1</script>\n"
                 else:
-                    self.log("unknown username: [%s]" % (idp_usr), 1)
+                    self.log("unknown username: %r" % (idp_usr,), 1)
 
         if self.args.ipu and self.uname == "*":
             self.uname = self.conn.ipu_iu[self.conn.ipu_nm.map(self.ip)]
@@ -663,7 +663,7 @@ class HttpCli(object):
                 origin = self.headers.get("origin", "<?>")
                 proto = "https://" if self.is_https else "http://"
                 guess = "modifying" if (origin and host) else "stripping"
-                t = "cors-reject %s because request-header Origin='%s' does not match request-protocol '%s' and host '%s' based on request-header Host='%s' (note: if this request is not malicious, check if your reverse-proxy is accidentally %s request headers, in particular 'Origin', for example by running copyparty with --ihead='*' to show all request headers)"
+                t = "cors-reject %s because request-header Origin=%r does not match request-protocol %r and host %r based on request-header Host=%r (note: if this request is not malicious, check if your reverse-proxy is accidentally %s request headers, in particular 'Origin', for example by running copyparty with --ihead='*' to show all request headers)"
                 self.log(t % (self.mode, origin, proto, self.host, host, guess), 3)
                 raise Pebkac(403, "rejected by cors-check")
 
@@ -709,7 +709,7 @@ class HttpCli(object):
 
                 if pex.code != 404 or self.do_log:
                     self.log(
-                        "http%d: %s\033[0m, %s" % (pex.code, msg, self.vpath),
+                        "http%d: %s\033[0m, %r" % (pex.code, msg, "/" + self.vpath),
                         6 if em.startswith("client d/c ") else 3,
                     )
 
@@ -1154,8 +1154,8 @@ class HttpCli(object):
                     return self.tx_res(res_path)
 
             if res_path != undot(res_path):
-                t = "malicious user; attempted path traversal [{}] => [{}]"
-                self.log(t.format(self.vpath, res_path), 1)
+                t = "malicious user; attempted path traversal %r => %r"
+                self.log(t % ("/" + self.vpath, res_path), 1)
                 self.cbonk(self.conn.hsrv.gmal, self.req, "trav", "path traversal")
 
             self.tx_404()
@@ -1166,11 +1166,11 @@ class HttpCli(object):
             return True
 
         if not self.can_read and not self.can_write and not self.can_get:
-            t = "@{} has no access to [{}]"
+            t = "@%s has no access to %r"
 
             if "on403" in self.vn.flags:
                 t += " (on403)"
-                self.log(t.format(self.uname, self.vpath))
+                self.log(t % (self.uname, "/" + self.vpath))
                 ret = self.on40x(self.vn.flags["on403"], self.vn, self.rem)
                 if ret == "true":
                     return True
@@ -1189,7 +1189,7 @@ class HttpCli(object):
                 if self.vpath:
                     ptn = self.args.nonsus_urls
                     if not ptn or not ptn.search(self.vpath):
-                        self.log(t.format(self.uname, self.vpath))
+                        self.log(t % (self.uname, "/" + self.vpath))
 
                     return self.tx_404(True)
 
@@ -1435,14 +1435,14 @@ class HttpCli(object):
         if depth == "infinity":
             # allow depth:0 from unmapped root, but require read-axs otherwise
             if not self.can_read and (self.vpath or self.asrv.vfs.realpath):
-                t = "depth:infinity requires read-access in /%s"
-                t = t % (self.vpath,)
+                t = "depth:infinity requires read-access in %r"
+                t = t % ("/" + self.vpath,)
                 self.log(t, 3)
                 raise Pebkac(401, t)
 
             if not stat.S_ISDIR(topdir["st"].st_mode):
-                t = "depth:infinity can only be used on folders; /%s is 0o%o"
-                t = t % (self.vpath, topdir["st"])
+                t = "depth:infinity can only be used on folders; %r is 0o%o"
+                t = t % ("/" + self.vpath, topdir["st"])
                 self.log(t, 3)
                 raise Pebkac(400, t)
 
@@ -1468,7 +1468,7 @@ class HttpCli(object):
         elif depth == "0" or not stat.S_ISDIR(st.st_mode):
             # propfind on a file; return as topdir
             if not self.can_read and not self.can_get:
-                self.log("inaccessible: [%s]" % (self.vpath,))
+                self.log("inaccessible: %r" % ("/" + self.vpath,))
                 raise Pebkac(401, "authenticate")
 
         elif depth == "1":
@@ -1495,7 +1495,7 @@ class HttpCli(object):
             raise Pebkac(412, t.format(depth, t2))
 
         if not self.can_read and not self.can_write and not fgen:
-            self.log("inaccessible: [%s]" % (self.vpath,))
+            self.log("inaccessible: %r" % ("/" + self.vpath,))
             raise Pebkac(401, "authenticate")
 
         fgen = itertools.chain([topdir], fgen)
@@ -1573,7 +1573,7 @@ class HttpCli(object):
             raise Pebkac(405, "WebDAV is disabled in server config")
 
         if not self.can_write:
-            self.log("{} tried to proppatch [{}]".format(self.uname, self.vpath))
+            self.log("%s tried to proppatch %r" % (self.uname, "/" + self.vpath))
             raise Pebkac(401, "authenticate")
 
         from xml.etree import ElementTree as ET
@@ -1631,7 +1631,7 @@ class HttpCli(object):
 
         # win7+ deadlocks if we say no; just smile and nod
         if not self.can_write and "Microsoft-WebDAV" not in self.ua:
-            self.log("{} tried to lock [{}]".format(self.uname, self.vpath))
+            self.log("%s tried to lock %r" % (self.uname, "/" + self.vpath))
             raise Pebkac(401, "authenticate")
 
         from xml.etree import ElementTree as ET
@@ -1697,7 +1697,7 @@ class HttpCli(object):
             raise Pebkac(405, "WebDAV is disabled in server config")
 
         if not self.can_write and "Microsoft-WebDAV" not in self.ua:
-            self.log("{} tried to lock [{}]".format(self.uname, self.vpath))
+            self.log("%s tried to lock %r" % (self.uname, "/" + self.vpath))
             raise Pebkac(401, "authenticate")
 
         self.send_headers(None, 204)
@@ -1851,7 +1851,7 @@ class HttpCli(object):
 
             if "save" in opt:
                 post_sz, _, _, _, path, _ = self.dump_to_file(False)
-                self.log("urlform: {} bytes, {}".format(post_sz, path))
+                self.log("urlform: %d bytes, %r" % (post_sz, path))
             elif "print" in opt:
                 reader, _ = self.get_body_reader()
                 buf = b""
@@ -1862,8 +1862,8 @@ class HttpCli(object):
 
                 if buf:
                     orig = buf.decode("utf-8", "replace")
-                    t = "urlform_raw {} @ {}\n  {}\n"
-                    self.log(t.format(len(orig), self.vpath, orig))
+                    t = "urlform_raw %d @ %r\n  %r\n"
+                    self.log(t % (len(orig), "/" + self.vpath, orig))
                     try:
                         zb = unquote(buf.replace(b"+", b" "))
                         plain = zb.decode("utf-8", "replace")
@@ -1889,8 +1889,8 @@ class HttpCli(object):
                                     plain,
                                 )
 
-                        t = "urlform_dec {} @ {}\n  {}\n"
-                        self.log(t.format(len(plain), self.vpath, plain))
+                        t = "urlform_dec %d @ %r\n  %r\n"
+                        self.log(t % (len(plain), "/" + self.vpath, plain))
 
                     except Exception as ex:
                         self.log(repr(ex))
@@ -2140,7 +2140,7 @@ class HttpCli(object):
             try:
                 ext = self.conn.hsrv.magician.ext(path)
             except Exception as ex:
-                self.log("filetype detection failed for [{}]: {}".format(path, ex), 6)
+                self.log("filetype detection failed for %r: %s" % (path, ex), 6)
                 ext = None
 
             if ext:
@@ -2240,8 +2240,8 @@ class HttpCli(object):
     def handle_stash(self, is_put: bool) -> bool:
         post_sz, sha_hex, sha_b64, remains, path, url = self.dump_to_file(is_put)
         spd = self._spd(post_sz)
-        t = "{} wrote {}/{} bytes to {}  # {}"
-        self.log(t.format(spd, post_sz, remains, path, sha_b64[:28]))  # 21
+        t = "%s wrote %d/%d bytes to %r  # %s"
+        self.log(t % (spd, post_sz, remains, path, sha_b64[:28]))  # 21
 
         ac = self.uparam.get(
             "want", self.headers.get("accept", "").lower().split(";")[-1]
@@ -2271,7 +2271,7 @@ class HttpCli(object):
         flags: dict[str, Any],
     ) -> None:
         now = time.time()
-        t = "bad-chunk:  %.3f  %s  %s  %d  %s  %s  %s"
+        t = "bad-chunk:  %.3f  %s  %s  %d  %s  %s  %r"
         t = t % (now, bad_sha, good_sha, ofs, self.ip, self.uname, ap)
         self.log(t, 5)
 
@@ -2411,7 +2411,7 @@ class HttpCli(object):
             body = json.loads(json_buf.decode(enc, "replace"))
             try:
                 zds = {k: v for k, v in body.items()}
-                zds["hash"] = "%d chunks" % (len(body["hash"]))
+                zds["hash"] = "%d chunks" % (len(body["hash"]),)
             except:
                 zds = body
             t = "POST len=%d type=%s ip=%s user=%s req=%r json=%s"
@@ -2455,7 +2455,7 @@ class HttpCli(object):
                 if not bos.path.isdir(dst):
                     bos.makedirs(dst)
             except OSError as ex:
-                self.log("makedirs failed [{}]".format(dst))
+                self.log("makedirs failed %r" % (dst,))
                 if not bos.path.isdir(dst):
                     if ex.errno == errno.EACCES:
                         raise Pebkac(500, "the server OS denied write-access")
@@ -2480,7 +2480,7 @@ class HttpCli(object):
             # strip common suffix (uploader's folder structure)
             vp_req, vp_vfs = vroots(self.vpath, vjoin(dbv.vpath, vrem))
             if not ret["purl"].startswith(vp_vfs):
-                t = "share-mapping failed; req=[%s] dbv=[%s] vrem=[%s] n1=[%s] n2=[%s] purl=[%s]"
+                t = "share-mapping failed; req=%r dbv=%r vrem=%r n1=%r n2=%r purl=%r"
                 zt = (self.vpath, dbv.vpath, vrem, vp_req, vp_vfs, ret["purl"])
                 raise Pebkac(500, t % zt)
             ret["purl"] = vp_req + ret["purl"][len(vp_vfs) :]
@@ -2529,13 +2529,13 @@ class HttpCli(object):
             # search by query params
             q = body["q"]
             n = body.get("n", self.args.srch_hits)
-            self.log("qj: {} |{}|".format(q, n))
+            self.log("qj: %r |%d|" % (q, n))
             hits, taglist, trunc = idx.search(self.uname, vols, q, n)
             msg = len(hits)
 
         idx.p_end = time.time()
         idx.p_dur = idx.p_end - t0
-        self.log("q#: {} ({:.2f}s)".format(msg, idx.p_dur))
+        self.log("q#: %r (%.2fs)" % (msg, idx.p_dur))
 
         order = []
         for t in self.args.mte:
@@ -2646,7 +2646,7 @@ class HttpCli(object):
                 t = "your client is sending %d bytes which is too much (server expected %d bytes at most)"
                 raise Pebkac(400, t % (remains, maxsize))
 
-            t = "writing %s %s+%d #%d+%d %s"
+            t = "writing %r %s+%d #%d+%d %s"
             chunkno = cstart0[0] // chunksize
             zs = " ".join([chashes[0][:15]] + [x[:9] for x in chashes[1:]])
             self.log(t % (path, cstart0, remains, chunkno, len(chashes), zs))
@@ -2758,7 +2758,7 @@ class HttpCli(object):
         cinf = self.headers.get("x-up2k-stat", "")
 
         spd = self._spd(postsize)
-        self.log("{:70} thank {}".format(spd, cinf))
+        self.log("%70s thank %r" % (spd, cinf))
         self.reply(b"thank")
         return True
 
@@ -2840,7 +2840,7 @@ class HttpCli(object):
                 logpwd = "%" + ub64enc(zb[:12]).decode("ascii")
 
             if pwd != "x":
-                self.log("invalid password: {}".format(logpwd), 3)
+                self.log("invalid password: %r" % (logpwd,), 3)
                 self.cbonk(self.conn.hsrv.gpwd, pwd, "pw", "invalid passwords")
 
             msg = "naw dude"
@@ -2876,7 +2876,7 @@ class HttpCli(object):
         rem = sanitize_vpath(rem, "/")
         fn = vfs.canonical(rem)
         if not fn.startswith(vfs.realpath):
-            self.log("invalid mkdir [%s] [%s]" % (self.gctx, vpath), 1)
+            self.log("invalid mkdir %r %r" % (self.gctx, vpath), 1)
             raise Pebkac(422)
 
         if not nullwrite:
@@ -3042,9 +3042,9 @@ class HttpCli(object):
                         elif bos.path.exists(abspath):
                             try:
                                 wunlink(self.log, abspath, vfs.flags)
-                                t = "overwriting file with new upload: %s"
+                                t = "overwriting file with new upload: %r"
                             except:
-                                t = "toctou while deleting for ?replace: %s"
+                                t = "toctou while deleting for ?replace: %r"
                             self.log(t % (abspath,))
                 else:
                     open_args = {}
@@ -3127,7 +3127,7 @@ class HttpCli(object):
                     f, tnam = ren_open(tnam, "wb", self.args.iobuf, **open_args)
                     try:
                         tabspath = os.path.join(fdir, tnam)
-                        self.log("writing to {}".format(tabspath))
+                        self.log("writing to %r" % (tabspath,))
                         sz, sha_hex, sha_b64 = copier(
                             p_data, f, hasher, max_sz, self.args.s_wr_slp
                         )
@@ -3312,7 +3312,7 @@ class HttpCli(object):
             jmsg["files"].append(jpart)
 
         vspd = self._spd(sz_total, False)
-        self.log("{} {}".format(vspd, msg))
+        self.log("%s %r" % (vspd, msg))
 
         suf = ""
         if not nullwrite and self.args.write_uplog:
@@ -3575,7 +3575,7 @@ class HttpCli(object):
         if req == zs:
             return True
 
-        t = "wrong dirkey, want %s, got %s\n  vp: %s\n  ap: %s"
+        t = "wrong dirkey, want %s, got %s\n  vp: %r\n  ap: %r"
         self.log(t % (zs, req, self.req, ap), 6)
         return False
 
@@ -3603,7 +3603,7 @@ class HttpCli(object):
         if req == zs:
             return True
 
-        t = "wrong filekey, want %s, got %s\n  vp: %s\n  ap: %s"
+        t = "wrong filekey, want %s, got %s\n  vp: %r\n  ap: %r"
         self.log(t % (zs, req, self.req, ap), 6)
         return False
 
@@ -3665,7 +3665,7 @@ class HttpCli(object):
             elif ph == "srv.htime":
                 sv = datetime.now(UTC).strftime("%Y-%m-%d, %H:%M:%S")
             else:
-                self.log("unknown placeholder in server config: [%s]" % (ph), 3)
+                self.log("unknown placeholder in server config: [%s]" % (ph,), 3)
                 continue
 
             sv = self.conn.hsrv.ptn_hsafe.sub("_", sv)
@@ -3822,7 +3822,7 @@ class HttpCli(object):
                 self.pipes.set(req_path, job)
             except Exception as ex:
                 if getattr(ex, "errno", 0) != errno.ENOENT:
-                    self.log("will not pipe [%s]; %s" % (ap_data, ex), 6)
+                    self.log("will not pipe %r; %s" % (ap_data, ex), 6)
                 ptop = None
 
         #
@@ -4112,7 +4112,7 @@ class HttpCli(object):
             if lower >= data_end:
                 if data_end:
                     t = "pipe: uploader is too slow; aborting download at %.2f MiB"
-                    self.log(t % (data_end / M))
+                    self.log(t % (data_end / M,))
                     raise Pebkac(416, "uploader is too slow")
 
                 raise Pebkac(416, "no data available yet; please retry in a bit")
@@ -4256,7 +4256,7 @@ class HttpCli(object):
 
         cdis = "attachment; filename=\"{}.{}\"; filename*=UTF-8''{}.{}"
         cdis = cdis.format(afn, ext, ufn, ext)
-        self.log(cdis)
+        self.log(repr(cdis))
         self.send_headers(None, mime=mime, headers={"Content-Disposition": cdis})
 
         fgen = vn.zipgen(
@@ -4920,7 +4920,7 @@ class HttpCli(object):
             raise Pebkac(500, "server busy, cannot unpost; please retry in a bit")
 
         filt = self.uparam.get("filter") or ""
-        lm = "ups [{}]".format(filt)
+        lm = "ups %r" % (filt,)
         self.log(lm)
 
         if self.args.shr and self.vpath.startswith(self.args.shr1):
@@ -5731,7 +5731,7 @@ class HttpCli(object):
                 linf = stats.get(fn) or bos.lstat(fspath)
                 inf = bos.stat(fspath) if stat.S_ISLNK(linf.st_mode) else linf
             except:
-                self.log("broken symlink: {}".format(repr(fspath)))
+                self.log("broken symlink: %r" % (fspath,))
                 continue
 
             is_dir = stat.S_ISDIR(inf.st_mode)
@@ -5846,8 +5846,7 @@ class HttpCli(object):
                     erd_efn = s3enc(idx.mem_cur, rd, fn)
                     r = icur.execute(q, erd_efn)
                 except:
-                    t = "tag read error, {}/{}\n{}"
-                    self.log(t.format(rd, fn, min_ex()))
+                    self.log("tag read error, %r / %r\n%s" % (rd, fn, min_ex()))
                     break
 
             tags = {k: v for k, v in r}
@@ -5967,10 +5966,10 @@ class HttpCli(object):
                     if doc.lower().endswith(".md") and "exp" in vn.flags:
                         doctxt = self._expand(doctxt, vn.flags.get("exp_md") or [])
                 else:
-                    self.log("doc 2big: [{}]".format(doc), c=6)
+                    self.log("doc 2big: %r" % (doc,), 6)
                     doctxt = "( size of textfile exceeds serverside limit )"
             else:
-                self.log("doc 404: [{}]".format(doc), c=6)
+                self.log("doc 404: %r" % (doc,), 6)
                 doctxt = "( textfile not found )"
 
             if doctxt is not None:

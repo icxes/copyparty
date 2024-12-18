@@ -109,13 +109,13 @@ class ThumbCli(object):
             fmt = sfmt
 
         elif fmt[:1] == "p" and not is_au and not is_vid:
-            t = "cannot thumbnail [%s]: png only allowed for waveforms"
-            self.log(t % (rem), 6)
+            t = "cannot thumbnail %r: png only allowed for waveforms"
+            self.log(t % (rem,), 6)
             return None
 
         histpath = self.asrv.vfs.histtab.get(ptop)
         if not histpath:
-            self.log("no histpath for [{}]".format(ptop))
+            self.log("no histpath for %r" % (ptop,))
             return None
 
         tpath = thumb_path(histpath, rem, mtime, fmt, self.fmt_ffa)

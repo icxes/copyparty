@@ -357,7 +357,7 @@ class Tftpd(object):
                 time.time(),
                 "",
             ):
-                yeet("blocked by xbu server config: " + vpath)
+                yeet("blocked by xbu server config: %r" % (vpath,))
 
         if not self.args.tftp_nols and bos.path.isdir(ap):
             return self._ls(vpath, "", 0, True)

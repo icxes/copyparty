@@ -212,7 +212,7 @@ class Lim(object):
 
             df, du, err = get_df(abspath, True)
             if err:
-                t = "failed to read disk space usage for [%s]: %s"
+                t = "failed to read disk space usage for %r: %s"
                 self.log(t % (abspath, err), 3)
                 self.dfv = 0xAAAAAAAAA  # 42.6 GiB
             else:
@@ -526,7 +526,7 @@ class VFS(object):
         """returns [vfsnode,fs_remainder] if user has the requested permissions"""
         if relchk(vpath):
             if self.log:
-                self.log("vfs", "invalid relpath [{}]".format(vpath))
+                self.log("vfs", "invalid relpath %r @%s" % (vpath, uname))
             raise Pebkac(422)
 
         cvpath = undot(vpath)
@@ -543,11 +543,11 @@ class VFS(object):
             if req and uname not in d and uname != LEELOO_DALLAS:
                 if vpath != cvpath and vpath != "." and self.log:
                     ap = vn.canonical(rem)
-                    t = "{} has no {} in [{}] => [{}] => [{}]"
-                    self.log("vfs", t.format(uname, msg, vpath, cvpath, ap), 6)
+                    t = "%s has no %s in %r => %r => %r"
+                    self.log("vfs", t % (uname, msg, vpath, cvpath, ap), 6)
 
-                t = 'you don\'t have %s-access in "/%s" or below "/%s"'
-                raise Pebkac(err, t % (msg, cvpath, vn.vpath))
+                t = "you don't have %s-access in %r or below %r"
+                raise Pebkac(err, t % (msg, "/" + cvpath, "/" + vn.vpath))
 
         return vn, rem
 
@@ -693,8 +693,8 @@ class VFS(object):
             and fsroot in seen
         ):
             if self.log:
-                t = "bailing from symlink loop,\n  prev: {}\n  curr: {}\n  from: {}/{}"
-                self.log("vfs.walk", t.format(seen[-1], fsroot, self.vpath, rem), 3)
+                t = "bailing from symlink loop,\n  prev: %r\n  curr: %r\n  from: %r / %r"
+                self.log("vfs.walk", t % (seen[-1], fsroot, self.vpath, rem), 3)
             return
 
         if "xdev" in self.flags or "xvol" in self.flags:
@@ -818,8 +818,8 @@ class VFS(object):
 
             if vdev != st.st_dev:
                 if self.log:
-                    t = "xdev: {}[{}] => {}[{}]"
-                    self.log("vfs", t.format(vdev, self.realpath, st.st_dev, ap), 3)
+                    t = "xdev: %s[%r] => %s[%r]"
+                    self.log("vfs", t % (vdev, self.realpath, st.st_dev, ap), 3)
 
                 return None
 
@@ -829,7 +829,7 @@ class VFS(object):
                     return vn
 
             if self.log:
-                self.log("vfs", "xvol: [{}]".format(ap), 3)
+                self.log("vfs", "xvol: %r" % (ap,), 3)
 
             return None
 
@@ -914,7 +914,7 @@ class AuthSrv(object):
 
             self.idp_accs[uname] = gnames
 
-            t = "reinitializing due to new user from IdP: [%s:%s]"
+            t = "reinitializing due to new user from IdP: [%r:%r]"
             self.log(t % (uname, gnames), 3)
 
             if not broker:
@@ -1568,7 +1568,7 @@ class AuthSrv(object):
                     continue
 
                 if self.args.shr_v:
-                    t = "loading %s share [%s] by [%s] => [%s]"
+                    t = "loading %s share %r by %r => %r"
                     self.log(t % (s_pr, s_k, s_un, s_vp))
 
                 if s_pw:
@@ -1765,7 +1765,7 @@ class AuthSrv(object):
                 use = True
                 try:
                     _ = float(zs)
-                    zs = "%sg" % (zs)
+                    zs = "%sg" % (zs,)
                 except:
                     pass
                 lim.dfl = unhumanize(zs)
@@ -2538,7 +2538,7 @@ class AuthSrv(object):
             return
 
         elif self.args.chpw_v == 2:
-            t = "chpw: %d changed" % (len(uok))
+            t = "chpw: %d changed" % (len(uok),)
             if urst:
                 t += ", \033[0munchanged:\033[35m %s" % (", ".join(list(urst)))
 
