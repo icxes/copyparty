@@ -1,4 +1,36 @@
 ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀  
+# 2024-1211-2236  `v1.16.5`  4chrome
+
+## 🧪 new features
+
+* #124 add workaround for a chrome bug (crash during upload) 24ce46b3
+  * chrome and chromium-based browsers could OOM
+  * https://issues.chromium.org/issues/383568268
+
+* #122 "hybrid IdP", regular users can still auth while [IdP](https://github.com/9001/copyparty#identity-providers) is enabled 64501fd7
+  * previously, enabling IdP would entirely disable password-based login
+  * now, password-auth is attempted for requests without a valid IdP header
+
+## 🩹 bugfixes
+
+* the terminal window title would only change if `--no-ansi` was specified, which is exactly the opposite of what it should be (and now is) doing db3c0b09
+
+## 🔧 other changes
+
+* mDNS: better log messages when several IPs are added/removed a49bf81f
+* webdeps: update dompurify 06868606
+
+----
+
+this release includes a build of [copyparty-winpe64.exe](https://github.com/9001/copyparty/releases/download/v1.16.5/copyparty-winpe64.exe) since the last one was [almost a year ago](https://github.com/9001/copyparty/releases/tag/v1.10.1)
+
+* winpe64.exe is only for *very* specific usecases, you almost definitely *do not* want to download it, please just grab the regular [copyparty.exe](https://github.com/9001/copyparty/releases/latest/download/copyparty.exe) instead (works on all 64bit machines running win8 or newer)
+
+* the only difference between winpe64.exe and [copyparty32.exe](https://github.com/9001/copyparty/releases/latest/download/copyparty32.exe) is that winpe64.exe works in the win7x64 PE (rescue-env), which makes it *almost* entirely useless, and every bit as dangerous to use as copyparty32.exe
+
+
+
+▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀  
 # 2024-1207-0024  `v1.16.4`  ux is hard
 
 ## 🧪 new features

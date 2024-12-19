@@ -5069,7 +5069,7 @@ class HttpCli(object):
             adm = "*" in vol.axs.uadmin or self.uname in vol.axs.uadmin
             dots = "*" in vol.axs.udot or self.uname in vol.axs.udot
 
-            n = 2000
+            n = 1000
             q = "select sz, rd, fn, ip, at from up where at>0 order by at desc"
             for sz, rd, fn, ip, at in cur.execute(q):
                 vp = "/" + "/".join(x for x in [vol.vpath, rd, fn] if x)
@@ -5096,12 +5096,12 @@ class HttpCli(object):
                     rv["fk_alg"] = fk_alg
 
                 ret.append(rv)
-                if len(ret) > 3000:
+                if len(ret) > 2000:
                     ret.sort(key=lambda x: x["at"], reverse=True)  # type: ignore
-                    ret = ret[:2000]
+                    ret = ret[:1000]
 
-        if len(ret) > 2000:
-            ret = ret[:2000]
+        if len(ret) > 1000:
+            ret = ret[:1000]
 
         ret.sort(key=lambda x: x["at"], reverse=True)  # type: ignore
 

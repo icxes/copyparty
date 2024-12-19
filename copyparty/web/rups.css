@@ -53,7 +53,8 @@ a {
 }
 #wrap td {
 	font-family: var(--font-mono), monospace, monospace;
-	white-space: pre;
+	white-space: pre; /*date*/
+	overflow: hidden; /*ipv6*/
 }
 #wrap th:first-child,
 #wrap td:first-child {

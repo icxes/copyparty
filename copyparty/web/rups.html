@@ -31,14 +31,14 @@
             <th>file</th>
         </tr></thead><tbody>
         {% for vp, evp, sz, ip, at in rows %}
-        <tr>
-            <td>{{ sz }}</td>
-            <td>{{ ip }}</td>
-            <td>{{ at }}</td>
-            <td>{{ (now-at) }}</td>
-            <td></td>
-            <td><a href="{{ r }}{{ evp }}">{{ vp|e }}</a></td>
-        </tr>
+<tr>
+<td>{{ sz }}</td>
+<td>{{ ip }}</td>
+<td>{{ at }}</td>
+<td>{{ (now-at) }}</td>
+<td></td>
+<td><a href="{{ r }}{{ evp }}">{{ vp|e }}</a></td>
+</tr>
         {% endfor %}
         </tbody></table>
         {% if not rows %}
