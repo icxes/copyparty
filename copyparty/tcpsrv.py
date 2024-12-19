@@ -406,12 +406,12 @@ class TcpSrv(object):
             rem = []
             for k, v in netdevs.items():
                 if k not in self.netdevs:
-                    add.append("\n  added %s = %s" % (k, v))
+                    add.append("\n\033[32m  added %s = %s" % (k, v))
             for k, v in self.netdevs.items():
                 if k not in netdevs:
-                    rem.append("\nremoved %s = %s" % (k, v))
+                    rem.append("\n\033[33mremoved %s = %s" % (k, v))
 
-            t = "network change detected:\033[32m%s\033[33m%s"
+            t = "network change detected:%s%s"
             self.log("tcpsrv", t % ("".join(add), "".join(rem)), 3)
             self.netdevs = netdevs
             self._distribute_netdevs()
