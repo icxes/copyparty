@@ -3017,6 +3017,19 @@ def expand_config_file(
 
     ret.append("#\033[36m closed{}\033[0m".format(ipath))
 
+    zsl = []
+    for ln in ret:
+        zs = ln.split("  #")[0]
+        if " #" in zs and zs.split("#")[0].strip():
+            zsl.append(ln)
+    if zsl and "no-cfg-cmt-warn" not in "\n".join(ret):
+        t = "\033[33mWARNING: there is less than two spaces before the # in the following config lines, so instead of assuming that this is a comment, the whole line will become part of the config value:\n\n>>> %s\n\nif you are familiar with this and would like to mute this warning, specify the global-option no-cfg-cmt-warn\n\033[0m"
+        t = t % ("\n>>> ".join(zsl),)
+        if log:
+            log(t)
+        else:
+            print(t, file=sys.stderr)
+
 
 def upgrade_cfg_fmt(
     log: Optional["NamedLogger"], args: argparse.Namespace, orig: list[str], cfg_fp: str
