@@ -1103,7 +1103,7 @@ class Ctl(object):
             nleft = self.nfiles - self.up_f
             tail = "\033[K\033[u" if VT100 and not self.ar.ns else "\r"
 
-            t = "%s eta @ %s/s, %s, %d# left\033[K" % (self.eta, spd, sleft, nleft)
+            t = "%s eta @ %s/s, %s, %d# left" % (self.eta, spd, sleft, nleft)
             if not self.hash_b:
                 t = " now hashing..."
             eprint(txt + "\033]0;{0}\033\\\r{0}{1}".format(t, tail))
