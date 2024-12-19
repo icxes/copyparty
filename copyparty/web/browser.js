@@ -3064,6 +3064,7 @@ var vbar = (function () {
 		can = r.can.can;
 		ctx = r.can.ctx;
 		ctx.font = '.7em sans-serif';
+		ctx.fontVariantCaps = 'small-caps';
 		w = r.can.w;
 		h = r.can.h;
 		r.draw();
@@ -3089,18 +3090,18 @@ var vbar = (function () {
 		ctx.fillStyle = grad2; ctx.fillRect(0, 0, w, h);
 		ctx.fillStyle = grad1; ctx.fillRect(0, 0, w * mp.vol, h);
 
-		if (Date.now() - lastv > 1000)
-			return;
+		var vt = 'volume ' + Math.floor(mp.vol * 100),
+			tw = ctx.measureText(vt).width,
+			x = w * mp.vol - tw - 8,
+			li = dy;
 
-		var vt = Math.floor(mp.vol * 100),
-			tw = ctx.measureText(vt).width;
-
-		var li = dy;
-		if (mp.vol < 0.05)
+		if (mp.vol < 0.5) {
+			x += tw + 16;
 			li = !li;
+		}
 
 		ctx.fillStyle = li ? '#fff' : '#210';
-		ctx.fillText(vt, Math.max(4, w * mp.vol - tw - 8), h / 3 * 2);
+		ctx.fillText(vt, x, h / 3 * 2);
 
 		clearTimeout(untext);
 		untext = setTimeout(r.draw, 1000);
