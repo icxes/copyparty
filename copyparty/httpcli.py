@@ -5031,10 +5031,10 @@ class HttpCli(object):
                     ret.sort(key=lambda x: x["at"], reverse=True)  # type: ignore
                     ret = ret[:2000]
 
+        ret.sort(key=lambda x: x["at"], reverse=True)  # type: ignore
+
         if len(ret) > 2000:
             ret = ret[:2000]
-
-        ret.sort(key=lambda x: x["at"], reverse=True)  # type: ignore
 
         for rv in ret:
             rv["vp"] = quotep(rv["vp"])
@@ -5124,10 +5124,6 @@ class HttpCli(object):
                 if not dots and "/." in vp:
                     continue
 
-                n -= 1
-                if not n:
-                    break
-
                 rv = {
                     "vp": vp,
                     "sz": sz,
@@ -5145,13 +5141,17 @@ class HttpCli(object):
                     ret.sort(key=lambda x: x["at"], reverse=True)  # type: ignore
                     ret = ret[:1000]
 
-        if len(ret) > 1000:
-            ret = ret[:1000]
+                n -= 1
+                if not n:
+                    break
 
         ret.sort(key=lambda x: x["at"], reverse=True)  # type: ignore
 
+        if len(ret) > 1000:
+            ret = ret[:1000]
+
         for rv in ret:
-            rv["evp"] = quotep(rv["vp"])
+            rv["vp"] = quotep(rv["vp"])
             nfk = rv.pop("nfk")
             if not nfk:
                 continue
@@ -5184,15 +5184,16 @@ class HttpCli(object):
             for v in ret:
                 v["vp"] = self.args.SR + v["vp"]
 
-        self.log("%s #%d %.2fsec" % (lm, len(ret), time.time() - t0))
+        now = time.time()
+        self.log("%s #%d %.2fsec" % (lm, len(ret), now - t0))
 
+        ret2 = {"now": int(now), "filter": sfilt, "ups": ret}
+        jtxt = json.dumps(ret2, separators=(",\n", ": "))
         if "j" in self.ouparam:
-            jtxt = json.dumps(ret, separators=(",\n", ": "))
             self.reply(jtxt.encode("utf-8", "replace"), mime="application/json")
             return True
 
-        rows = [[x["vp"], x["evp"], x["sz"], x["ip"], x["at"]] for x in ret]
-        html = self.j2s("rups", this=self, rows=rows, filt=sfilt, now=int(time.time()))
+        html = self.j2s("rups", this=self, v=jtxt)
         self.reply(html.encode("utf-8"), status=200)
         return True
 

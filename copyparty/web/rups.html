@@ -6,6 +6,7 @@
 	<title>{{ s_doctitle }}</title>
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=0.8">
+    <meta name="robots" content="noindex, nofollow">
 	<meta name="theme-color" content="#{{ tcolor }}">
 	<link rel="stylesheet" media="screen" href="{{ r }}/.cpr/rups.css?_={{ ts }}">
 	<link rel="stylesheet" media="screen" href="{{ r }}/.cpr/ui.css?_={{ ts }}">
@@ -14,14 +15,10 @@
 
 <body>
 	<div id="wrap">
-        <a id="a" href="{{ r }}/?ru" class="af">refresh</a>
-        <a id="a" href="{{ r }}/?h" class="af">control-panel</a>
-        <form method="get" enctype="application/x-www-form-urlencoded" accept-charset="utf-8" action="{{ r }}">
-            <input type="hidden" name="ru" value="a" />
-            Filter: <input type="text" name="filter" size="20" placeholder="documents/passwords" value="{{ filt }}" />
-            <input type="submit" />
-        </form>
-        <span id="hits"></span>
+        <a href="#" id="re">refresh</a>
+        <a href="{{ r }}/?h">control-panel</a>
+        &nbsp; Filter: <input type="text" id="filter" size="20" placeholder="documents/passwords" />
+        &nbsp; <span id="hits"></span>
         <table id="tab"><thead><tr>
             <th>size</th>
             <th>who</th>
@@ -29,27 +26,12 @@
             <th>age</th>
             <th>dir</th>
             <th>file</th>
-        </tr></thead><tbody>
-        {% for vp, evp, sz, ip, at in rows %}
-<tr>
-<td>{{ sz }}</td>
-<td>{{ ip }}</td>
-<td>{{ at }}</td>
-<td>{{ (now-at) }}</td>
-<td></td>
-<td><a href="{{ r }}{{ evp }}">{{ vp|e }}</a></td>
-</tr>
-        {% endfor %}
-        </tbody></table>
-        {% if not rows %}
-        (the database is not aware of any uploads)
-        {% endif %}
+        </tr></thead><tbody id="tb"></tbody></table>
     </div>
 	<a href="#" id="repl">π</a>
 	<script>
 
 var SR="{{ r }}",
-    NOW={{ now }},
 	lang="{{ lang }}",
 	dfavico="{{ favico }}";
 
@@ -58,6 +40,7 @@ document.documentElement.className = (STG && STG.cpp_thm) || "{{ this.args.theme
 
 </script>
 <script src="{{ r }}/.cpr/util.js?_={{ ts }}"></script>
+<script>var V={{ v }};</script>
 <script src="{{ r }}/.cpr/rups.js?_={{ ts }}"></script>
 {%- if js %}
 <script src="{{ js }}_={{ ts }}"></script>

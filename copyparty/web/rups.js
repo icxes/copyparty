@@ -1,34 +1,66 @@
-(function() {
-    var tab = ebi('tab').tBodies[0],
-        tr = Array.prototype.slice.call(tab.rows, 0),
-        rows = [];
+function render() {
+    var ups = V.ups, now = V.now, html = [];
+    ebi('filter').value = V.filter;
+    ebi('hits').innerHTML = 'showing ' + ups.length + ' files';
 
-    for (var a = 0; a < tr.length; a++) {
-        var td = tr[a].cells,
-            an = td[5].children[0];
+    for (var a = 0; a < ups.length; a++) {
+        var f = ups[a],
+            vsp = vsplit(f.vp.split('?')[0]),
+            dn = esc(uricom_dec(vsp[0])),
+            fn = esc(uricom_dec(vsp[1])),
+            at = f.at,
+            td = now - f.at,
+            ts = !at ? '(?)' : unix2iso(at),
+            sa = !at ? '(?)' : td > 60 ? shumantime(td) : (td + 's'),
+            sz = ('' + f.sz).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
 
-        rows.push([
-            td[0].textContent,
-            td[2].textContent,
-            td[3].textContent,
-            an.textContent,
-            an.getAttribute('href'),
-        ]);
+        html.push('<tr><td>' + sz +
+            '</td><td>' + f.ip +
+            '</td><td>' + ts +
+            '</td><td>' + sa +
+            '</td><td><a href="' + vsp[0] + '">' + dn +
+            '</a></td><td><a href="' + f.vp + '">' + fn +
+            '</a></td></tr>');
     }
-
-    for (var a = 0; a < rows.length; a++) {
-        var t = rows[a],
-            sz = t[0],
-            at = parseInt(t[1]),
-            nam = vsplit(t[3]),
-            dh = vsplit(t[4])[0];
-
-        tr[a].cells[0].innerHTML = sz.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
-        tr[a].cells[2].innerHTML = at ? unix2iso(at) : '(?)';
-        tr[a].cells[3].innerHTML = at ? shumantime(t[2]) : '(?)';
-        tr[a].cells[4].innerHTML = '<a href="' + dh + '">' + nam[0] + '</a>';
-        tr[a].cells[5].children[0].innerHTML = nam[1].split('?')[0];
+    if (!ups.length) {
+        var t = V.filter ? ' matching the filter' : '';
+        html = ['<tr><td colspan="6">there are no uploads' + t + '</td></tr>'];
     }
+    ebi('tb').innerHTML = html.join('');
+}
+render();
 
-    ebi('hits').innerHTML = '-- showing ' + rows.length + ' files';
-})();
+var ti;
+function ask(e) {
+    ev(e);
+    clearTimeout(ti);
+    ebi('hits').innerHTML = 'Loading...';
+
+    var xhr = new XHR(),
+        filter = unsmart(ebi('filter').value);
+
+    hist_replace(get_evpath().split('?')[0] + '?ru&filter=' + uricom_enc(filter));
+
+    xhr.onload = xhr.onerror = function () {
+        try {
+            V = JSON.parse(this.responseText)
+        }
+        catch (ex) {
+            ebi('tb').innerHTML = '<tr><td colspan="6">failed to decode server response as json: <pre>' + esc(this.responseText) + '</pre></td></tr>';
+            return;
+        }
+        render();
+    };
+    xhr.open('GET', SR + '/?ru&j&filter=' + uricom_enc(filter), true);
+    xhr.send();
+}
+ebi('re').onclick = ask;
+ebi('filter').oninput = function () {
+    clearTimeout(ti);
+    ti = setTimeout(ask, 500);
+    ebi('hits').innerHTML = '...';
+};
+ebi('filter').onkeydown = function (e) {
+    if (('' + e.key).endsWith('Enter'))
+        ask();
+};

@@ -10,16 +10,10 @@ html {
 	padding: 0 1em 3em 1em;
 	line-height: 2.3em;
 }
-form {
-	display: inline;
-	padding-left: 1em;
-}
-input[type=submit],
 a {
 	color: #047;
 	background: #fff;
 	text-decoration: none;
-	border: none;
 	border-bottom: 1px solid #8ab;
 	border-radius: .2em;
 	padding: .2em .6em;
@@ -89,7 +83,6 @@ html.bz {
 	background: #11121d;
 	color: #bbd;
 }
-html.z input[type=submit],
 html.z a {
 	color: #fff;
 	background: #057;

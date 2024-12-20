@@ -6,6 +6,7 @@
 	<title>{{ s_doctitle }}</title>
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=0.8">
+    <meta name="robots" content="noindex, nofollow">
 	<meta name="theme-color" content="#{{ tcolor }}">
 	<link rel="stylesheet" media="screen" href="{{ r }}/.cpr/shares.css?_={{ ts }}">
 	<link rel="stylesheet" media="screen" href="{{ r }}/.cpr/ui.css?_={{ ts }}">
@@ -14,8 +15,8 @@
 
 <body>
 	<div id="wrap">
-		<a id="a" href="{{ r }}/?shares" class="af">refresh</a>
-		<a id="a" href="{{ r }}/?h" class="af">control-panel</a>
+		<a href="{{ r }}/?shares">refresh</a>
+		<a href="{{ r }}/?h">control-panel</a>
 
         <span>axs = perms (read,write,move,delet)</span>
         <span>nf = numFiles (0=dir)</span>
