@@ -195,10 +195,6 @@ class HttpSrv(object):
         self.xff_nm = build_netmap(self.args.xff_src)
         self.xff_lan = build_netmap("lan")
 
-        self.ptn_cc = re.compile(r"[\x00-\x1f]")
-        self.ptn_hsafe = re.compile(r"[\x00-\x1f<>\"'&]")
-        self.uparam_cc_ok = set("doc move tree".split())
-
         self.mallow = "GET HEAD POST PUT DELETE OPTIONS".split()
         if not self.args.no_dav:
             zs = "PROPFIND PROPPATCH LOCK UNLOCK MKCOL COPY MOVE"

@@ -145,6 +145,14 @@ A_FILE = os.stat_result(
     (0o644, -1, -1, 1, 1000, 1000, 8, 0x39230101, 0x39230101, 0x39230101)
 )
 
+RE_CC = re.compile(r"[\x00-\x1f]")  # search always faster
+RE_HSAFE = re.compile(r"[\x00-\x1f<>\"'&]")  # search always much faster
+RE_HOST = re.compile(r"[^][0-9a-zA-Z.:_-]")  # search faster <=17ch
+RE_MHOST = re.compile(r"^[][0-9a-zA-Z.:_-]+$")  # match faster >=18ch
+RE_K = re.compile(r"[^0-9a-zA-Z_-]")  # search faster <=17ch
+
+UPARAM_CC_OK = set("doc move tree".split())
+
 
 class HttpCli(object):
     """
@@ -389,6 +397,15 @@ class HttpCli(object):
                     self.host = self.headers.get("x-forwarded-host") or self.host
                     trusted_xff = True
 
+        m = RE_HOST.search(self.host)
+        if m and self.host != self.args.name:
+            zs = self.host
+            t = "malicious user; illegal Host header; req(%r) host(%r) => %r"
+            self.log(t % (self.req, zs, zs[m.span()[0] :]), 1)
+            self.cbonk(self.conn.hsrv.gmal, zs, "bad_host", "illegal Host header")
+            self.terse_reply(b"illegal Host header", 400)
+            return False
+
         if self.is_banned():
             return False
 
@@ -434,6 +451,16 @@ class HttpCli(object):
                 self.loud_reply(t, status=400)
                 return False
 
+        ptn_cc = RE_CC
+        m = ptn_cc.search(self.req)
+        if m:
+            zs = self.req
+            t = "malicious user; Cc in req0 %r => %r"
+            self.log(t % (zs, zs[m.span()[0] :]), 1)
+            self.cbonk(self.conn.hsrv.gmal, zs, "cc_r0", "Cc in req0")
+            self.terse_reply(b"", 500)
+            return False
+
         # split req into vpath + uparam
         uparam = {}
         if "?" not in self.req:
@@ -446,8 +473,8 @@ class HttpCli(object):
             self.trailing_slash = vpath.endswith("/")
             vpath = undot(vpath)
 
-            ptn = self.conn.hsrv.ptn_cc
-            k_safe = self.conn.hsrv.uparam_cc_ok
+            re_k = RE_K
+            k_safe = UPARAM_CC_OK
             for k in arglist.split("&"):
                 if "=" in k:
                     k, zs = k.split("=", 1)
@@ -457,6 +484,14 @@ class HttpCli(object):
                 else:
                     sv = ""
 
+                m = re_k.search(k)
+                if m:
+                    t = "malicious user; bad char in query key; req(%r) qk(%r) => %r"
+                    self.log(t % (self.req, k, k[m.span()[0] :]), 1)
+                    self.cbonk(self.conn.hsrv.gmal, self.req, "bc_q", "illegal qkey")
+                    self.terse_reply(b"", 500)
+                    return False
+
                 k = k.lower()
                 uparam[k] = sv
 
@@ -464,16 +499,25 @@ class HttpCli(object):
                     continue
 
                 zs = "%s=%s" % (k, sv)
-                m = ptn.search(zs)
+                m = ptn_cc.search(zs)
                 if not m:
                     continue
 
-                hit = zs[m.span()[0] :]
-                t = "malicious user; Cc in query [{}] => [{!r}]"
-                self.log(t.format(self.req, hit), 1)
+                t = "malicious user; Cc in query; req(%r) qp(%r) => %r"
+                self.log(t % (self.req, zs, zs[m.span()[0] :]), 1)
                 self.cbonk(self.conn.hsrv.gmal, self.req, "cc_q", "Cc in query")
                 self.terse_reply(b"", 500)
                 return False
+
+            if "k" in uparam:
+                m = RE_K.search(uparam["k"])
+                if m:
+                    zs = uparam["k"]
+                    t = "malicious user; illegal filekey; req(%r) k(%r) => %r"
+                    self.log(t % (self.req, zs, zs[m.span()[0] :]), 1)
+                    self.cbonk(self.conn.hsrv.gmal, zs, "bad_k", "illegal filekey")
+                    self.terse_reply(b"illegal filekey", 400)
+                    return False
 
         if self.is_vproxied:
             if vpath.startswith(self.args.R):
@@ -518,7 +562,7 @@ class HttpCli(object):
             return self.tx_qr()
 
         if relchk(self.vpath) and (self.vpath != "*" or self.mode != "OPTIONS"):
-            self.log("invalid relpath %r" % ("/" + self.vpath,))
+            self.log("illegal relpath; req(%r) => %r" % (self.req, "/" + self.vpath))
             self.cbonk(self.conn.hsrv.gmal, self.req, "bad_vp", "invalid relpaths")
             return self.tx_404() and self.keepalive
 
@@ -871,12 +915,12 @@ class HttpCli(object):
         for k, zs in list(self.out_headers.items()) + self.out_headerlist:
             response.append("%s: %s" % (k, zs))
 
+        ptn_cc = RE_CC
         for zs in response:
-            m = self.conn.hsrv.ptn_cc.search(zs)
+            m = ptn_cc.search(zs)
             if m:
-                hit = zs[m.span()[0] :]
-                t = "malicious user; Cc in out-hdr {!r} => [{!r}]"
-                self.log(t.format(zs, hit), 1)
+                t = "malicious user; Cc in out-hdr; req(%r) hdr(%r) => %r"
+                self.log(t % (self.req, zs, zs[m.span()[0] :]), 1)
                 self.cbonk(self.conn.hsrv.gmal, zs, "cc_hdr", "Cc in out-hdr")
                 raise Pebkac(999)
 
@@ -1002,7 +1046,7 @@ class HttpCli(object):
         if not kv:
             return ""
 
-        r = ["%s=%s" % (k, quotep(zs)) if zs else k for k, zs in kv.items()]
+        r = ["%s=%s" % (quotep(k), quotep(zs)) if zs else k for k, zs in kv.items()]
         return "?" + "&amp;".join(r)
 
     def ourlq(self) -> str:
@@ -1154,8 +1198,8 @@ class HttpCli(object):
                     return self.tx_res(res_path)
 
             if res_path != undot(res_path):
-                t = "malicious user; attempted path traversal %r => %r"
-                self.log(t % ("/" + self.vpath, res_path), 1)
+                t = "malicious user; attempted path traversal; req(%r) vp(%r) => %r"
+                self.log(t % (self.req, "/" + self.vpath, res_path), 1)
                 self.cbonk(self.conn.hsrv.gmal, self.req, "trav", "path traversal")
 
             self.tx_404()
@@ -1298,8 +1342,8 @@ class HttpCli(object):
 
         pw = self.ouparam.get("pw")
         if pw:
-            q_pw = "?pw=%s" % (pw,)
-            a_pw = "&pw=%s" % (pw,)
+            q_pw = "?pw=%s" % (html_escape(pw, True, True),)
+            a_pw = "&pw=%s" % (html_escape(pw, True, True),)
             for i in hits:
                 i["rp"] += a_pw if "?" in i["rp"] else q_pw
         else:
@@ -1663,7 +1707,7 @@ class HttpCli(object):
 
         token = str(uuid.uuid4())
 
-        if not lk.find(r"./{DAV:}depth"):
+        if lk.find(r"./{DAV:}depth") is None:
             depth = self.headers.get("depth", "infinity")
             lk.append(mktnod("D:depth", depth))
 
@@ -3654,6 +3698,7 @@ class HttpCli(object):
         return logues, readmes
 
     def _expand(self, txt: str, phs: list[str]) -> str:
+        ptn_hsafe = RE_HSAFE
         for ph in phs:
             if ph.startswith("hdr."):
                 sv = str(self.headers.get(ph[4:], ""))
@@ -3671,7 +3716,7 @@ class HttpCli(object):
                 self.log("unknown placeholder in server config: [%s]" % (ph,), 3)
                 continue
 
-            sv = self.conn.hsrv.ptn_hsafe.sub("_", sv)
+            sv = ptn_hsafe.sub("_", sv)
             txt = txt.replace("{{%s}}" % (ph,), sv)
 
         return txt
