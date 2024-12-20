@@ -26,9 +26,9 @@
 	<a href="#" id="repl">π</a>
 	<script>
 
-var SR = {{ r|tojson }},
+var SR = "{{ r }}",
 	last_modified = {{ lastmod }},
-	have_emp = {{ have_emp|tojson }},
+	have_emp = {{ "true" if have_emp else "false" }},
 	dfavico = "{{ favico }}";
 
 var md_opt = {
