@@ -1,4 +1,37 @@
 ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀  
+# 2024-1219-0037  `v1.16.6`  merry \x58mas
+
+# ☃️🎄 **it is time** 🎅🎁
+
+❄️❄️❄️ please [enjoy some appropriate music](https://a.ocv.me/pub/demo/music/.bonus/#af-55d4554d) (trust me on this one, you won't regret it) ❄️❄️❄️
+
+## 🧪 new features
+
+* [list of recent uploads](https://a.ocv.me/?ru) eaa4b04a
+  * new button in the controlpanel; can be disabled with `--no-ups-page`
+  * only users with the dot-permission can see dotfiles
+  * only admins can see uploader-ip and upload-times
+    * enable `--ups-when` to let all users see upload-times
+* #125 log decoded request-URLs 73f7249c
+  * non-ascii filenames would make the accesslog a wall of `%E5%B9%BB%E6%83%B3%E9%83%B7` so print [the decoded URL](https://github.com/user-attachments/assets/9d411183-30f3-4cb2-a880-84cf18011183) in addition to the original one, which is left as-is for debugging purposes
+
+## 🩹 bugfixes
+
+* #126 improve dotfile handling 4c4e48ba
+  * was impossible to delete a folder which contained hidden files if the user did not have the permission to see hidden files
+  * would also affect moving, renaming, copying folders, in which case the dotfiles would not be carried over to the new location
+  * now, dotfiles are always deleted, and always moved/copied into a new destination, on the condition that this is safe -- if the user has the dotfile permission in the target loocation but not in the source location, the dotfiles will be left behind to avoid accidentally making then browsable
+* ux: cosmetic eta/idle-timer fixes 01a3eb29
+
+## 🔧 other changes
+
+* warn on ambiguous comments in config files da5ad2ab
+* avoid writing mojibake to the log 3051b131
+  * use `\x`-encoding for unprintable text
+
+
+
+▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀  
 # 2024-1211-2236  `v1.16.5`  4chrome
 
 ## 🧪 new features
