@@ -856,9 +856,9 @@ class Up2k(object):
         self.iacct = self.asrv.iacct
         self.grps = self.asrv.grps
 
+        have_e2d = self.args.idp_h_usr
         vols = list(all_vols.values())
         t0 = time.time()
-        have_e2d = False
 
         if self.no_expr_idx:
             modified = False

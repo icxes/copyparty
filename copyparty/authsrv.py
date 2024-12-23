@@ -2181,11 +2181,11 @@ class AuthSrv(object):
             if not self.args.no_voldump:
                 self.log(t)
 
-            if have_e2d:
+            if have_e2d or self.args.idp_h_usr:
                 t = self.chk_sqlite_threadsafe()
                 if t:
                     self.log("\n\033[{}\033[0m\n".format(t))
-
+            if have_e2d:
                 if not have_e2t:
                     t = "hint: enable multimedia indexing (artist/title/...) with argument -e2ts"
                     self.log(t, 6)
