@@ -25,6 +25,9 @@
 ## [`changelog.md`](changelog.md)
 * occasionally grabbed from github release notes
 
+## [`synology-dsm.md`](synology-dsm.md)
+* running copyparty on a synology nas
+
 ## [`devnotes.md`](devnotes.md)
 * technical stuff
 
