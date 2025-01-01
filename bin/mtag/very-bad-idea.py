@@ -6,6 +6,11 @@ WARNING -- DANGEROUS PLUGIN --
   running this plugin, they can execute malware on your machine
   so please keep this on a LAN and protect it with a password
 
+here is a MUCH BETTER ALTERNATIVE (which also works on Windows):
+  https://github.com/steinuil/kameloso
+
+----------------------------------------------------------------------
+
 use copyparty as a chromecast replacement:
   * post a URL and it will open in the default browser
   * upload a file and it will open in the default application

@@ -31,6 +31,9 @@ plugins in this section should only be used with appropriate precautions:
 * [very-bad-idea.py](./very-bad-idea.py) combined with [meadup.js](https://github.com/9001/copyparty/blob/hovudstraum/contrib/plugins/meadup.js) converts copyparty into a janky yet extremely flexible chromecast clone
   * also adds a virtual keyboard by @steinuil to the basic-upload tab for comfy couch crowd control
   * anything uploaded through the [android app](https://github.com/9001/party-up) (files or links) are executed on the server, meaning anyone can infect your PC with malware... so protect this with a password and keep it on a LAN!
+  * [kamelåså](https://github.com/steinuil/kameloso) is a much better (and MUCH safer) alternative to this plugin
+    * powered by [chicken-curry-banana-pineapple-peanut pizza](https://a.ocv.me/pub/g/i/2025/01/298437ce-8351-4c8c-861c-fa131d217999.jpg?cache) so you know it's good
+    * and, unlike this plugin, kamelåså even has windows support (nice)
 
 
 # dependencies
