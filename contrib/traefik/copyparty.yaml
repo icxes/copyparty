@@ -1,0 +1,12 @@
+# ./traefik --experimental.fastproxy=true --entrypoints.web.address=:8080 --providers.file.filename=copyparty.yaml
+
+http:
+  services:
+    service-cpp:
+      loadBalancer:
+        servers:
+          - url: "http://127.0.0.1:3923/"
+  routers:
+    my-router:
+      rule: "PathPrefix(`/`)"
+      service: service-cpp

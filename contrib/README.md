@@ -53,5 +53,10 @@ init-scripts to start copyparty as a service
 * [`openrc/copyparty`](openrc/copyparty)
 
 # Reverse-proxy
-copyparty has basic support for running behind another webserver
-* [`nginx/copyparty.conf`](nginx/copyparty.conf)
+copyparty supports running behind another webserver
+* [`apache/copyparty.conf`](apache/copyparty.conf)
+* [`haproxy/copyparty.conf`](haproxy/copyparty.conf)
+* [`lighttpd/subdomain.conf`](lighttpd/subdomain.conf)
+* [`lighttpd/subpath.conf`](lighttpd/subpath.conf)
+* [`nginx/copyparty.conf`](nginx/copyparty.conf) -- recommended
+* [`traefik/copyparty.yaml`](traefik/copyparty.yaml)

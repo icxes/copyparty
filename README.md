@@ -1670,10 +1670,16 @@ some reverse proxies (such as [Caddy](https://caddyserver.com/)) can automatical
 
 for improved security (and a 10% performance boost) consider listening on a unix-socket with `-i unix:770:www:/tmp/party.sock` (permission `770` means only members of group `www` can access it)
 
-example webserver configs:
+example webserver / reverse-proxy configs:
 
-* [nginx config](contrib/nginx/copyparty.conf) -- entire domain/subdomain
-* [apache2 config](contrib/apache/copyparty.conf) -- location-based
+* [apache config](contrib/apache/copyparty.conf)
+* caddy uds: `caddy reverse-proxy --from :8080 --to unix///dev/shm/party.sock`
+* caddy tcp: `caddy reverse-proxy --from :8081 --to http://127.0.0.1:3923`
+* [haproxy config](contrib/haproxy/copyparty.conf)
+* [lighttpd subdomain](contrib/lighttpd/subdomain.conf) -- entire domain/subdomain
+* [lighttpd subpath](contrib/lighttpd/subpath.conf) -- location-based (not optimal, but in case you need it)
+* [nginx config](contrib/nginx/copyparty.conf) -- recommended
+* [traefik config](contrib/traefik/copyparty.yaml)
 
 
 ### real-ip
@@ -1683,6 +1689,38 @@ teaching copyparty how to see client IPs  when running behind a reverse-proxy, o
 if you (and maybe everybody else) keep getting a message that says `thank you for playing`, then you've gotten banned for malicious traffic. This ban applies to the IP address that copyparty *thinks* identifies the shady client -- so, depending on your setup, you might have to tell copyparty where to find the correct IP
 
 for most common setups, there should be a helpful message in the server-log explaining what to do, but see [docs/xff.md](docs/xff.md) if you want to learn more, including a quick hack to **just make it work** (which is **not** recommended, but hey...)
+
+
+### reverse-proxy performance
+
+most reverse-proxies support connecting to copyparty either using uds/unix-sockets (`/dev/shm/party.sock`, faster/recommended) or using tcp (`127.0.0.1`)
+
+with copyparty listening on a uds / unix-socket / unix-domain-socket and the reverse-proxy connecting to that:
+
+| index.html   | upload      | download    | software |
+| ------------ | ----------- | ----------- | -------- |
+| 28'900 req/s | 6'900 MiB/s | 7'400 MiB/s | no-proxy |
+| 18'750 req/s | 3'500 MiB/s | 2'370 MiB/s | haproxy |
+|  9'900 req/s | 3'750 MiB/s | 2'200 MiB/s | caddy |
+| 18'700 req/s | 2'200 MiB/s | 1'570 MiB/s | nginx |
+|  9'700 req/s | 1'750 MiB/s | 1'830 MiB/s | apache |
+|  9'900 req/s | 1'300 MiB/s | 1'470 MiB/s | lighttpd |
+
+when connecting the reverse-proxy to `127.0.0.1` instead (the basic and/or old-fasioned way), speeds are a bit worse:
+
+| index.html   | upload      | download    | software |
+| ------------ | ----------- | ----------- | -------- |
+| 21'200 req/s | 5'700 MiB/s | 6'700 MiB/s | no-proxy |
+| 14'500 req/s | 1'700 MiB/s | 2'170 MiB/s | haproxy |
+| 11'100 req/s | 2'750 MiB/s | 2'000 MiB/s | traefik |
+|  8'400 req/s | 2'300 MiB/s | 1'950 MiB/s | caddy |
+| 13'400 req/s | 1'100 MiB/s | 1'480 MiB/s | nginx |
+|  8'400 req/s | 1'000 MiB/s | 1'000 MiB/s | apache |
+|  6'500 req/s | 1'270 MiB/s | 1'500 MiB/s | lighttpd |
+
+in summary, `haproxy > caddy > traefik > nginx > apache > lighttpd`, and use uds when possible (traefik does not support it yet)
+
+* if these results are bullshit because my config exampels are bad, please submit corrections!
 
 
 ## prometheus
