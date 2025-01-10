@@ -1897,7 +1897,7 @@ class HttpCli(object):
                 return self.handle_stash(False)
 
             if "save" in opt:
-                post_sz, _, _, _, path, _ = self.dump_to_file(False)
+                post_sz, _, _, _, _, path, _ = self.dump_to_file(False)
                 self.log("urlform: %d bytes, %r" % (post_sz, path))
             elif "print" in opt:
                 reader, _ = self.get_body_reader()
@@ -1978,11 +1978,11 @@ class HttpCli(object):
         else:
             return read_socket(self.sr, bufsz, remains), remains
 
-    def dump_to_file(self, is_put: bool) -> tuple[int, str, str, int, str, str]:
-        # post_sz, sha_hex, sha_b64, remains, path, url
+    def dump_to_file(self, is_put: bool) -> tuple[int, str, str, str, int, str, str]:
+        # post_sz, halg, sha_hex, sha_b64, remains, path, url
         reader, remains = self.get_body_reader()
         vfs, rem = self.asrv.vfs.get(self.vpath, self.uname, False, True)
-        rnd, _, lifetime, xbu, xau = self.upload_flags(vfs)
+        rnd, lifetime, xbu, xau = self.upload_flags(vfs)
         lim = vfs.get_dbv(rem)[0].lim
         fdir = vfs.canonical(rem)
         if lim:
@@ -2132,12 +2132,14 @@ class HttpCli(object):
                 # small toctou, but better than clobbering a hardlink
                 wunlink(self.log, path, vfs.flags)
 
+        halg = "sha512"
         hasher = None
         copier = hashcopy
         if "ck" in self.ouparam or "ck" in self.headers:
-            zs = self.ouparam.get("ck") or self.headers.get("ck") or ""
+            halg = zs = self.ouparam.get("ck") or self.headers.get("ck") or ""
             if not zs or zs == "no":
                 copier = justcopy
+                halg = ""
             elif zs == "md5":
                 hasher = hashlib.md5(**USED4SEC)
             elif zs == "sha1":
@@ -2171,7 +2173,7 @@ class HttpCli(object):
                 raise
 
         if self.args.nw:
-            return post_sz, sha_hex, sha_b64, remains, path, ""
+            return post_sz, halg, sha_hex, sha_b64, remains, path, ""
 
         at = mt = time.time() - lifetime
         cli_mt = self.headers.get("x-oc-mtime")
@@ -2282,19 +2284,30 @@ class HttpCli(object):
             self.args.RS + vpath + vsuf,
         )
 
-        return post_sz, sha_hex, sha_b64, remains, path, url
+        return post_sz, halg, sha_hex, sha_b64, remains, path, url
 
     def handle_stash(self, is_put: bool) -> bool:
-        post_sz, sha_hex, sha_b64, remains, path, url = self.dump_to_file(is_put)
+        post_sz, halg, sha_hex, sha_b64, remains, path, url = self.dump_to_file(is_put)
         spd = self._spd(post_sz)
         t = "%s wrote %d/%d bytes to %r  # %s"
         self.log(t % (spd, post_sz, remains, path, sha_b64[:28]))  # 21
 
-        ac = self.uparam.get(
-            "want", self.headers.get("accept", "").lower().split(";")[-1]
-        )
+        mime = "text/plain; charset=utf-8"
+        ac = self.uparam.get("want") or self.headers.get("accept") or ""
+        if ac:
+            ac = ac.split(";", 1)[0].lower()
+            if ac == "application/json":
+                ac = "json"
         if ac == "url":
             t = url
+        elif ac == "json" or "j" in self.uparam:
+            jmsg = {"fileurl": url, "filesz": post_sz}
+            if halg:
+                jmsg[halg] = sha_hex[:56]
+                jmsg["sha_b64"] = sha_b64
+
+            mime = "application/json"
+            t = json.dumps(jmsg, indent=2, sort_keys=True)
         else:
             t = "{}\n{}\n{}\n{}\n".format(post_sz, sha_b64, sha_hex[:56], url)
 
@@ -2304,7 +2317,7 @@ class HttpCli(object):
             h["X-OC-MTime"] = "accepted"
             t = ""  # some webdav clients expect/prefer this
 
-        self.reply(t.encode("utf-8"), 201, headers=h)
+        self.reply(t.encode("utf-8", "replace"), 201, mime=mime, headers=h)
         return True
 
     def bakflip(
@@ -2983,7 +2996,7 @@ class HttpCli(object):
         self.redirect(vpath, "?edit")
         return True
 
-    def upload_flags(self, vfs: VFS) -> tuple[int, bool, int, list[str], list[str]]:
+    def upload_flags(self, vfs: VFS) -> tuple[int, int, list[str], list[str]]:
         if self.args.nw:
             rnd = 0
         else:
@@ -2991,10 +3004,6 @@ class HttpCli(object):
             if vfs.flags.get("rand"):  # force-enable
                 rnd = max(rnd, vfs.flags["nrand"])
 
-        ac = self.uparam.get(
-            "want", self.headers.get("accept", "").lower().split(";")[-1]
-        )
-        want_url = ac == "url"
         zs = self.uparam.get("life", self.headers.get("life", ""))
         if zs:
             vlife = vfs.flags.get("lifetime") or 0
@@ -3004,7 +3013,6 @@ class HttpCli(object):
 
         return (
             rnd,
-            want_url,
             lifetime,
             vfs.flags.get("xbu") or [],
             vfs.flags.get("xau") or [],
@@ -3057,7 +3065,14 @@ class HttpCli(object):
             if not nullwrite:
                 bos.makedirs(fdir_base)
 
-        rnd, want_url, lifetime, xbu, xau = self.upload_flags(vfs)
+        rnd, lifetime, xbu, xau = self.upload_flags(vfs)
+        zs = self.uparam.get("want") or self.headers.get("accept") or ""
+        if zs:
+            zs = zs.split(";", 1)[0].lower()
+            if zs == "application/json":
+                zs = "json"
+        want_url = zs == "url"
+        want_json = zs == "json" or "j" in self.uparam
 
         files: list[tuple[int, str, str, str, str, str]] = []
         # sz, sha_hex, sha_b64, p_file, fname, abspath
@@ -3379,7 +3394,7 @@ class HttpCli(object):
                 msg += "\n" + errmsg
 
             self.reply(msg.encode("utf-8", "replace"), status=sc)
-        elif "j" in self.uparam:
+        elif want_json:
             jtxt = json.dumps(jmsg, indent=2, sort_keys=True).encode("utf-8", "replace")
             self.reply(jtxt, mime="application/json", status=sc)
         else:

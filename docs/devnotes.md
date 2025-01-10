@@ -212,6 +212,7 @@ authenticate using header `Cookie: cppwd=foo` or url param `&pw=foo`
 | method | params | body | result |
 |--|--|--|--|
 | PUT | | (binary data) | upload into file at URL |
+| PUT | `?j` | (binary data) | ...and reply with json |
 | PUT | `?ck` | (binary data) | upload without checksum gen (faster) |
 | PUT | `?ck=md5` | (binary data) | return md5 instead of sha512 |
 | PUT | `?gz` | (binary data) | compress with gzip and write into file at URL |
@@ -236,6 +237,7 @@ upload modifiers:
 | http-header | url-param | effect |
 |--|--|--|
 | `Accept: url` | `want=url` | return just the file URL |
+| `Accept: json` | `want=json` | return upload info as json; same as `?j` |
 | `Rand: 4` | `rand=4` | generate random filename with 4 characters |
 | `Life: 30` | `life=30` | delete file after 30 seconds |
 | `CK: no` | `ck` | disable serverside checksum (maybe faster) |
