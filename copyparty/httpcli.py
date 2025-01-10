@@ -3395,6 +3395,8 @@ class HttpCli(object):
 
             self.reply(msg.encode("utf-8", "replace"), status=sc)
         elif want_json:
+            if len(jmsg["files"]) == 1:
+                jmsg["fileurl"] = jmsg["files"][0]["url"]
             jtxt = json.dumps(jmsg, indent=2, sort_keys=True).encode("utf-8", "replace")
             self.reply(jtxt, mime="application/json", status=sc)
         else:

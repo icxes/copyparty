@@ -648,7 +648,7 @@ dragdrop is the recommended way, but you may also:
 
 * select some files (not folders) in your file explorer and press CTRL-V inside the browser window
 * use the [command-line uploader](https://github.com/9001/copyparty/tree/hovudstraum/bin#u2cpy)
-* upload using [curl or sharex](#client-examples)
+* upload using [curl, sharex, ishare, ...](#client-examples)
 
 when uploading files through dragdrop or CTRL-V, this initiates an upload using `up2k`; there are two browser-based uploaders available:
 * `[🎈] bup`, the basic uploader, supports almost every browser since netscape 4.0
@@ -2039,7 +2039,8 @@ interact with copyparty using non-browser clients
   * can be downloaded from copyparty: controlpanel -> connect -> [partyfuse.py](http://127.0.0.1:3923/.cpr/a/partyfuse.py)
   * [rclone](https://rclone.org/) as client can give ~5x performance, see [./docs/rclone.md](docs/rclone.md)
 
-* sharex (screenshot utility): see [./contrib/sharex.sxcu](contrib/#sharexsxcu)
+* sharex (screenshot utility): see [./contrib/sharex.sxcu](./contrib/#sharexsxcu)
+  * and for screenshots on macos, see [./contrib/ishare.iscu](./contrib/#ishareiscu)
   * and for screenshots on linux, see [./contrib/flameshot.sh](./contrib/flameshot.sh)
 
 * contextlet (web browser integration); see [contrib contextlet](contrib/#send-to-cppcontextletjson)

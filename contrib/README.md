@@ -12,14 +12,19 @@
 * assumes the webserver and copyparty is running on the same server/IP
 * modify `10.13.1.1` as necessary if you wish to support browsers without javascript
 
-### [`sharex.sxcu`](sharex.sxcu)
-* sharex config file to upload screenshots and grab the URL
+### [`sharex.sxcu`](sharex.sxcu) - Windows screenshot uploader
+* [sharex](https://getsharex.com/) config file to upload screenshots and grab the URL
 * `RequestURL`: full URL to the target folder
 * `pw`: password (remove the `pw` line if anon-write)
 * the `act:bput` thing is optional since copyparty v1.9.29
 * using an older sharex version, maybe sharex v12.1.1 for example? dw fam i got your back 👉😎👉 [`sharex12.sxcu`](sharex12.sxcu)
 
-### [`flameshot.sh`](flameshot.sh)
+### [`ishare.iscu`](ishare.iscu) - MacOS screenshot uploader
+* [ishare](https://isharemac.app/) config file to upload screenshots and grab the URL
+* `RequestURL`: full URL to the target folder
+* `pw`: password (remove the `pw` line if anon-write)
+
+### [`flameshot.sh`](flameshot.sh) - Linux screenshot uploader
 * takes a screenshot with [flameshot](https://flameshot.org/) on Linux, uploads it, and writes the URL to clipboard
 
 ### [`send-to-cpp.contextlet.json`](send-to-cpp.contextlet.json)
