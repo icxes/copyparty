@@ -1106,6 +1106,8 @@ on macos, connect from finder:
 
 in order to grant full write-access to webdav clients, the volflag `daw` must be set and the account must also have delete-access (otherwise the client won't be allowed to replace the contents of existing files, which is how webdav works)
 
+> note: if you have enabled [IdP authentication](#identity-providers) then that may cause issues for some/most webdav clients; see [the webdav section in the IdP docs](https://github.com/9001/copyparty/blob/hovudstraum/docs/idp.md#connecting-webdav-clients)
+
 
 ### connecting to webdav from windows
 
