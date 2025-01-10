@@ -6,6 +6,7 @@
     * [up2k](#up2k) - quick outline of the up2k protocol
         * [why not tus](#why-not-tus) - I didn't know about [tus](https://tus.io/)
         * [why chunk-hashes](#why-chunk-hashes) - a single sha512 would be better, right?
+        * [list of chunk-sizes](#list-of-chunk-sizes) - specific chunksizes are enforced
 * [hashed passwords](#hashed-passwords) - regarding the curious decisions
 * [http api](#http-api)
     * [read](#read)
@@ -94,6 +95,44 @@ however it allows for hashing multiple chunks in parallel, greatly increasing up
 hashwasm would solve the streaming issue but reduces hashing speed for sha512 (xxh128 does 6 GiB/s), and it would make old browsers and [iphones](https://bugs.webkit.org/show_bug.cgi?id=228552) unsupported
 
 * blake2 might be a better choice since xxh is non-cryptographic, but that gets ~15 MiB/s on slower androids
+
+### list of chunk-sizes
+
+specific chunksizes are enforced  depending on total filesize
+
+each pair of filesize/chunksize is the largest filesize which will use its listed chunksize; a 512 MiB file will use chunksize 2 MiB, but if the file is one byte larger than 512 MiB then it becomes 3 MiB
+
+for the purpose of performance (or dodging arbitrary proxy limitations), it is possible to upload combined and/or partial chunks using stitching and/or subchunks respectively
+
+| filesize           | filesize | chunksize     | chunksz |
+| -----------------: | -------: | ------------: | ------: |
+|        268 435 456 |  256 MiB |     1 048 576 | 1.0 MiB |
+|        402 653 184 |  384 MiB |     1 572 864 | 1.5 MiB |
+|        536 870 912 |  512 MiB |     2 097 152 | 2.0 MiB |
+|        805 306 368 |  768 MiB |     3 145 728 | 3.0 MiB |
+|      1 073 741 824 |  1.0 GiB |     4 194 304 | 4.0 MiB |
+|      1 610 612 736 |  1.5 GiB |     6 291 456 | 6.0 MiB |
+|      2 147 483 648 |  2.0 GiB |     8 388 608 | 8.0 MiB |
+|      3 221 225 472 |  3.0 GiB |    12 582 912 |  12 MiB |
+|      4 294 967 296 |  4.0 GiB |    16 777 216 |  16 MiB |
+|      6 442 450 944 |  6.0 GiB |    25 165 824 |  24 MiB |
+|    137 438 953 472 |  128 GiB |    33 554 432 |  32 MiB |
+|    206 158 430 208 |  192 GiB |    50 331 648 |  48 MiB |
+|    274 877 906 944 |  256 GiB |    67 108 864 |  64 MiB |
+|    412 316 860 416 |  384 GiB |   100 663 296 |  96 MiB |
+|    549 755 813 888 |  512 GiB |   134 217 728 | 128 MiB |
+|    824 633 720 832 |  768 GiB |   201 326 592 | 192 MiB |
+|  1 099 511 627 776 |  1.0 TiB |   268 435 456 | 256 MiB |
+|  1 649 267 441 664 |  1.5 TiB |   402 653 184 | 384 MiB |
+|  2 199 023 255 552 |  2.0 TiB |   536 870 912 | 512 MiB |
+|  3 298 534 883 328 |  3.0 TiB |   805 306 368 | 768 MiB |
+|  4 398 046 511 104 |  4.0 TiB | 1 073 741 824 | 1.0 GiB |
+|  6 597 069 766 656 |  6.0 TiB | 1 610 612 736 | 1.5 GiB |
+|  8 796 093 022 208 |  8.0 TiB | 2 147 483 648 | 2.0 GiB |
+| 13 194 139 533 312 | 12.0 TiB | 3 221 225 472 | 3.0 GiB |
+| 17 592 186 044 416 | 16.0 TiB | 4 294 967 296 | 4.0 GiB |
+| 26 388 279 066 624 | 24.0 TiB | 6 442 450 944 | 6.0 GiB |
+| 35 184 372 088 832 | 32.0 TiB | 8 589 934 592 | 8.0 GiB |
 
 
 # hashed passwords

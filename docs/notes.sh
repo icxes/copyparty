@@ -259,6 +259,12 @@ for d in /usr /var; do find $d -type f -size +30M 2>/dev/null; done | while IFS=
 for f in {0..255}; do echo $f; truncate -s 256M $f; b1=$(printf '%02x' $f); for o in {0..255}; do b2=$(printf '%02x' $o); printf "\x$b1\x$b2" | dd of=$f bs=2 seek=$((o*1024*1024)) conv=notrunc 2>/dev/null; done; done
 # create 6.06G file with 16 bytes of unique data at start+end of each 32M chunk
 sz=6509559808; truncate -s $sz f; csz=33554432; sz=$((sz/16)); step=$((csz/16)); ofs=0; while [ $ofs -lt $sz ]; do dd if=/dev/urandom of=f bs=16 count=2 seek=$ofs conv=notrunc iflag=fullblock; [ $ofs = 0 ] && ofs=$((ofs+step-1)) || ofs=$((ofs+step)); done
+# same but for chunksizes 16M (3.1G), 24M (4.1G), 48M (128.1G)
+sz=3321225472;   csz=16777216;
+sz=4394967296;   csz=25165824;
+sz=6509559808;   csz=33554432;
+sz=138438953472; csz=50331648;
+f=csz-$csz; truncate -s $sz $f; sz=$((sz/16)); step=$((csz/16)); ofs=0; while [ $ofs -lt $sz ]; do dd if=/dev/urandom of=$f bs=16 count=2 seek=$ofs conv=notrunc iflag=fullblock; [ $ofs = 0 ] && ofs=$((ofs+step-1)) || ofs=$((ofs+step)); done
 
 # py2 on osx
 brew install python@2

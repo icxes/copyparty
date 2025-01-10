@@ -92,6 +92,7 @@ turn almost any device into a file server with resumable uploads/downloads using
     * [listen on port 80 and 443](#listen-on-port-80-and-443) - become a *real* webserver
     * [reverse-proxy](#reverse-proxy) - running copyparty next to other websites
         * [real-ip](#real-ip) - teaching copyparty how to see client IPs
+        * [reverse-proxy performance](#reverse-proxy-performance)
     * [prometheus](#prometheus) - metrics/stats can be enabled
     * [other extremely specific features](#other-extremely-specific-features) - you'll never find a use for these
         * [custom mimetypes](#custom-mimetypes) - change the association of a file extension
