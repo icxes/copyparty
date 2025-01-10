@@ -29,7 +29,7 @@ var wah = '',
     HTTPS = ('' + location).indexOf('https:') === 0,
     TOUCH = 'ontouchstart' in window,
     MOBILE = TOUCH,
-    CHROME = !!window.chrome,
+    CHROME = !!window.chrome,  // safari=false
     VCHROME = CHROME ? 1 : 0,
     IE = /Trident\//.test(navigator.userAgent),
     FIREFOX = ('netscape' in window) && / rv:/.test(navigator.userAgent),

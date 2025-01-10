@@ -881,7 +881,7 @@ function up2k_init(subtle) {
     bcfg_bind(uc, 'turbo', 'u2turbo', turbolvl > 1, draw_turbo);
     bcfg_bind(uc, 'datechk', 'u2tdate', turbolvl < 3, null);
     bcfg_bind(uc, 'az', 'u2sort', u2sort.indexOf('n') + 1, set_u2sort);
-    bcfg_bind(uc, 'hashw', 'hashw', !!WebAssembly && (!subtle || !CHROME || MOBILE || VCHROME >= 107), set_hashw);
+    bcfg_bind(uc, 'hashw', 'hashw', !!WebAssembly && !(CHROME && MOBILE) && (!subtle || !CHROME), set_hashw);
     bcfg_bind(uc, 'upnag', 'upnag', false, set_upnag);
     bcfg_bind(uc, 'upsfx', 'upsfx', false, set_upsfx);
 
@@ -1972,32 +1972,84 @@ function up2k_init(subtle) {
             nchunk = 0,
             chunksize = get_chunksize(t.size),
             nchunks = Math.ceil(t.size / chunksize),
+            csz_mib = chunksize / 1048576,
+            tread = t.t_hashing,
+            cache_buf = null,
+            cache_car = 0,
+            cache_cdr = 0,
+            hashers = 0,
             hashtab = {};
+
+        // resolving subtle.digest w/o worker takes 1sec on blur if the actx hack breaks
+        var use_workers = hws.length && !hws_ng && uc.hashw && (nchunks > 1 || document.visibilityState == 'hidden'),
+            hash_par = (!subtle && !use_workers) ? 0 : csz_mib < 48 ? 2 : csz_mib < 96 ? 1 : 0;
 
         pvis.setab(t.n, nchunks);
         pvis.move(t.n, 'bz');
 
-        if (hws.length && !hws_ng && uc.hashw && (nchunks > 1 || document.visibilityState == 'hidden'))
-            // resolving subtle.digest w/o worker takes 1sec on blur if the actx hack breaks
+        if (use_workers)
             return wexec_hash(t, chunksize, nchunks);
 
         var segm_next = function () {
             if (nchunk >= nchunks || bpend)
                 return false;
 
-            var reader = new FileReader(),
-                nch = nchunk++,
+            var nch = nchunk++,
                 car = nch * chunksize,
                 cdr = Math.min(chunksize + car, t.size);
 
             st.bytes.hashed += cdr - car;
             st.etac.h++;
 
-            var orz = function (e) {
-                bpend--;
-                segm_next();
-                hash_calc(nch, e.target.result);
+            if (MOBILE && CHROME && st.slow_io === null && nch == 1 && cdr - car >= 1024 * 512) {
+                var spd = Math.floor((cdr - car) / (Date.now() + 1 - tread));
+                st.slow_io = spd < 40 * 1024;
+                console.log('spd {0}, slow: {1}'.format(spd, st.slow_io));
             }
+
+            if (cdr <= cache_cdr && car >= cache_car) {
+                try {
+                    var ofs = car - cache_car,
+                        ofs2 = ofs + (cdr - car),
+                        buf = cache_buf.subarray(ofs, ofs2);
+
+                    hash_calc(nch, buf);
+                }
+                catch (ex) {
+                    vis_exh(ex + '', 'up2k.js', '', '', ex);
+                }
+                return;
+            }
+
+            var reader = new FileReader(),
+                fr_cdr = cdr;
+
+            if (st.slow_io) {
+                var step = cdr - car,
+                    tgt = 48 * 1048576;
+
+                while (step && fr_cdr - car < tgt)
+                    fr_cdr += step;
+                if (fr_cdr - car > tgt && fr_cdr > cdr)
+                    fr_cdr -= step;
+                if (fr_cdr > t.size)
+                    fr_cdr = t.size;
+            }
+
+            var orz = function (e) {
+                bpend = 0;
+                var buf = e.target.result;
+                if (fr_cdr > cdr) {
+                    cache_buf = new Uint8Array(buf);
+                    cache_car = car;
+                    cache_cdr = fr_cdr;
+                    buf = cache_buf.subarray(0, cdr - car);
+                }
+                if (hashers < hash_par)
+                    segm_next();
+
+                hash_calc(nch, buf);
+            };
             reader.onload = function (e) {
                 try { orz(e); } catch (ex) { vis_exh(ex + '', 'up2k.js', '', '', ex); }
             };
@@ -2024,17 +2076,20 @@ function up2k_init(subtle) {
 
                 toast.err(0, 'y o u   b r o k e    i t\nfile: ' + esc(t.name + '') + '\nerror: ' + err);
             };
-            bpend++;
-            reader.readAsArrayBuffer(t.fobj.slice(car, cdr));
+            bpend = 1;
+            tread = Date.now();
+            reader.readAsArrayBuffer(t.fobj.slice(car, fr_cdr));
 
             return true;
         };
 
         var hash_calc = function (nch, buf) {
+            hashers++;
             var orz = function (hashbuf) {
                 var hslice = new Uint8Array(hashbuf).subarray(0, 33),
                     b64str = buf2b64(hslice);
 
+                hashers--;
                 hashtab[nch] = b64str;
                 t.hash.push(nch);
                 pvis.hashed(t);
@@ -3044,7 +3099,7 @@ function up2k_init(subtle) {
                 new_state = false;
                 fixed = true;
             }
-            if (new_state === undefined)
+            if (new_state === undefined && preferred === undefined)
                 new_state = can_write ? false : have_up2k_idx ? true : undefined;
         }
 
