@@ -40,6 +40,12 @@
 
 
 
+        {% if args.idp_h_usr %}
+        <p style="line-height:2em"><b>WARNING:</b> this server is using IdP-based authentication, so this stuff may not work as advertised. Depending on server config, these commands can probably only be used to access areas which don't require authentication, unless you auth using any non-IdP accounts defined in the copyparty config. Please see <a href="https://github.com/9001/copyparty/blob/hovudstraum/docs/idp.md#connecting-webdav-clients">the IdP docs</a></p>
+        {% endif %}
+
+
+
         {% if not args.no_dav %}
         <h1>WebDAV</h1>
 
