@@ -274,6 +274,22 @@
 
 
 
+        <div class="os lin">
+            <h1>flameshot</h1>
+
+            <p>to upload screenshots using <a href="https://flameshot.org/">flameshot</a>, save this as <code>flameshot.sh</code> and run it:</p>
+
+            <pre class="dl" name="flameshot.sh">
+                #!/bin/bash
+                pw="<b>{{ pw }}</b>"
+                url="http{{ s }}://{{ ep }}/{{ rvp }}"
+                filename="$(date +%Y-%m%d-%H%M%S).png"
+                flameshot gui -s -r | curl -sT- "$url$filename?want=url&pw=$pw" | xsel -ib
+            </pre>
+        </div>
+
+
+
     </div>
 	<a href="#" id="repl">π</a>
 	<script>

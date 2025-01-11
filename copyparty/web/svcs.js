@@ -24,7 +24,7 @@ function add_dls() {
         oa[a].setAttribute('id', 'tx' + a);
         oa[a].parentNode.insertBefore(o, oa[a]);
         o.setAttribute('download', oa[a].getAttribute('name'));
-        o.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(oa[a].textContent));
+        o.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(oa[a].innerText));
         clmod(o, 'txa', 1);
     }
 }
