@@ -1119,6 +1119,7 @@ class Up2k(object):
         reg = {}
         drp = None
         emptylist = []
+        dotpart = "." if self.args.dotpart else ""
         snap = os.path.join(histpath, "up2k.snap")
         if bos.path.exists(snap):
             with gzip.GzipFile(snap, "rb") as f:
@@ -1131,6 +1132,8 @@ class Up2k(object):
             except:
                 pass
 
+            reg = reg2  # diff-golf
+
             if reg2 and "dwrk" not in reg2[next(iter(reg2))]:
                 for job in reg2.values():
                     job["dwrk"] = job["wark"]
@@ -1138,7 +1141,8 @@ class Up2k(object):
             rm = []
             for k, job in reg2.items():
                 job["ptop"] = ptop
-                if "done" in job:
+                is_done = "done" in job
+                if is_done:
                     job["need"] = job["hash"] = emptylist
                 else:
                     if "need" not in job:
@@ -1146,10 +1150,13 @@ class Up2k(object):
                     if "hash" not in job:
                         job["hash"] = []
 
-                fp = djoin(ptop, job["prel"], job["name"])
+                if is_done:
+                    fp = djoin(ptop, job["prel"], job["name"])
+                else:
+                    fp = djoin(ptop, job["prel"], dotpart + job["name"] + ".PARTIAL")
+
                 if bos.path.exists(fp):
-                    reg[k] = job
-                    if "done" in job:
+                    if is_done:
                         continue
                     job["poke"] = time.time()
                     job["busy"] = {}
