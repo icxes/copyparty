@@ -9,7 +9,7 @@
 	<meta name="theme-color" content="#{{ tcolor }}">
 	<link rel="stylesheet" media="screen" href="{{ r }}/.cpr/splash.css?_={{ ts }}">
 	<link rel="stylesheet" media="screen" href="{{ r }}/.cpr/ui.css?_={{ ts }}">
-	<style>ul{padding-left:1.3em}li{margin:.4em 0}</style>
+	<style>ul{padding-left:1.3em}li{margin:.4em 0}.txa{float:right;margin:0 0 0 1em}</style>
 {{ html_head }}
 </head>
 
@@ -31,11 +31,12 @@
             <br />
             <span class="os win lin mac">placeholders:</span>
             <span class="os win">
-                {% if accs %}<code><b>{{ pw }}</b></code>=password, {% endif %}<code><b>W:</b></code>=mountpoint
+                {% if accs %}<code><b id="pw0">{{ pw }}</b></code>=password, {% endif %}<code><b>W:</b></code>=mountpoint
             </span>
             <span class="os lin mac">
-                {% if accs %}<code><b>{{ pw }}</b></code>=password, {% endif %}<code><b>mp</b></code>=mountpoint
+                {% if accs %}<code><b id="pw0">{{ pw }}</b></code>=password, {% endif %}<code><b>mp</b></code>=mountpoint
             </span>
+            <a href="#" id="setpw">use real password</a>
         </p>
 
 
@@ -232,6 +233,44 @@
             open 'smb://<b>{{ pw }}</b>:k@{{ host }}/a'
         </pre>
         {% endif %}
+
+
+
+        <div class="os win">
+            <h1>ShareX</h1>
+
+            <p>to upload screenshots using ShareX <a href="https://github.com/ShareX/ShareX/releases/tag/v12.4.1">v12</a> or <a href="https://getsharex.com/">v15+</a>, save this as <code>copyparty.sxcu</code> and run it:</p>
+
+            <pre class="dl" name="copyparty.sxcu">
+                { "Name": "copyparty",
+                "RequestURL": "http{{ s }}://{{ ep }}/{{ rvp }}",
+                "Headers": {
+                    {% if accs %}"pw": "<b>{{ pw }}</b>",{% endif %}
+                    "accept": "url"
+                },
+                "DestinationType": "ImageUploader, TextUploader, FileUploader",
+                "FileFormName": "f" }
+            </pre>
+        </div>
+
+
+
+        <div class="os mac">
+            <h1>ishare</h1>
+
+            <p>to upload screenshots using <a href="https://isharemac.app/">ishare</a>, save this as <code>copyparty.iscu</code> and run it:</p>
+
+            <pre class="dl" name="copyparty.iscu">
+                { "Name": "copyparty",
+                "RequestURL": "http{{ s }}://{{ ep }}/{{ rvp }}",
+                "Headers": {
+                    {% if accs %}"pw": "<b>{{ pw }}</b>",{% endif %}
+                    "accept": "json"
+                },
+                "ResponseURL": "{{ '{{fileurl}}' }}",
+                "FileFormName": "f" }
+            </pre>
+        </div>
 
 
 
