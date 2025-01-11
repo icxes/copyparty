@@ -1164,10 +1164,17 @@ class Up2k(object):
                     self.log("ign deleted file in snap: %r" % (fp,))
                     if not n4g:
                         rm.append(k)
-                        continue
 
             for x in rm:
                 del reg2[x]
+
+            # optimize pre-1.15.4 entries
+            if next((x for x in reg.values() if "done" in x and "poke" in x), None):
+                zsl = "host tnam busy sprs poke t0c".split()
+                for job in reg.values():
+                    if "done" in job:
+                        for k in zsl:
+                            job.pop(k, None)
 
             if drp is None:
                 drp = [k for k, v in reg.items() if not v["need"]]
@@ -3011,7 +3018,7 @@ class Up2k(object):
                 if wark in reg:
                     del reg[wark]
                 job["hash"] = job["need"] = []
-                job["done"] = True
+                job["done"] = 1
                 job["busy"] = {}
 
             if lost:
