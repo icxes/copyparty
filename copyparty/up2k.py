@@ -856,7 +856,7 @@ class Up2k(object):
         self.iacct = self.asrv.iacct
         self.grps = self.asrv.grps
 
-        have_e2d = self.args.idp_h_usr
+        have_e2d = self.args.idp_h_usr or self.args.chpw or self.args.shr
         vols = list(all_vols.values())
         t0 = time.time()
 
