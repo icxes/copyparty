@@ -1,4 +1,35 @@
 ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀  
+# 2024-1223-0005  `v1.16.7`  an idp fix for xmas
+
+# ☃️🎄 **there is still time** 🎅🎁
+
+❄️❄️❄️ please [enjoy some appropriate music](https://a.ocv.me/pub/demo/music/.bonus/#af-55d4554d) -- you'll probably like this more than the idp thing honestly ❄️❄️❄️
+
+## 🧪 new features
+
+* more improvements to the recent-uploads feature 87598dcd
+  * move html rendering to clientside
+    * any changes to the filter-text applies in real-time
+    * loads 50% faster, reduces server-load by 30%
+    * inhibits search engines from indexing it
+
+## 🩹 bugfixes
+
+* using idp without e2d could mess with uploads dd6e9ea7
+* u2c (commandline uploader): fix window title 946a8c5b
+* mDNS/SSDP: fix incorrect log colors when multiple primary IPs are lost 552897ab
+
+## 🔧 other changes
+
+* ui: make it more obvious that the volume-control is a volume-control 7f044372
+* copyparty.exe: update deps (jinja2, markupsafe, pyinstaller) c0dacbc4
+* improve safety of custom plugins 988a7223
+  * if you've made your own plugins which expect certain values (host-header, filekeys) to be html-safe, then you'll want to upgrade
+  * also fixes rss-feed xml if password contains special characters
+
+
+
+▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀  
 # 2024-1219-0037  `v1.16.6`  merry \x58mas
 
 # ☃️🎄 **it is time** 🎅🎁
