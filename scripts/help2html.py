@@ -32,6 +32,7 @@ def readclip():
 def cnv(src):
     hostname = str(socket.gethostname()).split(".")[0]
 
+    yield '<!DOCTYPE html>'
     yield '<html style="background:#222;color:#fff"><body>'
     skip_sfx = False
     in_sfx = 0

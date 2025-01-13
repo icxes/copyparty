@@ -279,7 +279,7 @@ symbol legend,
 | per-file passwords      | █ |   |   | █ | █ |   | █ |   | █ |   |   |   | █ |
 | unmap subfolders        | █ |   | █ |   |   |   | █ |   |   | █ | ╱ | • |   |
 | index.html blocks list  | ╱ |   |   |   |   |   | █ |   |   | • |   |   |   |
-| write-only folders      | █ |   | █ |   |   |   |   |   |   |   | █ | █ |   |
+| write-only folders      | █ |   | █ |   | █ |   |   |   |   |   | █ | █ |   |
 | files stored as-is      | █ | █ | █ | █ |   | █ | █ |   |   | █ | █ | █ | █ |
 | file versioning         |   |   |   | █ | █ |   |   |   |   |   |   |   |   |
 | file encryption         |   |   |   | █ | █ | █ |   |   |   |   |   | █ |   |
@@ -507,7 +507,6 @@ symbol legend,
 * ⚠️ uploads not resumable / accelerated / integrity-checked
   * ⚠️ on cloudflare: max upload size 100 MiB
 * ⚠️ uploading small files is slow; `4.7` files per sec (copyparty does `670`/sec, 140x faster)
-* ⚠️ no write-only / upload-only folders
 * ⚠️ big folders cannot be zip-downloaded
 * ⚠️ http/webdav only; no ftp, zeroconf
 * ⚠️ less awesome music player
@@ -593,6 +592,7 @@ symbol legend,
 * ✅ user signup
 * ✅ command runner / remote shell
 * ✅ more efficient; can handle around twice as much simultaneous traffic
+* note: keep an eye on [gtsteffaniak's fork](https://github.com/gtsteffaniak/filebrowser)
 
 ## [filegator](https://github.com/filegator/filegator)
 * php; cross-platform (windows, linux, mac)
